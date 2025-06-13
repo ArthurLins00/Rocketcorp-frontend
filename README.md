@@ -4,14 +4,14 @@ Este repositório marca o início do nosso projeto para o desafio Rocket Corp, p
 
 ## Participantes
 
-Nosso time é formado pelos seguintes integrantes (ordenados alfabeticamente pelo usuário GitHub):
+Nosso time é formado pelos seguintes integrantes:
 
-- [alicecadete28](https://github.com/alicecadete28)  
-- [ArthurLins00](https://github.com/ArthurLins00)  
-- [erico-chen](https://github.com/erico-chen)  
-- [luanbezerra](https://github.com/luanbezerra)  
-- [MF853](https://github.com/MF853)  
-- [Raylandson](https://github.com/Raylandson)  
+- [Alice Cadete](https://github.com/alicecadete28)  
+- [Arthur Lins](https://github.com/ArthurLins00)  
+- [Erico Chen](https://github.com/erico-chen)  
+- [Luan Bezerra](https://github.com/luanbezerra)  
+- [José Mário](https://github.com/MF853)  
+- [Raylandson Cesário](https://github.com/Raylandson)  
 
 ---
 
