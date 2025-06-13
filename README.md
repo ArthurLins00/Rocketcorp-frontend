@@ -1,4 +1,4 @@
-# Projeto Rocket Corp - Início
+# Projeto Rocket Corp
 
 Este repositório marca o início do nosso projeto para o desafio Rocket Corp, parte do Rocket Lab. Nosso grupo está animado para desenvolver as soluções propostas e colaborar ao máximo para o sucesso do projeto.
 
