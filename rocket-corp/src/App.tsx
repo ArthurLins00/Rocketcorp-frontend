@@ -1,10 +1,10 @@
 import "./App.css";
-import { Home } from "./pages/home";
+import { DesempenhoChart } from "./components/DesempenhoChart";
 
 function App() {
   return (
     <>
-      <Home />
+      <DesempenhoChart />
     </>
   );
 }
