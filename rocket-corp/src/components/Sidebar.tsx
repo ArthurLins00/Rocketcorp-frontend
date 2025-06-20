@@ -1,8 +1,11 @@
 import Frame from "../assets/Frame.svg";
 import Frame1 from "../assets/Frame (1).svg";
 import Frame2 from "../assets/Frame (2).svg";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export const Sidebar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   return (
     <aside className="w-[14.5rem] h-[64rem] bg-white border-r-2 border-[#CECDCD] flex flex-col justify-between py-8">
       <div>
@@ -12,19 +15,46 @@ export const Sidebar = () => {
         <nav>
           <ul className="flex flex-col gap-2 pl-5">
             <li>
-              <span className="flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer hover:bg-[#08605F1F] block w-[12rem] text-left">
+              <span
+                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  ${
+                    location.pathname === "/dashboard"
+                      ? "bg-[#08605F1F] font-bold"
+                      : "hover:bg-[#08605F1F]"
+                  }
+                `}
+                onClick={() => navigate("/dashboard")}
+              >
                 <img src={Frame} alt="Frame" className="mr-2 w-5 h-5" />
                 Dashboard
               </span>
             </li>
             <li>
-              <span className="flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer hover:bg-[#08605F1F] block w-[12rem] text-left">
+              <span
+                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  ${
+                    location.pathname === "/cycle-evaluation"
+                      ? "bg-[#08605F1F] font-bold"
+                      : "hover:bg-[#08605F1F]"
+                  }
+                `}
+                onClick={() => navigate("/cycle-evaluation")}
+              >
                 <img src={Frame1} alt="Frame 1" className="mr-2 w-5 h-5" />
                 Avaliação de ciclo
               </span>
             </li>
             <li>
-              <span className="flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer hover:bg-[#08605F1F] block w-[12rem] text-left">
+              <span
+                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  ${
+                    location.pathname === "/evolution"
+                      ? "bg-[#08605F1F] font-bold"
+                      : "hover:bg-[#08605F1F]"
+                  }
+                `}
+                onClick={() => navigate("/evolution")}
+              >
                 <img src={Frame2} alt="Frame 2" className="mr-2 w-5 h-5" />
                 Evolução
               </span>

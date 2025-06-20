@@ -16,8 +16,8 @@ const data = [
   { name: "2024.5", value: 4.5, fill: "#219653" },
 ];
 
-export const DesempenhoChart = () => (
-  <div className="bg-white rounded-lg border border-[#CECDCD] p-6 w-full max-w-5xl mx-auto min-h-[20rem]">
+export const PerformanceChart = () => (
+  <div className="bg-white rounded-lg border border-[#CECDCD] p-6 w-full h-full flex flex-col">
     <div className="flex justify-between items-center mb-4">
       <span className="text-lg font-bold">Desempenho</span>
       <button className="border border-[#CECDCD] rounded px-3 py-1 text-sm text-[#1D1D1D]">

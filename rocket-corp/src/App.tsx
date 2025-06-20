@@ -1,11 +1,17 @@
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
-import { DesempenhoChart } from "./components/DesempenhoChart";
+import { Dashboard } from "./pages/dashboard";
+import { Evolution } from "./pages/evolution";
 
 function App() {
   return (
-    <>
-      <DesempenhoChart />
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/evolution" element={<Evolution />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
