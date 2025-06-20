@@ -1,12 +1,34 @@
-import "./App.css";
-import { Home } from "./pages/home";
+import { Routes, Route, useLocation } from "react-router-dom";
+import {Sidebar} from "./components/Sidebar";
+import Header from "./components/Header";
+import Topbar from "./components/Topbar";
 
-function App() {
+import AutoAvaliacao from "./pages/avaliacao/Autoavaliacao";
+import Avaliacao360 from "./pages/avaliacao/Avaliacao360";
+import Mentoring from "./pages/avaliacao/Mentoring";
+import Referencias from "./pages/avaliacao/Referencias";
+
+export default function App() {
+  const location = useLocation();
+  const isAvaliacaoRoute = location.pathname.startsWith("/avaliacao");
+
   return (
-    <>
-      <Home />
-    </>
+    <div className="flex min-h-screen bg-gray-50 text-gray-800">
+      <Sidebar />
+
+      <div className="flex flex-col flex-1">
+        <Header />
+        {isAvaliacaoRoute && <Topbar />}
+
+        <main className="flex-1 p-6">
+          <Routes>
+            <Route path="/avaliacao/autoavaliacao" element={<AutoAvaliacao />} />
+            <Route path="/avaliacao/avaliacao360" element={<Avaliacao360 />} />
+            <Route path="/avaliacao/mentoring" element={<Mentoring />} />
+            <Route path="/avaliacao/referencias" element={<Referencias />} />
+          </Routes>
+        </main>
+      </div>
+    </div>
   );
 }
-
-export default App;
