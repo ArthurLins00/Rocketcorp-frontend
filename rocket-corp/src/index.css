@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .all-\[unset\] {
+        all: unset;
+    }
+}
+
+:root {
+    --p-font-family: "Inter", Helvetica;
+    --p-font-size: 16px;
+    --p-font-style: normal;
+    --p-font-weight: 400;
+    --p-letter-spacing: 0px;
+    --p-line-height: 28px;
+    --slate-200: rgba(226, 232, 240, 1);
+    --slate-900: rgba(15, 23, 42, 1);
+}
