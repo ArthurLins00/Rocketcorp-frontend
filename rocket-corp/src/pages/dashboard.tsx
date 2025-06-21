@@ -15,6 +15,7 @@ import { CardPrazo } from "../components/cards/CardPrazo";
 import { CardEqualizacoesPendentes } from "../components/cards/CardEqualizacoesPendentes";
 import { CardFechamentoDeCiclo } from "../components/cards/CardFechamentoDeCiclo";
 import { CardAvaliacoesPendentes } from "../components/cards/CardAvaliacoesPendentes";
+import { CollaboratorCard } from "../components/CollaboratorCard/CollaboratorCard";
 
 export const Dashboard = () => {
   const [userType, setUserType] = useState<string[]>(["COLABORADOR"]);
@@ -60,7 +61,6 @@ export const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar />
       <main className="flex-row p-10">
         {/* Saudação */}
 
@@ -197,6 +197,7 @@ export const Dashboard = () => {
               <CardAvaliacoesPendentes />
               <CardFechamentoDeCiclo />
             </div>
+            <CollaboratorCard />
           </>
         )}
       </main>
