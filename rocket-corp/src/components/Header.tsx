@@ -14,7 +14,6 @@ import {
 import { mensagensErro } from "../utils/errorMessages";
 import { enviarAvaliacao } from "../services/avaliacaoService";
 
-
 export default function Header() {
   const location = useLocation();
   const isAvaliacaoPage = location.pathname.startsWith("/avaliacao");
@@ -23,9 +22,28 @@ export default function Header() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const getPageTitle = (pathname: string) => {
+    if (pathname.startsWith("/avaliacao")) {
+      return "Avaliação de Ciclo";
+    }
+    if (pathname.startsWith("/dashboard")) {
+      return "Dashboard";
+    }
+    if (pathname.startsWith("/evolution")) {
+      return "Evolução";
+    }
+    return "Página Principal";
+  };
+
+  const pageTitle = getPageTitle(location.pathname);
+
   const handleConcluirEEnviar = () => {
-    const autoavaliacao = JSON.parse(localStorage.getItem("autoavaliacao") || "{}");
-    const avaliacao360 = JSON.parse(localStorage.getItem("avaliacao360") || "{}");
+    const autoavaliacao = JSON.parse(
+      localStorage.getItem("autoavaliacao") || "{}"
+    );
+    const avaliacao360 = JSON.parse(
+      localStorage.getItem("avaliacao360") || "{}"
+    );
     const mentoring = JSON.parse(localStorage.getItem("mentoring") || "{}");
     const referencias = JSON.parse(localStorage.getItem("referencias") || "{}");
 
@@ -65,21 +83,21 @@ export default function Header() {
     };
 
     enviarAvaliacao(dados)
-    .then(() => {
-      alert("Avaliação enviada com sucesso!");
-      localStorage.clear();
-      window.location.reload();
-    })
-    .catch((err) => {
-      setErrorMessage(err.message);
-      setShowErrorModal(true);
-    });
+      .then(() => {
+        alert("Avaliação enviada com sucesso!");
+        localStorage.clear();
+        window.location.reload();
+      })
+      .catch((err) => {
+        setErrorMessage(err.message);
+        setShowErrorModal(true);
+      });
   };
 
   return (
     <header className="bg-white border-b px-6 py-4 shadow-sm">
       <div className="flex justify-between items-center">
-        <p className="text-gray-800 font-semibold">Olá, Colaborador.</p>
+        <h1 className="text-gray-800 font-semibold">{pageTitle}</h1>
         {isAvaliacaoPage && (
           <>
             <button

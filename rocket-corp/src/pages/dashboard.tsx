@@ -1,6 +1,5 @@
 import { EvaluationCard } from "../components/EvaluationCard";
 import { PerformanceChart } from "../components/PerformanceChart";
-import { Sidebar } from "../components/Sidebar";
 import { StatusCycleCard } from "../components/StatusCycleCard";
 import { useEffect, useState } from "react";
 import Frame4 from "../assets/Frame (4).svg";
@@ -15,13 +14,16 @@ import { CardPrazo } from "../components/cards/CardPrazo";
 import { CardEqualizacoesPendentes } from "../components/cards/CardEqualizacoesPendentes";
 import { CardFechamentoDeCiclo } from "../components/cards/CardFechamentoDeCiclo";
 import { CardAvaliacoesPendentes } from "../components/cards/CardAvaliacoesPendentes";
-import { CollaboratorCard } from "../components/CollaboratorCard/CollaboratorCard";
+
+import { DashboardSmallerCollaboratorCard } from "../components/cards/DashboardSmallerCollaboratorCard";
+import { DashboardCollaboratorCard } from "../components/cards/DashboardCollaboratorCard";
+import { PreenchimentoChart } from "../components/PreenchimentoChart";
 
 export const Dashboard = () => {
   const [userType, setUserType] = useState<string[]>(["COLABORADOR"]);
   useEffect(() => {
     setTimeout(() => {
-      setUserType(["RH"]);
+      setUserType(["COLABORADOR", "RH"]);
     }, 500);
   }, []);
 
@@ -151,10 +153,16 @@ export const Dashboard = () => {
               </div>
             </div>
             {/* Grid de 3 colunas para os cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-              <CardNotaAtual />
-              <CardPreenchimento />
-              <CardRevisoesPendentes />
+
+            <div className="flex flex-col gap-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <CardNotaAtual />
+                <CardPreenchimento />
+                <CardRevisoesPendentes />
+              </div>
+              <div>
+                <DashboardCollaboratorCard />
+              </div>
             </div>
           </>
         )}
@@ -170,10 +178,15 @@ export const Dashboard = () => {
               <div className="col-span-1 md:col-span-2"></div>
             </div>
             {/* Grid de 3 colunas para os cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-              <CardPrazo />
-              <CardPreenchimento />
-              <CardEqualizacoesPendentes />
+            <div className="flex flex-col gap-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <CardPrazo />
+                <CardPreenchimento />
+                <CardEqualizacoesPendentes />
+              </div>
+              <div>
+                <DashboardCollaboratorCard />
+              </div>
             </div>
           </>
         )}
@@ -192,12 +205,17 @@ export const Dashboard = () => {
               <div className="col-span-1 md:col-span-2"></div>
             </div>
             {/* Grid de 3 colunas para os cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-              <CardPreenchimento />
-              <CardAvaliacoesPendentes />
-              <CardFechamentoDeCiclo />
+            <div className="flex flex-col gap-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <CardPreenchimento />
+                <CardAvaliacoesPendentes />
+                <CardFechamentoDeCiclo />
+              </div>
+              <div className="flex gap-x-6">
+                <DashboardSmallerCollaboratorCard />
+                <PreenchimentoChart />
+              </div>
             </div>
-            <CollaboratorCard />
           </>
         )}
       </main>
