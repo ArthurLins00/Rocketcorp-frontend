@@ -1,6 +1,6 @@
 import { Sidebar } from "../components/Sidebar";
-import { CollaboratorCard } from "../components/CollaboratorCard/CollaboratorCard";
-import { MockedCollaboratorCard } from "../components/CollaboratorCard/mockedCollaboratorCard";
+import { CollaboratorCard } from "../components/collaborators/CollaboratorCard";
+import { MockedCollaboratorCard } from "../mocks/mockedCollaboratorCard";
 
 export const Home = () => {
   return (

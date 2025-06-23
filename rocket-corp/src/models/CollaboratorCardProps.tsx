@@ -3,6 +3,6 @@ export interface CollaboratorCardProps {
     role: string;
     initials: string;
     status: string;
-    selfRating: number;  
+    selfRating: number;
     managerRating?: number;
 }
