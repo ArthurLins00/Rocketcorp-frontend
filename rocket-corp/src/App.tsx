@@ -8,6 +8,8 @@ import Avaliacao360 from "./pages/avaliacao/Avaliacao360";
 import Mentoring from "./pages/avaliacao/Mentoring";
 import Referencias from "./pages/avaliacao/Referencias";
 
+import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
+
 export default function App() {
   const location = useLocation();
   const isAvaliacaoRoute = location.pathname.startsWith("/avaliacao");
@@ -26,6 +28,9 @@ export default function App() {
             <Route path="/avaliacao/avaliacao360" element={<Avaliacao360 />} />
             <Route path="/avaliacao/mentoring" element={<Mentoring />} />
             <Route path="/avaliacao/referencias" element={<Referencias />} />
+
+            <Route path="/criterios" element={<CriteriaManagementPage />} />
+            
           </Routes>
         </main>
       </div>
