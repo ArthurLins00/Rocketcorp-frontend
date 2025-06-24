@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Header } from '../../components/collaborators/collaboratorHeader';
 import { SegmentedControl } from '../../components/collaborators/CollaboratorSegmentedControl';
-import EvaluationBlock from '../../components/collaborators/EvaluationBlock';
 import Avaliacao360Page from './Evaluation360Page';
 import HistoricoPage from './HistoryPage';
 import type { CriterionBlock } from '../../models/criterions';

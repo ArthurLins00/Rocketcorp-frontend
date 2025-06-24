@@ -11,7 +11,6 @@ import {
 
 import type { Criterion } from '../../models/criterions';
 
-import StarRating from './StarRating';
 interface Props {
   criterion: Criterion;
   onScoreChange: (id: string, score: number) => void;
@@ -19,7 +18,6 @@ interface Props {
 }
 
 const EvaluationItem: React.FC<Props> = ({ criterion, onScoreChange, onJustificationChange }) => {
-  const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const {
     name,
@@ -81,7 +79,9 @@ const EvaluationItem: React.FC<Props> = ({ criterion, onScoreChange, onJustifica
             <span className="[font-family:'Inter-Bold',Helvetica] font-bold text-[#1c1c1cbf] text-sm"> {selfScore} </span>
           </div>
           <div className="flex w-[37px] h-[25px] justify-center items-center">
-            <span className="[font-family:'Inter-Bold',Helvetica] font-bold text-[#08605f] text-sm"> - </span>
+            <span className="[font-family:'Inter-Bold',Helvetica] font-bold text-[#08605f] text-sm">
+              {displayManagerScore > 0 ? displayManagerScore : '-'}
+            </span>
           </div>
           <div className="flex w-[37px] h-[25px] justify-center items-center">
             { expanded ? (
@@ -139,31 +139,6 @@ const EvaluationItem: React.FC<Props> = ({ criterion, onScoreChange, onJustifica
       )}
     </div>
     </>
-
-    // <div className="border rounded p-4 mb-4">
-    //   <div
-    //     className="flex items-center justify-between cursor-pointer"
-    //     onClick={toggleExpanded}
-    //   >
-    //   {expanded && (
-    //     <div className="flex mt-4 space-x-8">
-
-    //       {/* Manager block */}
-    //       <div className="flex-1">
-    //         <div className="text-sm font-semibold text-gray-600">Avaliação</div>
-    //         <div className="mt-1">
-    //           {renderStars(displayManagerScore, true)}
-    //         </div>
-    //         <div className="mt-2 text-sm font-semibold text-gray-600">Justificativa</div>
-    //         <textarea
-    //           className="mt-1 w-full p-2 border rounded"
-    //           value={displayManagerJustification}
-    //           onChange={e => onJustificationChange(criterion.id, e.target.value)}
-    //         />
-    //       </div>
-    //     </div>
-    //   )}
-    // </div>
   );
 };
 export default EvaluationItem;
