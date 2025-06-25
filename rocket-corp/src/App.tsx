@@ -20,8 +20,8 @@ export default function App() {
       <Sidebar />
 
       <div className="flex flex-col flex-1">
-        {/* <Header /> */}
-        {/* {isAvaliacaoRoute && <Topbar />} */}
+        <Header />
+        {isAvaliacaoRoute && <Topbar />}
 
         <main className="flex-1">
           <Routes>

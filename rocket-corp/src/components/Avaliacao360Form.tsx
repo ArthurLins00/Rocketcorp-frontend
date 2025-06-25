@@ -3,15 +3,26 @@ import { Star, Trash } from "lucide-react";
 import AvatarInicial from "./AvatarInicial";
 
 const colaboradoresDisponiveis = [
-  { id: "1", nome: "João Silva" },
-  { id: "2", nome: "Maria Oliveira" },
-  { id: "3", nome: "Carlos Souza" },
+  { id: "1", nome: "João Silva", cargo: "Desenvolvedor Back-end" },
+  { id: "2", nome: "Maria Oliveira", cargo: "UX Designer" },
+  { id: "3", nome: "Carlos Souza", cargo: "Analista de Dados" },
 ];
 
 type AvaliacaoColaborador = {
-  rating: number;
+  idAvaliador: string;
+  idAvaliado: string;
+  nota: number;
   pontosFortes: string;
   pontosMelhoria: string;
+  nomeProjeto: string;
+  periodoMeses: string;
+  trabalhariaNovamente: number;
+  idCiclo: string;
+};
+
+type Avaliacao360FormProps = {
+  idAvaliador: string;
+  idCiclo: string;
 };
 
 type Avaliacao360State = {
@@ -28,7 +39,7 @@ const getInitialState = (): Avaliacao360State => {
   return {};
 };
 
-export default function Avaliacao360Form() {
+export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360FormProps) {
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao360State>(getInitialState);
   const [termoBusca, setTermoBusca] = useState("");
   const [selecionados, setSelecionados] = useState<string[]>(Object.keys(getInitialState()));
@@ -46,9 +57,15 @@ export default function Avaliacao360Form() {
           return {
             ...prev,
             [id]: {
-              rating: 0,
+              idAvaliador,
+              idAvaliado: id,
+              idCiclo,
+              nota: 0,
               pontosFortes: "",
               pontosMelhoria: "",
+              nomeProjeto: "",
+              periodoMeses: "",
+              trabalhariaNovamente: 0,
             },
           };
         }
@@ -57,34 +74,18 @@ export default function Avaliacao360Form() {
     }
   };
 
-  const handleRating = (id: string, rating: number) => {
-    setAvaliacoes((prev) => {
-      const atual = prev[id] || { pontosFortes: "", pontosMelhoria: "", rating: 0 };
-      return {
-        ...prev,
-        [id]: {
-          ...atual,
-          rating,
-        },
-      };
-    });
-  };
-
-  const handleTexto = (
+  const handleChange = (
     id: string,
-    campo: "pontosFortes" | "pontosMelhoria",
-    valor: string
+    campo: keyof AvaliacaoColaborador,
+    valor: string | number
   ) => {
-    setAvaliacoes((prev) => {
-      const atual = prev[id] || { rating: 0, pontosFortes: "", pontosMelhoria: "" };
-      return {
-        ...prev,
-        [id]: {
-          ...atual,
-          [campo]: valor,
-        },
-      };
-    });
+    setAvaliacoes((prev) => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        [campo]: valor,
+      },
+    }));
   };
 
   const removerColaborador = (id: string) => {
@@ -133,63 +134,120 @@ export default function Avaliacao360Form() {
       {selecionados.map((id) => {
         const colaborador = colaboradoresDisponiveis.find((c) => c.id === id);
         if (!colaborador) return null;
-        const dados = avaliacoes[id] || {
-          rating: 0,
-          pontosFortes: "",
-          pontosMelhoria: "",
-        };
+        const dados = avaliacoes[id];
 
         return (
           <div
             key={id}
-            className="relative border rounded-xl p-4 pb-16 space-y-3 bg-gray-50"
+            className="relative border rounded-xl p-4 pb-16 space-y-4 bg-white"
           >
             <div className="flex justify-between items-center">
-              <div className="flex items-center">
+              <div className="flex items-center gap-2">
                 <AvatarInicial nome={colaborador.nome} />
-                <p className="font-semibold">{colaborador.nome}</p>
+                <div>
+                  <p className="font-semibold">{colaborador.nome}</p>
+                  <p className="text-sm text-gray-500">{colaborador.cargo}</p>
+                </div>
               </div>
               <span className="bg-gray-200 text-sm font-bold px-2 py-1 rounded">
-                {dados.rating.toFixed(1)}
+                {dados.nota.toFixed(1)}
               </span>
             </div>
 
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  size={20}
-                  fill={star <= dados.rating ? "#facc15" : "none"}
-                  stroke="#facc15"
-                  className="cursor-pointer"
-                  onClick={() => handleRating(id, star)}
-                />
-              ))}
+            <div>
+              <label className="block text-sm font-small mb-1 text-gray-500">
+                Dê uma avaliação de 1 a 5 ao colaborador
+              </label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={20}
+                    fill={star <= dados.nota ? "#facc15" : "none"}
+                    stroke="#facc15"
+                    className="cursor-pointer"
+                    onClick={() => handleChange(id, "nota", star)}
+                  />
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <p className="text-sm font-medium mb-1">Pontos fortes</p>
+                <label className="text-sm font-small text-gray-500">Pontos fortes</label>
                 <textarea
-                  className="w-full p-2 border rounded"
-                  placeholder="Justifique sua nota"
+                  className="w-full p-2 border rounded resize-none"
+                  placeholder="Destaque os pontos positivos do colaborador"
                   value={dados.pontosFortes}
-                  onChange={(e) =>
-                    handleTexto(id, "pontosFortes", e.target.value)
-                  }
+                  onChange={(e) => handleChange(id, "pontosFortes", e.target.value)}
                 />
               </div>
               <div>
-                <p className="text-sm font-medium mb-1">Pontos de melhoria</p>
+                <label className="text-sm font-small text-gray-500">Pontos de melhoria</label>
                 <textarea
-                  className="w-full p-2 border rounded"
-                  placeholder="Justifique sua nota"
+                  className="w-full p-2 border rounded resize-none"
+                  placeholder="Destaque os pontos onde o colaborador pode melhorar"
                   value={dados.pontosMelhoria}
-                  onChange={(e) =>
-                    handleTexto(id, "pontosMelhoria", e.target.value)
-                  }
+                  onChange={(e) => handleChange(id, "pontosMelhoria", e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 items-end">
+              <div className="col-span-2">
+                <label className="text-sm font-small text-gray-500">Nome do Projeto</label>
+                <input
+                  className="w-full border p-2 rounded"
+                  placeholder="Projeto trabalhado juntos"
+                  value={dados.nomeProjeto}
+                  onChange={(e) => handleChange(id, "nomeProjeto", e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-small text-gray-500">Período</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={12}
+                  className="w-full border p-2 rounded"
+                  placeholder="Meses trabalhados"
+                  value={dados.periodoMeses}
+                  onChange={(e) => handleChange(id, "periodoMeses", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Você ficaria motivado em trabalhar novamente com essa pessoa?
+              </label>
+              <div className="flex flex-col space-y-2">
+              <div className="flex flex-wrap gap-4">
+                {[1, 2, 3, 4, 5].map((nivel) => {
+                  const label = [
+                    "Discordo totalmente",
+                    "Discordo parcialmente",
+                    "Indiferente",
+                    "Concordo parcialmente",
+                    "Concordo totalmente",
+                  ][nivel - 1];
+                  return (
+                    <label key={nivel} className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name={`trabalharia-${id}`}
+                        value={nivel}
+                        checked={dados.trabalhariaNovamente === nivel}
+                        onChange={() =>
+                          handleChange(id, "trabalhariaNovamente", nivel)
+                        }
+                      />
+                      <span className="text-sm">{label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
             </div>
 
             <button
@@ -204,4 +262,7 @@ export default function Avaliacao360Form() {
       })}
     </div>
   );
+}
+export function getAvaliacoesFormatadas(state: Avaliacao360State): AvaliacaoColaborador[] {
+  return Object.values(state);
 }

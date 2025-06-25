@@ -9,7 +9,7 @@ export default function Topbar() {
       : "text-gray-600 hover:text-green-700";
 
   return (
-    <nav className="flex space-x-6 border-b border-gray-200 mb-8 px-6 pt-4">
+    <nav className="flex space-x-6 border-b border-gray-200 mb-1 px-6 pt-4 bg-white">
       <Link to="/avaliacao/autoavaliacao" className={`pb-2 ${isActive("/avaliacao/autoavaliacao")}`}>
         Autoavaliação
       </Link>

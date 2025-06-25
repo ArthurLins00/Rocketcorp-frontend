@@ -1,64 +1,66 @@
 import CriterionGroup from "./CriterionGroup";
-
-type Criterion = {
-  id: string;
-  name: string;
-  weight: string;
-  description: string;
-  required: boolean;
-};
+import type { Criterion } from "../../mocks/criteriosBase";
 
 type CriterionGroup = {
   groupName: string;
   criteria: Criterion[];
 };
 
-type Trilha = {
-  id: string;
-  nome: string;
-  expanded: boolean;
-  criteriaGroups: CriterionGroup[];
-};
-
 type TrilhaSectionProps = {
-  trilha: Trilha;
+  trilha: {
+    id: string;
+    nome: string;
+    expanded?: boolean;
+    criteriaGroups: CriterionGroup[];
+  };
   onToggleExpand: (id: string) => void;
-  onCriterionChange: (updatedCriterion: Criterion, groupName: string) => void;
-  refProp?: React.Ref<HTMLDivElement>;
+  onCriterionChange: (updated: Criterion, groupName: string) => void;
+  onAddCriterion: (trilhaId: string, groupName: string) => void;
+  refProp?: (el: HTMLDivElement | null) => void;
 };
 
 export default function TrilhaSection({
   trilha,
   onToggleExpand,
   onCriterionChange,
+  onAddCriterion,
   refProp,
 }: TrilhaSectionProps) {
-    const handleCriterionChange = (updatedCriterion: Criterion, groupName: string) => {
-        onCriterionChange(updatedCriterion, groupName);
-      };
-
   return (
-    <div ref={refProp} className="border rounded p-4 shadow-sm bg-white">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-xl font-bold">{trilha.nome}</h2>
+    <div ref={refProp} className="border border-gray-300 rounded-md shadow p-4 bg-white">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-[#08605F]">{trilha.nome}</h2>
         <button
           onClick={() => onToggleExpand(trilha.id)}
-          className="text-[#08605F] text-sm font-medium hover:underline"
+          className="text-sm text-[#08605F] hover:underline"
         >
-          {trilha.expanded ? "Minimizar" : "Expandir"}
+          {trilha.expanded ? "Minimizar trilha" : "Expandir trilha"}
         </button>
       </div>
 
-        {trilha.expanded &&
-        trilha.criteriaGroups.map((group) => (
-            <CriterionGroup
-            key={group.groupName}
-            group={group}
-            onCriterionChange={(updated, groupName) =>
-                handleCriterionChange(updated, groupName)
-            }
-            />
-        ))}
+      {trilha.expanded && (
+        <div className="space-y-6">
+          {trilha.criteriaGroups.map((group) => (
+            <div key={group.groupName}>
+              <CriterionGroup
+                group={group}
+                onCriterionChange={(updated, groupName) => onCriterionChange(updated, groupName)}
+              />
+              <div className="text-right mt-2">
+              <button
+                onClick={() => {
+                  console.log("Adicionar critério clicado:", trilha.id, group.groupName);
+                  onAddCriterion(trilha.id, group.groupName);
+                }}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                + Adicionar critério
+              </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

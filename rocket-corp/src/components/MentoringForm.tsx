@@ -9,39 +9,54 @@ const mentoresDisponiveis = [
 ];
 
 type MentoringData = {
-  mentorId: string;
-  rating: number;
+  idAvaliador: string;
+  idAvaliado: string; // mentor selecionado
+  idCiclo: string;
+  nota: number;
   justificativa: string;
+};
+
+type MentoringFormProps = {
+  idAvaliador: string;
+  idCiclo: string;
 };
 
 const LOCAL_STORAGE_KEY = "mentoring";
 
-const getInitialState = (): MentoringData => {
+const getInitialState = (idAvaliador: string, idCiclo: string): MentoringData => {
   if (typeof window !== "undefined") {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) return JSON.parse(saved);
   }
-  return { mentorId: "", rating: 0, justificativa: "" };
+  return { idAvaliador, idAvaliado: "", idCiclo, nota: 0, justificativa: "" };
 };
 
-export default function MentoringForm() {
-  const [dados, setDados] = useState<MentoringData>(getInitialState);
+export default function MentoringForm({ idAvaliador, idCiclo }: MentoringFormProps) {
+  const [dados, setDados] = useState<MentoringData>(() =>
+    getInitialState(idAvaliador || "", idCiclo || "")
+  );
   const [termoBusca, setTermoBusca] = useState("");
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dados));
   }, [dados]);
 
-  const mentorSelecionado = mentoresDisponiveis.find((m) => m.id === dados.mentorId);
+  const mentorSelecionado = mentoresDisponiveis.find((m) => m.id === dados.idAvaliado);
 
   const resultadosBusca = mentoresDisponiveis.filter(
     (m) =>
       m.nome.toLowerCase().includes(termoBusca.toLowerCase()) &&
-      m.id !== dados.mentorId
+      m.id !== dados.idAvaliado
   );
 
   const removerMentor = () => {
-    setDados({ mentorId: "", rating: 0, justificativa: "" });
+    setDados({
+      idAvaliador,
+      idAvaliado: "",
+      idCiclo,
+      nota: 0,
+      justificativa: "",
+    });
   };
 
   return (
@@ -62,7 +77,12 @@ export default function MentoringForm() {
                   key={mentor.id}
                   className="p-2 hover:bg-gray-100 cursor-pointer"
                   onClick={() => {
-                    setDados({ ...dados, mentorId: mentor.id });
+                    setDados((prev) => ({
+                      ...prev,
+                      idAvaliado: mentor.id,
+                      idAvaliador,
+                      idCiclo,
+                    }));
                     setTermoBusca("");
                   }}
                 >
@@ -75,7 +95,7 @@ export default function MentoringForm() {
       )}
 
       {mentorSelecionado && (
-        <div className="relative border rounded-xl p-4 pb-16 space-y-4 bg-gray-50">
+        <div className="relative border rounded-xl p-4 pb-16 space-y-4 bg-white">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <AvatarInicial nome={mentorSelecionado.nome} />
@@ -85,31 +105,37 @@ export default function MentoringForm() {
               </div>
             </div>
             <span className="bg-gray-200 text-sm font-bold px-2 py-1 rounded">
-              {dados.rating.toFixed(1)}
+              {(dados.nota ?? 0).toFixed(1)}
             </span>
           </div>
-
-          <div className="flex gap-1">
+          <label className="block font-small mb-1 text-sm text-gray-500">
+            Dê uma avaliação de 1 a 5 para seu mentor
+          </label>
+          <div className="flex gap-5">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={star}
                 size={20}
-                fill={star <= dados.rating ? "#facc15" : "none"}
+                fill={star <= dados.nota ? "#facc15" : "none"}
                 stroke="#facc15"
                 className="cursor-pointer"
-                onClick={() => setDados({ ...dados, rating: star })}
+                onClick={() => setDados((prev) => ({ ...prev, nota: star }))}
               />
             ))}
           </div>
 
           <div>
-            <label className="block font-medium mb-1">Justificativa</label>
+            <label className="block font-small mb-1 text-sm text-gray-500">
+              Justifique sua avaliação
+            </label>
             <textarea
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded resize-none"
               rows={4}
               placeholder="Descreva sua experiência com seu mentor"
               value={dados.justificativa}
-              onChange={(e) => setDados({ ...dados, justificativa: e.target.value })}
+              onChange={(e) =>
+                setDados((prev) => ({ ...prev, justificativa: e.target.value }))
+              }
             />
           </div>
 
@@ -124,4 +150,9 @@ export default function MentoringForm() {
       )}
     </div>
   );
+}
+
+// Função para formatar os dados para envio ao backend
+export function getMentoringFormatado(dados: MentoringData): MentoringData {
+  return dados;
 }

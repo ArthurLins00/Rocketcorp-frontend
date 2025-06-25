@@ -9,7 +9,15 @@ const colaboradoresDisponiveis = [
 ];
 
 type Referencia = {
+  idAvaliado: string;
+  idAvaliador: string;
   justificativa: string;
+  idCiclo: string;
+};
+
+type ReferenciasFormProps = {
+  idAvaliador: string;
+  idCiclo: string;
 };
 
 type ReferenciasState = {
@@ -26,10 +34,26 @@ const getInitialState = (): ReferenciasState => {
   return {};
 };
 
-export default function ReferenciasForm() {
+export default function ReferenciasForm({ idAvaliador, idCiclo }: ReferenciasFormProps) {
   const [referencias, setReferencias] = useState<ReferenciasState>(getInitialState);
   const [termoBusca, setTermoBusca] = useState("");
   const [selecionados, setSelecionados] = useState<string[]>(Object.keys(getInitialState()));
+
+  // Corrige registros incompletos do localStorage
+  useEffect(() => {
+    const atualizadas: ReferenciasState = {};
+
+    Object.entries(referencias).forEach(([id, ref]) => {
+      atualizadas[id] = {
+        ...ref,
+        idAvaliado: id,
+        idAvaliador,
+        idCiclo,
+      };
+    });
+
+    setReferencias(atualizadas);
+  }, [idAvaliador, idCiclo]);
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(referencias));
@@ -45,13 +69,16 @@ export default function ReferenciasForm() {
     setReferencias((prev) => ({
       ...prev,
       [id]: {
+        idAvaliado: id,
+        idAvaliador,
+        idCiclo,
         justificativa: texto,
       },
     }));
   };
 
   const removerColaborador = (id: string) => {
-    setSelecionados((prev: string[]) => prev.filter((cid: string) => cid !== id));
+    setSelecionados((prev) => prev.filter((cid) => cid !== id));
 
     setReferencias((prev) => {
       const novo = { ...prev };
@@ -97,10 +124,16 @@ export default function ReferenciasForm() {
       {selecionados.map((id) => {
         const colaborador = colaboradoresDisponiveis.find((c) => c.id === id);
         if (!colaborador) return null;
-        const dados = referencias[id] || { justificativa: "" };
+
+        const dados = referencias[id] || {
+          idAvaliado: id,
+          idAvaliador,
+          idCiclo,
+          justificativa: "",
+        };
 
         return (
-          <div key={id} className="border rounded-xl p-4 space-y-3 bg-gray-50">
+          <div key={id} className="border rounded-xl p-4 space-y-3 bg-white">
             <div className="flex justify-between items-center">
               <div className="flex items-center">
                 <AvatarInicial nome={colaborador.nome} />
@@ -119,9 +152,11 @@ export default function ReferenciasForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Justificativa</label>
+              <label className="block font-small mb-1 text-sm text-gray-500">
+                Justifique sua escolha
+              </label>
               <textarea
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded resize-none"
                 placeholder="Por que essa pessoa é uma referência?"
                 value={dados.justificativa}
                 onChange={(e) => handleJustificativa(id, e.target.value)}
@@ -132,4 +167,9 @@ export default function ReferenciasForm() {
       })}
     </div>
   );
+}
+
+// Para envio ao backend
+export function getReferenciasFormatadas(referencias: ReferenciasState): Referencia[] {
+  return Object.values(referencias);
 }
