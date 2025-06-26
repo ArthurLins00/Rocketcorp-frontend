@@ -16,6 +16,10 @@ import DashboardComite from "./pages/dashboard-comite";
 import DashboardRH from "./pages/dashboard-rh";
 import DashboardGestor from "./pages/dashboard-gestor";
 import CycleEvaluation from "./pages/cycle-evaluation";
+import { CollaboratorsPage } from "./pages/gestor/CollaboratorsListPage";
+
+import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
+import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 
 export default function App() {
   const location = useLocation();
@@ -42,7 +46,6 @@ export default function App() {
               />
               <Route path="/avaliacao/mentoring" element={<Mentoring />} />
               <Route path="/avaliacao/referencias" element={<Referencias />} />
-              <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/evolution" element={<Evolution />} />
               <Route
@@ -53,6 +56,21 @@ export default function App() {
               <Route path="/rh-dashboard" element={<DashboardRH />} />
               <Route path="/gestor-dashboard" element={<DashboardGestor />} />
               <Route path="/cycle-evaluation" element={<CycleEvaluation />} />
+              <Route
+                path="/avaliacao/autoavaliacao"
+                element={<AutoAvaliacao />}
+              />
+              <Route
+                path="/avaliacao/avaliacao360"
+                element={<Avaliacao360 />}
+              />
+
+              <Route
+                path="/gestor/id/colaboradores"
+                element={<CollaboratorsPage />}
+              />
+              <Route path="/criterios" element={<CriteriaManagementPage />} />
+              <Route path="/" element={<CollaboratorPage />} />
             </Routes>
           </main>
         </div>

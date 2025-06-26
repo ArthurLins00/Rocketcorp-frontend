@@ -1,4 +1,4 @@
-import { CollaboratorCard } from "./CollaboratorCard";
+import { CollaboratorCard } from "../components/collaborators/CollaboratorCard";
 
 export const collaborators = [
   {

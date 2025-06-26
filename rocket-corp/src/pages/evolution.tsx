@@ -1,3 +1,3 @@
 export const Evolution = () => {
-  return <div>Hello World</div>;
+  return <div></div>;
 };

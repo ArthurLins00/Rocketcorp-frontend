@@ -1,5 +1,5 @@
-import { CollaboratorCard } from "../CollaboratorCard/CollaboratorCard";
-import { collaborators } from "../CollaboratorCard/mockedCollaboratorCard";
+import { CollaboratorCard } from "../../models/CollaboratorCard";
+import { collaborators } from "../../mocks/mockedCollaboratorCard";
 
 export const DashboardCollaboratorCard = () => (
   <div className="bg-white rounded-xl p-4 shadow-sm w-full">

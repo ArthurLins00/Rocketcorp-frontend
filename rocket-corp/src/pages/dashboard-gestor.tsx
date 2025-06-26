@@ -8,8 +8,8 @@ import Frame6 from "../assets/Frame (6).svg";
 import { CardNotaAtual } from "../components/DashboardCards/CardNotaAtual";
 import { CardPreenchimento } from "../components/DashboardCards/CardPreenchimento";
 import { CardRevisoesPendentes } from "../components/DashboardCards/CadRevisoesPendentes";
-import { collaborators } from "../components/CollaboratorCard/mockedCollaboratorCard";
-import { CollaboratorCard } from "../components/CollaboratorCard/CollaboratorCard";
+import { collaborators } from "../mocks/mockedCollaboratorCard";
+import { CollaboratorCard } from "../models/CollaboratorCard";
 
 const DashboardGestor = () => {
   type CycleStatus =
