@@ -1,13 +1,18 @@
 import frame from "../../assets/RightChevron.svg";
 import type { CollaboratorCardProps } from "./CollaboratorCardProps";
 
-export const CollaboratorCard: React.FC<CollaboratorCardProps> = ({
+export const CollaboratorCard: React.FC<
+  CollaboratorCardProps & { onlyManager?: boolean }
+> = ({
   name,
   role,
   initials,
   status,
   selfRating,
+  avaliacao360,
   managerRating,
+  notaFinal,
+  onlyManager = false,
 }) => {
   return (
     <div className="flex flex-col items-start gap-4 p-4 bg-white rounded-xl">
@@ -45,7 +50,6 @@ export const CollaboratorCard: React.FC<CollaboratorCardProps> = ({
               {selfRating != null ? selfRating.toFixed(1) : "-"}
             </span>
           </div>
-
           <span className="font-medium text-[#1c1c1cbf] text-xs">
             Nota gestor
           </span>
@@ -62,6 +66,34 @@ export const CollaboratorCard: React.FC<CollaboratorCardProps> = ({
               {managerRating != null ? managerRating.toFixed(1) : "-"}
             </span>
           </div>
+          {!onlyManager && (
+            <>
+              <span className="font-medium text-[#1c1c1cbf] text-xs">
+                Avaliação 360
+              </span>
+              <div className="flex w-[37px] items-center justify-center px-2 py-1 bg-[#e6e6e6] rounded">
+                <span className="font-bold text-[#1c1c1c] text-sm">
+                  {avaliacao360 != null ? avaliacao360.toFixed(1) : "-"}
+                </span>
+              </div>
+              <span className="font-medium text-[#1c1c1cbf] text-xs">
+                Nota final
+              </span>
+              <div
+                className={`flex w-[37px] items-center justify-center px-2 py-1 ${
+                  notaFinal != null ? "bg-[#08605F]" : "bg-[#e6e6e6]"
+                }  rounded`}
+              >
+                <span
+                  className={`font-bold ${
+                    notaFinal != null ? "text-[#FFFFFF]" : "text-[#1c1c1c]"
+                  } text-sm`}
+                >
+                  {notaFinal != null ? notaFinal.toFixed(1) : "-"}
+                </span>
+              </div>
+            </>
+          )}
         </div>
         <div className="w-6 h-6 flex-shrink-0">
           <img

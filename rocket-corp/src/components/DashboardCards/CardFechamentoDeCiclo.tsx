@@ -1,4 +1,4 @@
-import { DashboardInfoCard } from "../cards/DashboardInfoCards";
+import { DashboardInfoCard } from "./DashboardInfoCards";
 import { FaRegCalendarAlt } from "react-icons/fa";
 
 export const CardFechamentoDeCiclo = () => (

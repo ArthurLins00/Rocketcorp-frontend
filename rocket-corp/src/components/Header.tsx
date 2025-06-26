@@ -26,8 +26,23 @@ export default function Header() {
     if (pathname.startsWith("/avaliacao")) {
       return "Avaliação de Ciclo";
     }
-    if (pathname.startsWith("/dashboard")) {
+    if (pathname === "/dashboard") {
       return "Dashboard";
+    }
+    if (pathname === "/employee-dashboard") {
+      return "Dashboard do Colaborador";
+    }
+    if (pathname === "/comite-dashboard") {
+      return "Dashboard do Comitê";
+    }
+    if (pathname === "/rh-dashboard") {
+      return "Dashboard do RH";
+    }
+    if (pathname === "/gestor-dashboard") {
+      return "Dashboard do Gestor";
+    }
+    if (pathname === "/cycle-evaluation") {
+      return "Avaliação de Ciclo";
     }
     if (pathname.startsWith("/evolution")) {
       return "Evolução";

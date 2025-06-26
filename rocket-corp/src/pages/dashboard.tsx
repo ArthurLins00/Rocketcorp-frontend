@@ -7,25 +7,21 @@ import Ellipse11 from "../assets/Ellipse 11.svg";
 import Frame3 from "../assets/Frame (3).svg";
 import Frame1 from "../assets/Frame (1).svg";
 import Frame6 from "../assets/Frame (6).svg";
-import { CardNotaAtual } from "../components/cards/CardNotaAtual";
-import { CardPreenchimento } from "../components/cards/CardPreenchimento";
-import { CardRevisoesPendentes } from "../components/cards/CadRevisoesPendentes";
-import { CardPrazo } from "../components/cards/CardPrazo";
-import { CardEqualizacoesPendentes } from "../components/cards/CardEqualizacoesPendentes";
-import { CardFechamentoDeCiclo } from "../components/cards/CardFechamentoDeCiclo";
-import { CardAvaliacoesPendentes } from "../components/cards/CardAvaliacoesPendentes";
+import { CardNotaAtual } from "../components/DashboardCards/CardNotaAtual";
+import { CardPreenchimento } from "../components/DashboardCards/CardPreenchimento";
+import { CardRevisoesPendentes } from "../components/DashboardCards/CadRevisoesPendentes";
+import { CardPrazo } from "../components/DashboardCards/CardPrazo";
+import { CardEqualizacoesPendentes } from "../components/DashboardCards/CardEqualizacoesPendentes";
+import { CardFechamentoDeCiclo } from "../components/DashboardCards/CardFechamentoDeCiclo";
+import { CardAvaliacoesPendentes } from "../components/DashboardCards/CardAvaliacoesPendentes";
 
-import { DashboardSmallerCollaboratorCard } from "../components/cards/DashboardSmallerCollaboratorCard";
-import { DashboardCollaboratorCard } from "../components/cards/DashboardCollaboratorCard";
+import { DashboardSmallerCollaboratorCard } from "../components/DashboardCards/DashboardSmallerCollaboratorCard";
+import { DashboardCollaboratorCard } from "../components/DashboardCards/DashboardCollaboratorCard";
 import { PreenchimentoChart } from "../components/PreenchimentoChart";
+import { useUserType } from "../contexts/UserTypeContext";
 
 export const Dashboard = () => {
-  const [userType, setUserType] = useState<string[]>(["COLABORADOR"]);
-  useEffect(() => {
-    setTimeout(() => {
-      setUserType(["COLABORADOR", "RH"]);
-    }, 500);
-  }, []);
+  const { userType } = useUserType();
 
   type CycleStatus =
     | "EM ANDAMENTO"

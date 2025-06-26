@@ -2,10 +2,13 @@ import Frame from "../assets/Frame.svg";
 import Frame1 from "../assets/Frame (1).svg";
 import Frame2 from "../assets/Frame (2).svg";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useUserType } from "../contexts/UserTypeContext";
 
 export const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { userType } = useUserType();
+
   return (
     <aside className="w-[14.5rem] h-[64rem] bg-white border-r-2 border-[#CECDCD] flex flex-col justify-between py-8">
       <div>
@@ -14,7 +17,7 @@ export const Sidebar = () => {
         </div>
         <nav>
           <ul className="flex flex-col gap-2 pl-5">
-            <li>
+            {/* <li>
               <span
                 className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
                   ${
@@ -28,7 +31,75 @@ export const Sidebar = () => {
                 <img src={Frame} alt="Frame" className="mr-2 w-5 h-5" />
                 Dashboard
               </span>
+            </li> */}
+
+            <li>
+              <span
+                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  ${
+                    location.pathname === "/employee-dashboard"
+                      ? "bg-[#08605F1F] font-bold"
+                      : "hover:bg-[#08605F1F]"
+                  }
+                `}
+                onClick={() => navigate("/employee-dashboard")}
+              >
+                <img src={Frame} alt="Frame" className="mr-2 w-5 h-5" />
+                Dashboard do colaborador
+              </span>
             </li>
+            {userType.includes("GESTOR") && (
+              <li>
+                <span
+                  className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  ${
+                    location.pathname === "/gestor-dashboard"
+                      ? "bg-[#08605F1F] font-bold"
+                      : "hover:bg-[#08605F1F]"
+                  }
+                `}
+                  onClick={() => navigate("/gestor-dashboard")}
+                >
+                  <img src={Frame} alt="Frame" className="mr-2 w-5 h-5" />
+                  Dashboard do gestor
+                </span>
+              </li>
+            )}
+            {userType.includes("COMITE") && (
+              <li>
+                <span
+                  className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  ${
+                    location.pathname === "/comite-dashboard"
+                      ? "bg-[#08605F1F] font-bold"
+                      : "hover:bg-[#08605F1F]"
+                  }
+                `}
+                  onClick={() => navigate("/comite-dashboard")}
+                >
+                  <img src={Frame} alt="Frame" className="mr-2 w-5 h-5" />
+                  Dashboard do comitê
+                </span>
+              </li>
+            )}
+            {userType.includes("RH") && (
+              <li>
+                <span
+                  className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  ${
+                    location.pathname === "/rh-dashboard"
+                      ? "bg-[#08605F1F] font-bold"
+                      : "hover:bg-[#08605F1F]"
+                  }
+                `}
+                  onClick={() => navigate("/rh-dashboard")}
+                >
+                  <img src={Frame} alt="Frame" className="mr-2 w-5 h-5" />
+                  Dashboard do RH
+                </span>
+              </li>
+            )}
+
             <li>
               <span
                 className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
