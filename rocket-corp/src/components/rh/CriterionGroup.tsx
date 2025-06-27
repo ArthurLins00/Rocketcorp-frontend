@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
-import type { Criterion } from "../../mocks/criteriosBase";
+import type { Criterio } from "../../mocks/trilhasMock";
 
 type CriterionGroupProps = {
   group: {
     groupName: string;
-    criteria: Criterion[];
+    criteria: Criterio[];
   };
-  onCriterionChange: (updated: Criterion, groupName: string) => void;
+  onCriterionChange: (updated: Criterio, groupName: string) => void;
 };
 
-export default function CriterionGroup({ group, onCriterionChange }: CriterionGroupProps) {
+export default function CriterionGroup({
+  group,
+  onCriterionChange,
+}: CriterionGroupProps) {
   const [localCriteria, setLocalCriteria] = useState(group.criteria);
   const [totalWeight, setTotalWeight] = useState(0);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -21,14 +24,25 @@ export default function CriterionGroup({ group, onCriterionChange }: CriterionGr
 
   useEffect(() => {
     const total = localCriteria
-      .filter((c) => c.required)
-      .reduce((sum, c) => sum + parseFloat(c.weight || "0"), 0);
+      .filter((c) => c.enabled)
+      .reduce((sum, c) => sum + parseFloat(String(c.peso || "0")), 0); // Use 'peso' instead of 'weight'
     setTotalWeight(total);
   }, [localCriteria]);
 
-  const handleChange = (index: number, field: keyof Criterion, value: string | boolean) => {
+  const handleChange = (
+    index: number,
+    field: keyof Criterio,
+    value: string | boolean
+  ) => {
     const updated = [...localCriteria];
-    updated[index] = { ...updated[index], [field]: value };
+
+    // Convert peso to number if the field is peso
+    if (field === "peso" && typeof value === "string") {
+      updated[index] = { ...updated[index], [field]: parseFloat(value) || 0 };
+    } else {
+      updated[index] = { ...updated[index], [field]: value };
+    }
+
     setLocalCriteria(updated);
     onCriterionChange(updated[index], group.groupName);
   };
@@ -43,7 +57,9 @@ export default function CriterionGroup({ group, onCriterionChange }: CriterionGr
     <div className="mb-8 p-4 bg-white rounded shadow-sm border border-gray-200">
       {/* Cabeçalho do grupo */}
       <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold text-[#08605F]">{group.groupName}</h3>
+        <h3 className="text-lg font-semibold text-[#08605F]">
+          {group.groupName}
+        </h3>
         <div className="flex flex-col items-end">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
@@ -77,7 +93,9 @@ export default function CriterionGroup({ group, onCriterionChange }: CriterionGr
                   <input
                     type="text"
                     value={criterion.name}
-                    onChange={(e) => handleChange(index, "name", e.target.value)}
+                    onChange={(e) =>
+                      handleChange(index, "name", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded px-3 py-2"
                   />
                 </div>
@@ -86,9 +104,14 @@ export default function CriterionGroup({ group, onCriterionChange }: CriterionGr
                     Peso (%)
                   </label>
                   <input
-                    type="text"
-                    value={criterion.weight}
-                    onChange={(e) => handleChange(index, "weight", e.target.value)}
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    value={criterion.peso.toString()} // Use 'peso' instead of 'weight'
+                    onChange={
+                      (e) => handleChange(index, "peso", e.target.value) // Use 'peso' instead of 'weight'
+                    }
                     className="w-full border border-gray-300 rounded px-3 py-2"
                   />
                 </div>
@@ -100,7 +123,9 @@ export default function CriterionGroup({ group, onCriterionChange }: CriterionGr
                 </label>
                 <textarea
                   value={criterion.description}
-                  onChange={(e) => handleChange(index, "description", e.target.value)}
+                  onChange={(e) =>
+                    handleChange(index, "description", e.target.value)
+                  }
                   className="w-full border border-gray-300 rounded px-3 py-2"
                   rows={3}
                 />
@@ -108,21 +133,21 @@ export default function CriterionGroup({ group, onCriterionChange }: CriterionGr
 
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium text-gray-700">
-                  {criterion.required ? "Habilitado" : "Desabilitado"}
+                  {criterion.enabled ? "Habilitado" : "Desabilitado"}
                 </span>
                 <button
                   onClick={() =>
-                    handleChange(index, "required", !criterion.required)
+                    handleChange(index, "enabled", !criterion.enabled)
                   }
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
-                    criterion.required ? "bg-green-500" : "bg-gray-300"
+                    criterion.enabled ? "bg-green-500" : "bg-gray-300"
                   }`}
                   role="switch"
-                  aria-checked={criterion.required}
+                  aria-checked={criterion.enabled}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      criterion.required ? "translate-x-6" : "translate-x-1"
+                      criterion.enabled ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>

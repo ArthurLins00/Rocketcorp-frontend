@@ -1,114 +1,103 @@
 import { useEffect, useRef, useState } from "react";
 import TrilhaFilterBar from "../../components/rh/TrilhaFilterBar";
 import TrilhaSection from "../../components/rh/TrilhaSection";
-import { criteriosBaseGroups , type Criterion } from "../../mocks/criteriosBase";
-import { trilhasMock, type Trilha } from "../../mocks/trilhasMock";
 import ErrorModal from "../../components/ErrorModal";
 
-import { buscarTrilhasDoBackend, enviarTrilhasParaBackend } from "../../services/trilhaService";
+import {
+  buscarTrilhasDoBackend,
+  enviarTrilhasParaBackend,
+} from "../../services/trilhaService";
 import ConfirmModal from "../../components/ConfirmModal";
 import SuccessModal from "../../components/SuccessModal";
-
-type CriterionGroup = {
-  groupName: string;
-  criteria: Criterion[];
-};
-
-export type TrilhaCompleta = Omit<Trilha, "criteriaGroups"> & {
-  criteriaGroups: CriterionGroup[];
-};
+import type { Trilha, Criterio } from "../../mocks/trilhasMock";
 
 const LOCAL_STORAGE_KEY = "rocketCorp.trilhas";
 
 export default function CriteriaManagementPage() {
-  const [trilhas, setTrilhas] = useState<TrilhaCompleta[]>([]);
-  const trilhaRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  // State now directly uses the new Trilha type
+  const [trilhas, setTrilhas] = useState<Trilha[]>([]);
+  const trilhaRefs = useRef<{ [key: number]: HTMLDivElement | null }>({}); // Changed key to number
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  function transformBackendDataToTrilha(backendTrilhas: Trilha[]): Trilha[] {
+    console.log("Raw backend data:", backendTrilhas); // Debug log
 
-  const criteriosMap: Record<string, Criterion> = criteriosBaseGroups
-    .flatMap((group) => group.criteria)
-    .reduce((acc, criterio) => {
-      acc[criterio.id] = criterio;
-      return acc;
-    }, {} as Record<string, Criterion>);
-
-  function expandCriteria(trilhas: Trilha[]): TrilhaCompleta[] {
-    return trilhas.map((trilha) => ({
+    return backendTrilhas.map((trilha) => ({
       ...trilha,
-      criteriaGroups: trilha.criteriaGroups.map((group) => ({
-        groupName: group.groupName,
-        criteria: group.criteriaIds.map((id) => criteriosMap[id]),
-      })),
+      expanded: false,
     }));
   }
 
   useEffect(() => {
     buscarTrilhasDoBackend()
-      .then((dados) => setTrilhas(dados))
-      .catch(() => {
+      .then((dados) => {
+        setTrilhas(transformBackendDataToTrilha(dados));
+      })
+      .catch((error) => {
+        console.error("Error fetching trilhas from backend:", error);
         const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (stored) setTrilhas(JSON.parse(stored));
-        else setTrilhas(expandCriteria(trilhasMock));
+        if (stored) {
+          setTrilhas(transformBackendDataToTrilha(JSON.parse(stored)));
+        } else {
+          // setTrilhas(transformBackendDataToTrilha(trilhasMock));
+        }
       });
   }, []);
 
   const handleCriterionChange = (
-    trilhaId: string,
+    trilhaId: number,
     groupName: string,
-    updatedCriterion: Criterion
+    updatedCriterion: Criterio
   ) => {
     setTrilhas((prev) =>
       prev.map((trilha) => {
         if (trilha.id !== trilhaId) return trilha;
         return {
           ...trilha,
-          criteriaGroups: trilha.criteriaGroups.map((group) => {
-            if (group.groupName !== groupName) return group;
-            return {
-              ...group,
-              criteria: group.criteria.map((criterion) =>
-                criterion.id === updatedCriterion.id ? updatedCriterion : criterion
-              ),
-            };
-          }),
+          criteriosGrouped: {
+            ...trilha.criteriosGrouped,
+            [groupName]: trilha.criteriosGrouped[groupName].map((criterion) =>
+              criterion.id === updatedCriterion.id
+                ? updatedCriterion
+                : criterion
+            ),
+          },
         };
       })
     );
   };
 
-  const handleAddCriterion = (trilhaId: string, groupName: string) => {
-    setTrilhas(prevTrilhas =>
-      prevTrilhas.map(trilha => {
+  const handleAddCriterion = (trilhaId: number, groupName: string) => {
+    setTrilhas((prevTrilhas) =>
+      prevTrilhas.map((trilha) => {
         if (trilha.id !== trilhaId) return trilha;
+
+        const currentGroupCriteria = trilha.criteriosGrouped[groupName] || [];
+
+        const newCriterion: Criterio = {
+          id: Date.now(),
+          name: "Novo critério",
+          tipo: groupName,
+          peso: 0,
+          description: "",
+          enabled: true,
+        };
 
         return {
           ...trilha,
-          criteriaGroups: trilha.criteriaGroups.map(group => {
-            if (group.groupName !== groupName) return group;
-
-            const newCriterion: Criterion = {
-              id: `new-${Date.now()}`,
-              name: "Novo critério",
-              weight: "0",
-              description: "",
-              required: false,
-            };
-
-            return {
-              ...group,
-              criteria: [...group.criteria, newCriterion],
-            };
-          }),
+          criteriosGrouped: {
+            ...trilha.criteriosGrouped,
+            [groupName]: [...currentGroupCriteria, newCriterion],
+          },
         };
       })
     );
   };
 
-  const handleToggleExpand = (id: string) => {
+  const handleToggleExpand = (id: number) => {
     setTrilhas((prev) =>
       prev.map((trilha) =>
         trilha.id === id ? { ...trilha, expanded: !trilha.expanded } : trilha
@@ -116,7 +105,7 @@ export default function CriteriaManagementPage() {
     );
   };
 
-  const handleSelectTrilha = (trilhaId: string) => {
+  const handleSelectTrilha = (trilhaId: number) => {
     setTrilhas((prev) =>
       prev.map((t) => (t.id === trilhaId ? { ...t, expanded: true } : t))
     );
@@ -126,42 +115,54 @@ export default function CriteriaManagementPage() {
     }, 100);
   };
 
-  // Função que salva mesmo — só chamada após confirmação
   const confirmSave = async () => {
     setShowConfirmModal(false);
-    setIsSaving(true);
-  
-    const isValid = trilhas.every((trilha) =>
-      trilha.criteriaGroups.every((group) => {
-        const total = group.criteria
-          .filter((c) => c.required)
-          .reduce((sum, c) => sum + parseFloat(c.weight || "0"), 0);
-        return total === 100;
-      })
-    );
-  
+
+    const isValid = trilhas.every((trilha) => {
+      for (const groupName in trilha.criteriosGrouped) {
+        if (
+          Object.prototype.hasOwnProperty.call(
+            trilha.criteriosGrouped,
+            groupName
+          )
+        ) {
+          const groupCriteria = trilha.criteriosGrouped[groupName];
+          const total = groupCriteria
+            .filter((c) => c.enabled)
+            .reduce((sum, c) => sum + parseFloat(String(c.peso || "0")), 0);
+          if (total !== 100) return false;
+        }
+      }
+      return true;
+    });
+
     if (!isValid) {
+      setErrorMessage(
+        "Todos os grupos devem ter exatamente 100% de peso nos critérios habilitados." // Updated message
+      );
       setShowErrorModal(true);
-      setIsSaving(false);
       return;
     }
-  
+
+    setIsSaving(true);
+
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(trilhas));
-  
+
     try {
       await enviarTrilhasParaBackend(trilhas);
-      setShowSuccessModal(true); // <- agora exibe o modal de sucesso
-    } catch (error: any) {
-      const msg = error?.message || "Erro ao enviar dados para o backend.";
+      setShowSuccessModal(true);
+    } catch (error) {
+      const msg =
+        error instanceof Error
+          ? error.message
+          : "Erro ao enviar dados para o backend.";
       setErrorMessage(msg);
       setShowErrorModal(true);
     }
-  
+
     setIsSaving(false);
   };
-  
 
-  // Abre modal para confirmar salvamento
   const handleSaveClick = () => {
     setShowConfirmModal(true);
   };
@@ -169,7 +170,9 @@ export default function CriteriaManagementPage() {
   return (
     <div className="p-8 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-[#08605F]">Critérios de Avaliação</h1>
+        <h1 className="text-2xl font-bold text-[#08605F]">
+          Critérios de Avaliação
+        </h1>
         <button
           onClick={handleSaveClick}
           disabled={isSaving}
@@ -184,7 +187,7 @@ export default function CriteriaManagementPage() {
       </div>
 
       <TrilhaFilterBar
-        trilhas={trilhas.map(({ id, nome }) => ({ id, nome }))}
+        trilhas={trilhas.map(({ id, name }) => ({ id, nome: name }))}
         onSelectTrilha={handleSelectTrilha}
       />
 
@@ -208,7 +211,10 @@ export default function CriteriaManagementPage() {
       <ErrorModal
         isOpen={showErrorModal}
         onClose={() => setShowErrorModal(false)}
-        message={errorMessage || "Todos os grupos devem ter exatamente 100% de peso nos critérios habilitados."}
+        message={
+          errorMessage ||
+          "Todos os grupos devem ter exatamente 100% de peso nos critérios habilitados."
+        }
       />
 
       <ConfirmModal
