@@ -5,7 +5,8 @@ import ErrorModal from "../../components/ErrorModal";
 
 import {
   buscarTrilhasDoBackend,
-  enviarTrilhasParaBackend,
+  enviarCriterios,
+  salvarCriteriosBulk,
 } from "../../services/trilhaService";
 import ConfirmModal from "../../components/ConfirmModal";
 import SuccessModal from "../../components/SuccessModal";
@@ -25,10 +26,21 @@ export default function CriteriaManagementPage() {
   function transformBackendDataToTrilha(backendTrilhas: Trilha[]): Trilha[] {
     console.log("Raw backend data:", backendTrilhas); // Debug log
 
-    return backendTrilhas.map((trilha) => ({
-      ...trilha,
-      expanded: false,
-    }));
+    return backendTrilhas
+      .map((trilha) => ({
+        ...trilha,
+        expanded: false,
+        // Sort criterios within each group by name
+        criteriosGrouped: Object.keys(trilha.criteriosGrouped)
+          .sort() // Sort group names alphabetically
+          .reduce((acc, groupName) => {
+            acc[groupName] = trilha.criteriosGrouped[groupName].sort((a, b) =>
+              a.name.localeCompare(b.name)
+            );
+            return acc;
+          }, {} as { [key: string]: Criterio[] }),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name)); // Sort trilhas by name
   }
 
   useEffect(() => {
@@ -59,11 +71,13 @@ export default function CriteriaManagementPage() {
           ...trilha,
           criteriosGrouped: {
             ...trilha.criteriosGrouped,
-            [groupName]: trilha.criteriosGrouped[groupName].map((criterion) =>
-              criterion.id === updatedCriterion.id
-                ? updatedCriterion
-                : criterion
-            ),
+            [groupName]: trilha.criteriosGrouped[groupName]
+              .map((criterion) =>
+                criterion.id === updatedCriterion.id
+                  ? { ...updatedCriterion, isModified: true } // Mark as modified
+                  : criterion
+              )
+              .sort((a, b) => a.name.localeCompare(b.name)), // Sort after update
           },
         };
       })
@@ -77,20 +91,36 @@ export default function CriteriaManagementPage() {
 
         const currentGroupCriteria = trilha.criteriosGrouped[groupName] || [];
 
+        // Get idCiclo from any existing criterio in this trilha
+        let idCiclo = 1; // Default fallback
+        for (const criterios of Object.values(trilha.criteriosGrouped)) {
+          for (const criterio of criterios) {
+            if (typeof criterio.id === "number" && criterio.idCiclo) {
+              idCiclo = criterio.idCiclo;
+              break;
+            }
+          }
+          if (idCiclo !== 1) break; // Found a valid idCiclo, break outer loop
+        }
+
         const newCriterion: Criterio = {
-          id: Date.now(),
+          id: `new-${Date.now()}`, // Use string ID for new criterios
           name: "Novo critério",
           tipo: groupName,
           peso: 0,
           description: "",
+          idCiclo, // Use the idCiclo from existing criterios
           enabled: true,
+          isNew: true, // Mark as new
         };
 
         return {
           ...trilha,
           criteriosGrouped: {
             ...trilha.criteriosGrouped,
-            [groupName]: [...currentGroupCriteria, newCriterion],
+            [groupName]: [...currentGroupCriteria, newCriterion].sort((a, b) =>
+              a.name.localeCompare(b.name)
+            ),
           },
         };
       })
@@ -149,7 +179,20 @@ export default function CriteriaManagementPage() {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(trilhas));
 
     try {
-      await enviarTrilhasParaBackend(trilhas);
+      // Collect all criterios from all trilhas and groups for update
+      const allCriterios: Criterio[] = [];
+      trilhas.forEach((trilha) => {
+        Object.values(trilha.criteriosGrouped).forEach((criterios) => {
+          allCriterios.push(...criterios);
+        });
+      });
+
+      // Save criterios using the new bulk operations for new criterios
+      await salvarCriteriosBulk(trilhas);
+
+      // Update existing criterios using the new enviarCriterios function
+      await enviarCriterios(allCriterios);
+
       setShowSuccessModal(true);
     } catch (error) {
       const msg =

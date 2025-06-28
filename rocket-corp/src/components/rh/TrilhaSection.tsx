@@ -33,8 +33,9 @@ export default function TrilhaSection({
 
       {trilha.expanded && (
         <div className="space-y-6">
-          {Object.entries(trilha.criteriosGrouped).map(
-            ([groupName, criteria]) => (
+          {Object.entries(trilha.criteriosGrouped)
+            .sort(([a], [b]) => a.localeCompare(b)) // Sort groups by name
+            .map(([groupName, criteria]) => (
               <div key={groupName}>
                 <CriterionGroup
                   group={{
@@ -43,14 +44,22 @@ export default function TrilhaSection({
                   }}
                   onCriterionChange={(updated, groupName) => {
                     // Convert back to Criterio type
+                    const originalCriterio = criteria.find(
+                      (c) => c.id === updated.id
+                    );
                     const updatedCriterio: Criterio = {
                       id: updated.id,
                       name: updated.name,
-                      tipo:
-                        criteria.find((c) => c.id === updated.id)?.tipo || "",
-                      peso: updated.peso, // Use 'peso' instead of 'weight'
+                      tipo: originalCriterio?.tipo || "",
+                      peso: updated.peso,
                       description: updated.description,
+                      idCiclo: originalCriterio?.idCiclo || 1,
                       enabled: updated.enabled,
+                      isNew: originalCriterio?.isNew,
+                      isModified:
+                        typeof updated.id === "number"
+                          ? true
+                          : originalCriterio?.isModified, // Mark as modified if it's an existing criterio
                     };
                     onCriterionChange(updatedCriterio, groupName);
                   }}
@@ -71,8 +80,7 @@ export default function TrilhaSection({
                   </button>
                 </div>
               </div>
-            )
-          )}
+            ))}
         </div>
       )}
     </div>
