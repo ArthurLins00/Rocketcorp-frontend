@@ -7,9 +7,10 @@ import type {
 } from "../mocks/trilhasMock";
 
 //colocar um .env
-const API_URL_GET_TRILHAS =
-  "http://localhost:3000/trilha/with-criterios-grouped";
-const API_URL_CRITERIO_BULK = "http://localhost:3000/criterio/bulk";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+const API_URL_GET_TRILHAS = `${API_BASE_URL}/trilha/with-criterios-grouped`;
+const API_URL_CRITERIO_BULK = `${API_BASE_URL}/criterio/bulk`;
 
 export async function buscarTrilhasDoBackend(): Promise<Trilha[]> {
   const response = await fetch(API_URL_GET_TRILHAS);
@@ -218,5 +219,15 @@ export async function salvarCriteriosBulk(trilhas: Trilha[]): Promise<void> {
   } catch (error) {
     console.error("Error saving criterios:", error);
     throw error;
+  }
+}
+
+export async function removerCriterio(criterioId: number) {
+  const response = await fetch(`${API_BASE_URL}/criterio/${criterioId}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Erro ao remover critério: ${errorBody}`);
   }
 }

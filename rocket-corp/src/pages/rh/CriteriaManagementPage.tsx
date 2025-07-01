@@ -7,6 +7,7 @@ import {
   buscarTrilhasDoBackend,
   enviarCriterios,
   salvarCriteriosBulk,
+  removerCriterio,
 } from "../../services/trilhaService";
 import ConfirmModal from "../../components/ConfirmModal";
 import SuccessModal from "../../components/SuccessModal";
@@ -17,7 +18,7 @@ const LOCAL_STORAGE_KEY = "rocketCorp.trilhas";
 export default function CriteriaManagementPage() {
   // State now directly uses the new Trilha type
   const [trilhas, setTrilhas] = useState<Trilha[]>([]);
-  const trilhaRefs = useRef<{ [key: number]: HTMLDivElement | null }>({}); // Changed key to number
+  const trilhaRefs = useRef<{ [key: number]: any }>({});
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -77,7 +78,6 @@ export default function CriteriaManagementPage() {
                   ? { ...updatedCriterion, isModified: true } // Mark as modified
                   : criterion
               )
-              .sort((a, b) => a.name.localeCompare(b.name)), // Sort after update
           },
         };
       })
@@ -118,9 +118,7 @@ export default function CriteriaManagementPage() {
           ...trilha,
           criteriosGrouped: {
             ...trilha.criteriosGrouped,
-            [groupName]: [...currentGroupCriteria, newCriterion].sort((a, b) =>
-              a.name.localeCompare(b.name)
-            ),
+            [groupName]: [...currentGroupCriteria, newCriterion],
           },
         };
       })
@@ -145,21 +143,71 @@ export default function CriteriaManagementPage() {
     }, 100);
   };
 
+  const handleSaveClick = () => {
+    setShowConfirmModal(true);
+  };
+
+  // Novo: consolidar dados locais antes de salvar, marcando isModified quando necessário
+  const getTrilhasWithLocalEdits = () => {
+    return trilhas.map((trilha) => {
+      const trilhaRef = trilhaRefs.current[trilha.id];
+      if (trilhaRef && trilhaRef.getAllLocalCriteria) {
+        const localGroups = trilhaRef.getAllLocalCriteria();
+        // Marcar isModified se houver diferença
+        const criteriosGroupedMarcados: { [key: string]: Criterio[] } = {};
+        Object.entries(localGroups).forEach(([groupName, localCriterios]) => {
+          criteriosGroupedMarcados[groupName] = (localCriterios as Criterio[]).map((localCriterio: Criterio) => {
+            // Procurar o critério original global
+            const original = trilha.criteriosGrouped[groupName]?.find((c) => c.id === localCriterio.id);
+            if (!original) return localCriterio; // Novo critério
+            // Verificar se houve alteração
+            const alterado =
+              localCriterio.name !== original.name ||
+              localCriterio.peso !== original.peso ||
+              localCriterio.description !== original.description ||
+              localCriterio.enabled !== original.enabled;
+            if (alterado) {
+              return { ...localCriterio, isModified: true };
+            }
+            return { ...localCriterio, isModified: original.isModified };
+          });
+        });
+        return {
+          ...trilha,
+          criteriosGrouped: criteriosGroupedMarcados,
+        };
+      }
+      return trilha;
+    });
+  };
+
   const confirmSave = async () => {
     setShowConfirmModal(false);
 
-    const isValid = trilhas.every((trilha) => {
+    // Consolidar edições locais em uma variável temporária
+    const trilhasConsolidadas = getTrilhasWithLocalEdits();
+
+    // Verificação: campos obrigatórios (nome e descrição)
+    const hasEmptyFields = trilhasConsolidadas.some((trilha) =>
+      Object.values(trilha.criteriosGrouped).some((criterios) =>
+        (criterios as Criterio[]).some((c: Criterio) => !c.name.trim() || !c.description.trim())
+      )
+    );
+
+    if (hasEmptyFields) {
+      setErrorMessage("Todos os critérios devem ter Nome e Descrição preenchidos.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    // Validação dos pesos
+    const isValid = trilhasConsolidadas.every((trilha) => {
       for (const groupName in trilha.criteriosGrouped) {
-        if (
-          Object.prototype.hasOwnProperty.call(
-            trilha.criteriosGrouped,
-            groupName
-          )
-        ) {
-          const groupCriteria = trilha.criteriosGrouped[groupName];
+        if (Object.prototype.hasOwnProperty.call(trilha.criteriosGrouped, groupName)) {
+          const groupCriteria = trilha.criteriosGrouped[groupName] as Criterio[];
           const total = groupCriteria
-            .filter((c) => c.enabled)
-            .reduce((sum, c) => sum + parseFloat(String(c.peso || "0")), 0);
+            .filter((c: Criterio) => c.enabled)
+            .reduce((sum: number, c: Criterio) => sum + parseFloat(String(c.peso || "0")), 0);
           if (total !== 100) return false;
         }
       }
@@ -168,32 +216,32 @@ export default function CriteriaManagementPage() {
 
     if (!isValid) {
       setErrorMessage(
-        "Todos os grupos devem ter exatamente 100% de peso nos critérios habilitados." // Updated message
+        "Todos os grupos devem ter exatamente 100% de peso nos critérios habilitados."
       );
       setShowErrorModal(true);
       return;
     }
 
     setIsSaving(true);
-
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(trilhas));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(trilhasConsolidadas));
 
     try {
-      // Collect all criterios from all trilhas and groups for update
+      // Agrupa todos os critérios para envio
       const allCriterios: Criterio[] = [];
-      trilhas.forEach((trilha) => {
+      trilhasConsolidadas.forEach((trilha) => {
         Object.values(trilha.criteriosGrouped).forEach((criterios) => {
-          allCriterios.push(...criterios);
+          allCriterios.push(...(criterios as Criterio[]));
         });
       });
 
-      // Save criterios using the new bulk operations for new criterios
-      await salvarCriteriosBulk(trilhas);
+      // Primeiro envia os novos critérios (bulk)
+      await salvarCriteriosBulk(trilhasConsolidadas);
 
-      // Update existing criterios using the new enviarCriterios function
+      // Depois envia os existentes atualizados
       await enviarCriterios(allCriterios);
 
       setShowSuccessModal(true);
+      setTrilhas(trilhasConsolidadas); // Atualiza o estado global só depois do sucesso
     } catch (error) {
       const msg =
         error instanceof Error
@@ -206,8 +254,39 @@ export default function CriteriaManagementPage() {
     setIsSaving(false);
   };
 
-  const handleSaveClick = () => {
-    setShowConfirmModal(true);
+  const handleRemoveCriterion = async (
+    trilhaId: number,
+    groupName: string,
+    criterionId: string | number,
+    idCiclo: number | string  
+  ) => {
+    // Se for critério já salvo no backend, remover no backend primeiro
+    if (typeof criterionId === 'number') {
+      try {
+        await removerCriterio(criterionId);
+      } catch (error) {
+        setErrorMessage('Erro ao remover critério no backend.');
+        setShowErrorModal(true);
+        return;
+      }
+    }
+    // Remover do estado local
+    setTrilhas((prevTrilhas) =>
+      prevTrilhas.map((trilha) => {
+        if (trilha.id !== trilhaId) return trilha;
+        const updatedGroup = trilha.criteriosGrouped[groupName]?.filter(
+          (criterio) =>
+            !(criterio.id === criterionId && criterio.idCiclo === idCiclo)
+        );
+        return {
+          ...trilha,
+          criteriosGrouped: {
+            ...trilha.criteriosGrouped,
+            [groupName]: updatedGroup,
+          },
+        };
+      })
+    );
   };
 
   return (
@@ -247,6 +326,9 @@ export default function CriteriaManagementPage() {
             refProp={(el) => {
               trilhaRefs.current[trilha.id] = el;
             }}
+            onRemoveCriterion={(groupName, criterionId, idCiclo) =>
+              handleRemoveCriterion(trilha.id, groupName, criterionId, idCiclo)
+            }
           />
         ))}
       </div>
