@@ -20,6 +20,7 @@ import { CollaboratorsPage } from "./pages/gestor/CollaboratorsListPage";
 
 import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
 import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
+import LoginPage from "./pages/login";
 
 export default function App() {
   const location = useLocation();
@@ -70,7 +71,7 @@ export default function App() {
                 element={<CollaboratorsPage />}
               />
               <Route path="/criterios" element={<CriteriaManagementPage />} />
-              <Route path="/" element={<CollaboratorPage />} />
+              <Route path="/" element={<LoginPage />} />
             </Routes>
           </main>
         </div>
