@@ -47,6 +47,9 @@ export default function Header() {
     if (pathname.startsWith("/evolution")) {
       return "Evolução";
     }
+    if (pathname === "/comite/equalizacoes") {
+      return "Equalizações";
+    }
     return "Página Principal";
   };
 

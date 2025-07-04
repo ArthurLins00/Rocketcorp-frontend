@@ -20,6 +20,7 @@ import { CollaboratorsPage } from "./pages/gestor/CollaboratorsListPage";
 
 import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
 import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
+import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
 
 export default function App() {
   const location = useLocation();
@@ -36,34 +37,18 @@ export default function App() {
 
           <main className="flex-1">
             <Routes>
-              <Route
-                path="/avaliacao/autoavaliacao"
-                element={<AutoAvaliacao />}
-              />
-              <Route
-                path="/avaliacao/avaliacao360"
-                element={<Avaliacao360 />}
-              />
+              <Route path="/avaliacao/autoavaliacao" element={<AutoAvaliacao />} />
+              <Route path="/avaliacao/avaliacao360" element={<Avaliacao360 />} />
               <Route path="/avaliacao/mentoring" element={<Mentoring />} />
               <Route path="/avaliacao/referencias" element={<Referencias />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/evolution" element={<Evolution />} />
-              <Route
-                path="/employee-dashboard"
-                element={<DashboardColaborador />}
-              />
+              <Route path="/employee-dashboard" element={<DashboardColaborador />} />
               <Route path="/comite-dashboard" element={<DashboardComite />} />
               <Route path="/rh-dashboard" element={<DashboardRH />} />
               <Route path="/gestor-dashboard" element={<DashboardGestor />} />
               <Route path="/cycle-evaluation" element={<CycleEvaluation />} />
-              <Route
-                path="/avaliacao/autoavaliacao"
-                element={<AutoAvaliacao />}
-              />
-              <Route
-                path="/avaliacao/avaliacao360"
-                element={<Avaliacao360 />}
-              />
+              
 
               <Route
                 path="/gestor/id/colaboradores"
@@ -71,6 +56,7 @@ export default function App() {
               />
               <Route path="/criterios" element={<CriteriaManagementPage />} />
               <Route path="/" element={<CollaboratorPage />} />
+              <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
             </Routes>
           </main>
         </div>
