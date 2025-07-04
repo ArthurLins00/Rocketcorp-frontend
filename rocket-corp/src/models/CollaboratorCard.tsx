@@ -1,6 +1,5 @@
 import frame from "../assets/RightChevron.svg";
 import type { CollaboratorCardProps } from "./CollaboratorCardProps";
-import { useNavigate, useLocation } from "react-router-dom";
 
 export const CollaboratorCard: React.FC<
   CollaboratorCardProps & { onlyManager?: boolean }
@@ -15,15 +14,6 @@ export const CollaboratorCard: React.FC<
   notaFinal,
   onlyManager = false,
 }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isGestorDashboard = location.pathname === "/gestor-dashboard";
-  const handleClick = () => {
-    if (location.pathname === "/gestor-dashboard") {
-      navigate("/gestor/collaborator/1");
-    }
-  };
-
   return (
     <div className="flex flex-col items-start gap-4 p-4 bg-white rounded-xl">
       <header className="flex h-11 items-center gap-6 w-full">
@@ -106,17 +96,11 @@ export const CollaboratorCard: React.FC<
           )}
         </div>
         <div className="w-6 h-6 flex-shrink-0">
-          <button
-            onClick={handleClick}
-            className="w-full h-full flex items-center justify-center"
-            disabled={!isGestorDashboard}
-          >
-            <img
-              className="w-[13px] h-[13px] m-auto"
-              alt="Frame icon"
-              src={frame}
-            />
-          </button>
+          <img
+            className="w-[13px] h-[13px] m-auto"
+            alt="Frame icon"
+            src={frame}
+          />
         </div>
       </header>
     </div>
