@@ -26,6 +26,9 @@ import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
 export default function App() {
   const location = useLocation();
   const isAvaliacaoRoute = location.pathname.startsWith("/avaliacao");
+  const isCollaboratorDetailRoute = location.pathname.startsWith(
+    "/gestor/collaborator/"
+  );
   const isLoginRoute = location.pathname === "/login";
 
   return (
@@ -47,6 +50,14 @@ export default function App() {
                 path="/avaliacao/avaliacao360"
                 element={<Avaliacao360 />}
               />
+              <Route
+                path="/avaliacao/autoavaliacao"
+                element={<AutoAvaliacao />}
+              />
+              <Route
+                path="/avaliacao/avaliacao360"
+                element={<Avaliacao360 />}
+              />
               <Route path="/avaliacao/mentoring" element={<Mentoring />} />
               <Route path="/avaliacao/referencias" element={<Referencias />} />
               <Route path="/dashboard" element={<Dashboard />} />
@@ -55,10 +66,22 @@ export default function App() {
                 path="/employee-dashboard"
                 element={<DashboardColaborador />}
               />
+              <Route
+                path="/employee-dashboard"
+                element={<DashboardColaborador />}
+              />
               <Route path="/comite-dashboard" element={<DashboardComite />} />
               <Route path="/rh-dashboard" element={<DashboardRH />} />
               <Route path="/gestor-dashboard" element={<DashboardGestor />} />
               <Route path="/cycle-evaluation" element={<CycleEvaluation />} />
+              <Route
+                path="/avaliacao/autoavaliacao"
+                element={<AutoAvaliacao />}
+              />
+              <Route
+                path="/avaliacao/avaliacao360"
+                element={<Avaliacao360 />}
+              />
               <Route path="/criterios" element={<CriteriaManagementPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route
