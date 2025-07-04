@@ -1,5 +1,5 @@
-import frame from "../../assets/RightChevron.svg";
-import type { CollaboratorCardProps } from "../../models/CollaboratorCardProps";
+import frame from "../assets/RightChevron.svg";
+import type { CollaboratorCardProps } from "./CollaboratorCardProps";
 
 export const CollaboratorCard: React.FC<
   CollaboratorCardProps & { onlyManager?: boolean }

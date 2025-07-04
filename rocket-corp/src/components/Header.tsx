@@ -24,6 +24,7 @@ export default function Header() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   const handleConcluirEEnviar = () => {
@@ -32,6 +33,7 @@ export default function Header() {
     const totalAuto = Object.keys(rawAuto).length;
 
     const avaliacao360 = JSON.parse(localStorage.getItem("avaliacao360") || "{}");
+
     const mentoring = JSON.parse(localStorage.getItem("mentoring") || "{}");
     const referencias = JSON.parse(localStorage.getItem("referencias") || "{}");
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAllCards, searchCards } from '../../controllers/CollaboratorsController';
+import { getAllCards, searchCards } from '../../controllers/collaboratorsCardController';
 import { CollaboratorsHeader } from "../../components/collaborators/CollaboratorsListHeader";
 import { CollaboratorsListSearchbar } from "../../components/collaborators/CollaboratorsListSearchbar";
 import { CollaboratorCard } from '../../components/collaborators/CollaboratorCard';
