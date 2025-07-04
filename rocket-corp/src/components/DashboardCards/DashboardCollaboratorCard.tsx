@@ -16,6 +16,7 @@ export const DashboardCollaboratorCard = () => (
       {collaborators.map((item) => (
         <CollaboratorCard
           key={item.id}
+          id={item.id}
           name={item.name}
           role={item.role}
           initials={item.initials}
