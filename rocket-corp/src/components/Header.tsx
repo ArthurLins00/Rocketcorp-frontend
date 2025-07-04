@@ -25,6 +25,36 @@ export default function Header() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const getPageTitle = (pathname: string) => {
+    if (pathname.startsWith("/avaliacao")) {
+      return "Avaliação de Ciclo";
+    }
+    if (pathname === "/dashboard") {
+      return "Dashboard";
+    }
+    if (pathname === "/employee-dashboard") {
+      return "Dashboard do Colaborador";
+    }
+    if (pathname === "/comite-dashboard") {
+      return "Dashboard do Comitê";
+    }
+    if (pathname === "/rh-dashboard") {
+      return "Dashboard do RH";
+    }
+    if (pathname === "/gestor-dashboard") {
+      return "Dashboard do Gestor";
+    }
+    if (pathname === "/cycle-evaluation") {
+      return "Avaliação de Ciclo";
+    }
+    if (pathname.startsWith("/evolution")) {
+      return "Evolução";
+    }
+    if (pathname === "/comite/equalizacoes") {
+      return "Equalizações";
+    }
+    return "Página Principal";
+  };
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   const handleConcluirEEnviar = () => {
