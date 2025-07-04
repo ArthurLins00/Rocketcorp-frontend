@@ -120,13 +120,18 @@ export default function AutoavaliacaoForm({
 
   const renderSection = (sectionTitle: string, criteria: Criterion[]) => {
     const filledCount = criteria.filter(
-      (c) =>
-        responses[c.id]?.nota > 0 &&
-        responses[c.id]?.justificativa.trim().length > 0
+      (c) => {
+        const response = responses[c.id];
+        return (
+          response?.nota > 0 &&
+          response?.justificativa && 
+          response.justificativa.trim().length > 0
+        );
+      }
     ).length;
-
+  
     const total = criteria.length;
-
+  
     const average =
       filledCount > 0
         ? (
@@ -135,6 +140,7 @@ export default function AutoavaliacaoForm({
               if (
                 item &&
                 item.nota > 0 &&
+                item.justificativa && 
                 item.justificativa.trim().length > 0
               ) {
                 return acc + item.nota;

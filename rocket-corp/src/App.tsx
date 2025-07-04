@@ -11,16 +11,19 @@ import AutoAvaliacao from "./pages/avaliacao/Autoavaliacao";
 import Avaliacao360 from "./pages/avaliacao/Avaliacao360";
 import Mentoring from "./pages/avaliacao/Mentoring";
 import Referencias from "./pages/avaliacao/Referencias";
+
 import DashboardColaborador from "./pages/dashboard-colaborador";
 import DashboardComite from "./pages/dashboard-comite";
 import DashboardRH from "./pages/dashboard-rh";
 import DashboardGestor from "./pages/dashboard-gestor";
-import CycleEvaluation from "./pages/cycle-evaluation";
+
 import { CollaboratorsPage } from "./pages/gestor/CollaboratorsListPage";
 
 import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
 import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import { EvolutionPage } from "./pages/EvolutionPage";
+import LoginPage from "./pages/login";
+import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
 
 export default function App() {
   const location = useLocation();
@@ -49,25 +52,18 @@ export default function App() {
               <Route path="/avaliacao/mentoring" element={<Mentoring />} />
               <Route path="/avaliacao/referencias" element={<Referencias />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/evolution" element={<Evolution />} />
+              <Route path="/evolution-page" element={<EvolutionPage />} />
               <Route
                 path="/employee-dashboard"
                 element={<DashboardColaborador />}
               />
               <Route path="/comite-dashboard" element={<DashboardComite />} />
               <Route path="/rh-dashboard" element={<DashboardRH />} />
-              <Route path="/gestor-dashboard" element={<DashboardGestor />} />
-              <Route path="/cycle-evaluation" element={<CycleEvaluation />} />
-              <Route
-                path="/avaliacao/autoavaliacao"
-                element={<AutoAvaliacao />}
-              />
-              <Route
-                path="/avaliacao/avaliacao360"
-                element={<Avaliacao360 />}
-              />
-              <Route path="/criterios" element={<CriteriaManagementPage />} />
-              <Route path="/evolution-page" element={<EvolutionPage />} />
+              <Route path="/gestor-dashboard" element={<DashboardGestor />} />         
+              <Route path="/rh/criterios" element={<CriteriaManagementPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
+
               <Route path="/gestor/collaborators" element={<CollaboratorsPage />} />
               <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} />
             </Routes>
