@@ -26,6 +26,14 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
     resumoIA,
   } = equalizacao;
 
+  const handleNotaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Permite apenas números entre 0 e 5 com 1 casa decimal
+    if (value === '' || (/^[0-5](\.\d?)?$/.test(value) && parseFloat(value) <= 5)) {
+      setNotaFinal(value ? Number(value) : null);
+    }
+  };
+
   function calcularMedia(notas: number[]) {
     return parseFloat((notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(1));
   }
@@ -191,16 +199,23 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
           <div className="space-y-2">
             <span className="text-sm font-semibold mr-1">Nota Final (Comitê):</span>
             {editando ? (
-              <input
-                type="number"
-                min={0}
-                max={5}
-                step={0.1}
-                value={notaFinal ?? ""}
-                onChange={(e) => setNotaFinal(e.target.value ? Number(e.target.value) : null)}
-                className="w-20 px-2 py-1 border rounded-md"
-                placeholder={calcularMedia([notaAutoavaliacao, notaGestor, notaAvaliacao360]).toFixed(1)}
-              />
+              <div>
+                <input
+                  type="number"
+                  min={0}
+                  max={5}
+                  step={0.1}
+                  value={notaFinal ?? ""}
+                  onChange={handleNotaChange}
+                  className={`w-20 px-2 py-1 border rounded-md ${
+                    notaFinal && notaFinal > 5 ? "border-red-500" : ""
+                  }`}
+                  placeholder={calcularMedia([notaAutoavaliacao, notaGestor, notaAvaliacao360]).toFixed(1)}
+                />
+                {notaFinal && notaFinal > 5 && (
+                  <p className="text-red-500 text-xs mt-1">A nota máxima é 5.0</p>
+                )}
+              </div>
             ) : (
               <p className={`text-lg font-bold ${
                 statusLocal === "Finalizado" ? "text-[#08605F]" : "text-gray-400"
