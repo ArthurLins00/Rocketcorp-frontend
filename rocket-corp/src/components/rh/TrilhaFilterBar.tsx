@@ -1,16 +1,19 @@
 import { useState } from "react";
 
 type Trilha = {
-  id: string;
+  id: number;
   nome: string;
 };
 
 type TrilhaFilterBarProps = {
   trilhas: Trilha[];
-  onSelectTrilha: (trilhaId: string) => void;
+  onSelectTrilha: (trilhaId: number) => void;
 };
 
-export default function TrilhaFilterBar({ trilhas, onSelectTrilha }: TrilhaFilterBarProps) {
+export default function TrilhaFilterBar({
+  trilhas,
+  onSelectTrilha,
+}: TrilhaFilterBarProps) {
   const [termoBusca, setTermoBusca] = useState("");
 
   const resultadosFiltrados = trilhas.filter((trilha) =>

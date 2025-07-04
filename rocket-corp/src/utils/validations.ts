@@ -13,13 +13,21 @@ export const criteriosAutoavaliacao = [
   "evolucao",
 ];
 
+// Valida autoavaliação
 export function validarFormulario(form: Record<string, any>, criterios: string[]) {
-  return criterios.every(
-    (id) =>
-      form[id]?.rating > 0 && form[id]?.justification?.trim() !== ""
-  );
+  return criterios.every((id) => {
+    const item = form[id];
+    return (
+      item &&
+      typeof item.nota === "number" &&
+      item.nota > 0 &&
+      typeof item.justificativa === "string" &&
+      item.justificativa.trim() !== ""
+    );
+  });
 }
 
+// Valida avaliação 360
 export function validarAvaliacao360(avaliacoes: Record<string, any>) {
   const ids = Object.keys(avaliacoes);
   if (ids.length === 0) return false;
@@ -28,23 +36,45 @@ export function validarAvaliacao360(avaliacoes: Record<string, any>) {
     const item = avaliacoes[id];
     return (
       item &&
-      item.rating > 0 &&
-      item.pontosFortes?.trim() !== "" &&
-      item.pontosMelhoria?.trim() !== ""
+      typeof item.nota === "number" &&
+      item.nota > 0 &&
+      typeof item.pontosFortes === "string" &&
+      item.pontosFortes.trim() !== "" &&
+      typeof item.pontosMelhoria === "string" &&
+      item.pontosMelhoria.trim() !== "" &&
+      typeof item.nomeProjeto === "string" &&
+      item.nomeProjeto.trim() !== "" &&
+      (typeof item.periodoMeses === "string" || typeof item.periodoMeses === "number") &&
+      String(item.periodoMeses).trim() !== "" &&
+      typeof item.trabalhariaNovamente === "number" &&
+      item.trabalhariaNovamente > 0
     );
   });
 }
 
+// Valida mentoring
 export function validarMentoring(dados: any) {
   return (
-    dados.mentorId &&
-    dados.rating > 0 &&
-    dados.justificativa?.trim() !== ""
+    dados &&
+    dados.idAvaliador &&
+    dados.idAvaliado &&
+    typeof dados.nota === "number" &&
+    dados.nota > 0 &&
+    typeof dados.justificativa === "string" &&
+    dados.justificativa.trim() !== "" &&
+    dados.idCiclo
   );
 }
 
+// Valida referências
 export function validarReferencias(referencias: Record<string, any>) {
   return Object.values(referencias).every(
-    (ref: any) => ref.justificativa?.trim() !== ""
+    (ref: any) =>
+      ref &&
+      ref.idAvaliador &&
+      ref.idAvaliado &&
+      typeof ref.justificativa === "string" &&
+      ref.justificativa.trim() !== "" &&
+      ref.idCiclo
   );
 }

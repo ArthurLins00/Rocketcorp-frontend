@@ -14,10 +14,13 @@ import {
 import { mensagensErro } from "../utils/errorMessages";
 import { enviarAvaliacao } from "../services/avaliacaoService";
 
+import { getAutoavaliacoesFormatadas } from "../components/AutoavaliacaoForm";  
+import SuccessModal from "./SuccessModal";
+
 export default function Header() {
+  const idCiclo = "2025.2"; // mockado
   const location = useLocation();
   const isAvaliacaoPage = location.pathname.startsWith("/avaliacao");
-
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -47,22 +50,24 @@ export default function Header() {
     if (pathname.startsWith("/evolution")) {
       return "Evolução";
     }
+    if (pathname === "/comite/equalizacoes") {
+      return "Equalizações";
+    }
     return "Página Principal";
   };
-
-  const pageTitle = getPageTitle(location.pathname);
-
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  
   const handleConcluirEEnviar = () => {
-    const autoavaliacao = JSON.parse(
-      localStorage.getItem("autoavaliacao") || "{}"
-    );
-    const avaliacao360 = JSON.parse(
-      localStorage.getItem("avaliacao360") || "{}"
-    );
+    const rawAuto = JSON.parse(localStorage.getItem("autoavaliacao") || "{}");
+    const autoavaliacao = getAutoavaliacoesFormatadas(rawAuto);
+    const totalAuto = Object.keys(rawAuto).length;
+
+    const avaliacao360 = JSON.parse(localStorage.getItem("avaliacao360") || "{}");
+
     const mentoring = JSON.parse(localStorage.getItem("mentoring") || "{}");
     const referencias = JSON.parse(localStorage.getItem("referencias") || "{}");
 
-    if (!validarFormulario(autoavaliacao, criteriosAutoavaliacao)) {
+    if (autoavaliacao.length !== totalAuto || !validarFormulario(rawAuto, criteriosAutoavaliacao)) {
       setErrorMessage(mensagensErro.autoavaliacaoIncompleta);
       setShowErrorModal(true);
       return;
@@ -90,8 +95,11 @@ export default function Header() {
   };
 
   const handleEnviarAvaliacao = () => {
+    const rawAuto = JSON.parse(localStorage.getItem("autoavaliacao") || "{}");
+    const autoavaliacao = getAutoavaliacoesFormatadas(rawAuto);
+
     const dados = {
-      autoavaliacao: JSON.parse(localStorage.getItem("autoavaliacao") || "{}"),
+      autoavaliacao,
       avaliacao360: JSON.parse(localStorage.getItem("avaliacao360") || "{}"),
       mentoring: JSON.parse(localStorage.getItem("mentoring") || "{}"),
       referencias: JSON.parse(localStorage.getItem("referencias") || "{}"),
@@ -112,7 +120,7 @@ export default function Header() {
   return (
     <header className="bg-white border-b px-6 py-4 shadow-sm">
       <div className="flex justify-between items-center">
-        <h1 className="text-gray-800 font-semibold">{pageTitle}</h1>
+        <p className="text-gray-800 font-bold">Ciclo {idCiclo}</p>
         {isAvaliacaoPage && (
           <>
             <button
@@ -137,6 +145,13 @@ export default function Header() {
               isOpen={showErrorModal}
               onClose={() => setShowErrorModal(false)}
               message={errorMessage}
+            />
+
+            <SuccessModal
+              isOpen={showSuccessModal}
+              onClose={() => setShowSuccessModal(false)}
+              title="Sucesso"
+              description="As alterações foram salvas com sucesso."
             />
           </>
         )}
