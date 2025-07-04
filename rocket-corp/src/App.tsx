@@ -20,7 +20,9 @@ import { CollaboratorsPage } from "./pages/gestor/CollaboratorsListPage";
 
 import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
 import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
+import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
+
 
 export default function App() {
   const location = useLocation();
@@ -47,16 +49,16 @@ export default function App() {
               <Route path="/comite-dashboard" element={<DashboardComite />} />
               <Route path="/rh-dashboard" element={<DashboardRH />} />
               <Route path="/gestor-dashboard" element={<DashboardGestor />} />
-              <Route path="/cycle-evaluation" element={<CycleEvaluation />} />
-              
-
+              <Route path="/cycle-evaluation" element={<CycleEvaluation />} />            
               <Route
                 path="/gestor/id/colaboradores"
                 element={<CollaboratorsPage />}
               />
               <Route path="/criterios" element={<CriteriaManagementPage />} />
+              <Route path="/login" element={<LoginPage />} />
               <Route path="/" element={<CollaboratorPage />} />
               <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
+
             </Routes>
           </main>
         </div>
