@@ -53,6 +53,14 @@ export default function Header() {
     if (pathname === "/comite/equalizacoes") {
       return "Equalizações";
     }
+    if (pathname === "/gestor/collaborators") {
+      return "Colaboradores";
+    }
+    if (pathname.startsWith("/gestor/collaborator/")) {
+      // For collaborator detail pages, we'll show the collaborator name
+      // This will be handled by the CollaboratorPage component passing the name
+      return "Colaborador";
+    }
     return "Página Principal";
   };
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -120,7 +128,11 @@ export default function Header() {
   return (
     <header className="bg-white border-b px-6 py-4 shadow-sm">
       <div className="flex justify-between items-center">
-        <p className="text-gray-800 font-bold">Ciclo {idCiclo}</p>
+        <p className="text-gray-800 font-bold">
+          {location.pathname.startsWith("/gestor/collaborator") || location.pathname === "/gestor/collaborators" 
+            ? getPageTitle(location.pathname) 
+            : `Ciclo ${idCiclo}`}
+        </p>
         {isAvaliacaoPage && (
           <>
             <button
