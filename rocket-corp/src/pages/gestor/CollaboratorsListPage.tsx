@@ -37,7 +37,7 @@ export const CollaboratorsPage = () => {
             ) : (
                 <div className="grid gap-4 mt-4">
                     {cards.map(c => (
-                        <CollaboratorCard key={c.initials + c.name} {...c} />
+                        <CollaboratorCard key={c.id} {...c} />
                     ))}
                 </div>
             )}

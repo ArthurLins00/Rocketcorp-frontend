@@ -23,7 +23,6 @@ import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
 
-import { HistoricoPage } from "./pages/gestor/HistoryPage";
 
 export default function App() {
   const location = useLocation();
@@ -60,6 +59,8 @@ export default function App() {
               <Route path="/" element={<CollaboratorPage />} />
               <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
 
+              <Route path="/gestor/collaborators" element={<CollaboratorsPage />} />
+              <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} />
             </Routes>
           </main>
         </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import { CollaboratorScore } from '../../components/history/CollaboratorScore';
 import { CollaboratorGrowth } from '../../components/history/CollaboratorGrowth';
 import { CollaboratorTotalEvaluations } from '../../components/history/CollaboratorTotalEvaluations';
@@ -7,12 +8,15 @@ import { EvaluationCycles } from '../../components/history/EvaluationCycles';
 import { useHistoryController } from '../../controllers/historyController';
 
 interface HistoricoPageProps {
-  collaboratorId?: string; // TODO: Get this from route params or context when integrated
+  collaboratorId?: string; // Optional prop for when used as component
 }
 
 export const HistoricoPage: React.FC<HistoricoPageProps> = ({ 
-  collaboratorId = 'collab-123' // TODO: Remove default value and get from route/context
+  collaboratorId: propCollaboratorId 
 }) => {
+  const { id } = useParams<{ id: string }>();
+  const collaboratorId = propCollaboratorId || id || 'collab-123'; // Use prop first, then route param, then fallback
+  
   const { history, performanceData, evaluationCycles, loading, error, refreshData } = useHistoryController(collaboratorId);
 
   // Loading state
