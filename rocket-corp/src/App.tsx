@@ -23,33 +23,42 @@ import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
 
-
 export default function App() {
   const location = useLocation();
   const isAvaliacaoRoute = location.pathname.startsWith("/avaliacao");
+  const isLoginRoute = location.pathname === "/login";
 
   return (
     <UserTypeProvider>
       <div className="flex min-h-screen bg-gray-50 text-gray-800">
-        <Sidebar />
+        {!isLoginRoute && <Sidebar />}
 
-      <div className="flex flex-col flex-1">
-        <Header />
-        {isAvaliacaoRoute && <Topbar />}
+        <div className="flex flex-col flex-1">
+          {!isLoginRoute && <Header />}
+          {isAvaliacaoRoute && !isLoginRoute && <Topbar />}
 
           <main className="flex-1">
             <Routes>
-              <Route path="/avaliacao/autoavaliacao" element={<AutoAvaliacao />} />
-              <Route path="/avaliacao/avaliacao360" element={<Avaliacao360 />} />
+              <Route
+                path="/avaliacao/autoavaliacao"
+                element={<AutoAvaliacao />}
+              />
+              <Route
+                path="/avaliacao/avaliacao360"
+                element={<Avaliacao360 />}
+              />
               <Route path="/avaliacao/mentoring" element={<Mentoring />} />
               <Route path="/avaliacao/referencias" element={<Referencias />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/evolution" element={<Evolution />} />
-              <Route path="/employee-dashboard" element={<DashboardColaborador />} />
+              <Route
+                path="/employee-dashboard"
+                element={<DashboardColaborador />}
+              />
               <Route path="/comite-dashboard" element={<DashboardComite />} />
               <Route path="/rh-dashboard" element={<DashboardRH />} />
               <Route path="/gestor-dashboard" element={<DashboardGestor />} />
-              <Route path="/cycle-evaluation" element={<CycleEvaluation />} />            
+              <Route path="/cycle-evaluation" element={<CycleEvaluation />} />
               <Route
                 path="/gestor/id/colaboradores"
                 element={<CollaboratorsPage />}
@@ -57,8 +66,10 @@ export default function App() {
               <Route path="/criterios" element={<CriteriaManagementPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/" element={<CollaboratorPage />} />
-              <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
-
+              <Route
+                path="/comite/equalizacoes"
+                element={<EqualizacoesPage />}
+              />
             </Routes>
           </main>
         </div>
