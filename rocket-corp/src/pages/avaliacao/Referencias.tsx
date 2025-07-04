@@ -1,9 +1,12 @@
 import ReferenciasForm from "../../components/ReferenciasForm";
 
-export default function Referencias() {
+export default function ReferenciasPage() {
+  const idCiclo = "2025.2";      // mockado
+  const idAvaliador = "999";     // mockado
+
   return (
-    <main className="p-6">
-      <ReferenciasForm />
-    </main>
+    <div className="p-4">
+      <ReferenciasForm idCiclo={idCiclo} idAvaliador={idAvaliador} />
+    </div>
   );
 }

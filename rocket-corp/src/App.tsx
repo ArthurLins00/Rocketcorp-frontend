@@ -31,9 +31,9 @@ export default function App() {
       <div className="flex min-h-screen bg-gray-50 text-gray-800">
         <Sidebar />
 
-        <div className="flex flex-col flex-1">
-          <Header />
-          {isAvaliacaoRoute && <Topbar />}
+      <div className="flex flex-col flex-1">
+        <Header />
+        {isAvaliacaoRoute && <Topbar />}
 
           <main className="flex-1">
             <Routes>
