@@ -1,72 +1,44 @@
 export type Trilha = {
-    id: string;
-    nome: string;
-    expanded: boolean;
-    criteriaGroups: {
-      groupName: string;
-      criteriaIds: string[];
-    }[];
+  id: number;
+  name: string;
+  expanded?: boolean;
+  criteriosGrouped: {
+    [key: string]: Criterio[];
   };
-  
-  export const trilhasMock: Trilha[] = [
-    {
-      id: "financeiro",
-      nome: "Trilha de Financeiro",
-      expanded: false,
-      criteriaGroups: [
-        {
-          groupName: "Critérios de Postura",
-          criteriaIds: [
-            "sentimentoDeDono", "resiliencia", "organizacao", "aprendizado", "teamPlayer"
-          ],
-        },
-        {
-          groupName: "Critérios de Execução",
-          criteriaIds: ["qualidade", "prazos", "eficiencia", "criatividade"]
-        },
-        {
-          groupName: "Critérios de Gente e Gestão",
-          criteriaIds: ["gente", "resultados", "evolucao"]
-        },
-      ],
-    },
-    {
-      id: "design",
-      nome: "Trilha de Design",
-      expanded: false,
-      criteriaGroups: [
-        {
-          groupName: "Critérios de Postura",
-          criteriaIds: ["sentimentoDeDono", "resiliencia", "organizacao", "aprendizado", "teamPlayer"]
-        },
-        {
-          groupName: "Critérios de Execução",
-          criteriaIds: ["qualidade", "prazos", "eficiencia", "criatividade"]
-        },
-        {
-          groupName: "Critérios de Gente e Gestão",
-          criteriaIds: ["gente", "resultados", "evolucao"]
-        },
-      ],
-    },
-    {
-      id: "marketing",
-      nome: "Trilha de Marketing",
-      expanded: false,
-      criteriaGroups: [
-        {
-          groupName: "Critérios de Postura",
-          criteriaIds: ["sentimentoDeDono", "resiliencia", "organizacao", "aprendizado", "teamPlayer"]
-        },
-        {
-          groupName: "Critérios de Execução",
-          criteriaIds: ["qualidade", "prazos", "eficiencia", "criatividade"]
-        },
-        {
-          groupName: "Critérios de Gente e Gestão",
-          criteriaIds: ["gente", "resultados", "evolucao"]
-        },
-      ],
-    },
-  ];
-  
+};
+
+export type Criterio = {
+  id: number | string; // Allow string for new criterios (temporary IDs)
+  name: string;
+  tipo: string;
+  peso: number;
+  description: string;
+  idCiclo: number;
+  enabled: boolean;
+  isNew?: boolean; // Flag to identify new criterios
+  isModified?: boolean; // Flag to identify modified criterios
+};
+
+// Types for API requests
+export type CriterioCreateRequest = {
+  name: string;
+  tipo: string;
+  peso: number;
+  description: string;
+  idCiclo: number;
+  trilhaId: number;
+  enabled: boolean;
+};
+
+export type CriterioUpdateRequest = {
+  id: number;
+  name?: string;
+  tipo?: string;
+  peso?: number;
+  description?: string;
+  enabled?: boolean;
+};
+
+export type CriterioBulkRequest = {
+  criterios: (CriterioCreateRequest | CriterioUpdateRequest)[];
+};
