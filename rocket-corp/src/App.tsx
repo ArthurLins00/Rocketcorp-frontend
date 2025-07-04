@@ -20,6 +20,7 @@ import { CollaboratorsPage } from "./pages/gestor/CollaboratorsListPage";
 
 import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
 import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
+import { EvolutionPage } from "./pages/EvolutionPage";
 
 export default function App() {
   const location = useLocation();
@@ -66,6 +67,7 @@ export default function App() {
                 element={<Avaliacao360 />}
               />
               <Route path="/criterios" element={<CriteriaManagementPage />} />
+              <Route path="/evolution-page" element={<EvolutionPage />} />
               <Route path="/gestor/collaborators" element={<CollaboratorsPage />} />
               <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} />
             </Routes>
