@@ -26,9 +26,7 @@ import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
 export default function App() {
   const location = useLocation();
   const isAvaliacaoRoute = location.pathname.startsWith("/avaliacao");
-  const isCollaboratorDetailRoute = location.pathname.startsWith(
-    "/gestor/collaborator/"
-  );
+
   const isLoginRoute = location.pathname === "/login";
 
   return (
