@@ -11,11 +11,12 @@ import AutoAvaliacao from "./pages/avaliacao/Autoavaliacao";
 import Avaliacao360 from "./pages/avaliacao/Avaliacao360";
 import Mentoring from "./pages/avaliacao/Mentoring";
 import Referencias from "./pages/avaliacao/Referencias";
+
 import DashboardColaborador from "./pages/dashboard-colaborador";
 import DashboardComite from "./pages/dashboard-comite";
 import DashboardRH from "./pages/dashboard-rh";
 import DashboardGestor from "./pages/dashboard-gestor";
-import CycleEvaluation from "./pages/cycle-evaluation";
+
 import { CollaboratorsPage } from "./pages/gestor/CollaboratorsListPage";
 
 import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
@@ -48,9 +49,8 @@ export default function App() {
               <Route path="/employee-dashboard" element={<DashboardColaborador />} />
               <Route path="/comite-dashboard" element={<DashboardComite />} />
               <Route path="/rh-dashboard" element={<DashboardRH />} />
-              <Route path="/gestor-dashboard" element={<DashboardGestor />} />
-              <Route path="/cycle-evaluation" element={<CycleEvaluation />} />            
-              <Route path="/criterios" element={<CriteriaManagementPage />} />
+              <Route path="/gestor-dashboard" element={<DashboardGestor />} />         
+              <Route path="/rh/criterios" element={<CriteriaManagementPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
 

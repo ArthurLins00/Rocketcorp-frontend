@@ -1,6 +1,8 @@
 import Frame from "../assets/Frame.svg";
 import Frame1 from "../assets/Frame (1).svg";
 import Frame2 from "../assets/Frame (2).svg";
+import Frame3 from "../assets/Frame (7).svg";
+import Frame4 from "../assets/Frame (8).svg";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUserType } from "../contexts/UserTypeContext";
 
@@ -35,7 +37,7 @@ export const Sidebar = () => {
 
             <li>
               <span
-                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left
                   ${
                     location.pathname === "/employee-dashboard"
                       ? "bg-[#08605F1F] font-bold"
@@ -51,7 +53,7 @@ export const Sidebar = () => {
             {userType.includes("GESTOR") && (
               <li>
                 <span
-                  className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left
                   ${
                     location.pathname === "/gestor-dashboard"
                       ? "bg-[#08605F1F] font-bold"
@@ -68,7 +70,7 @@ export const Sidebar = () => {
             {userType.includes("COMITE") && (
               <li>
                 <span
-                  className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left
                   ${
                     location.pathname === "/comite-dashboard"
                       ? "bg-[#08605F1F] font-bold"
@@ -85,7 +87,7 @@ export const Sidebar = () => {
             {userType.includes("RH") && (
               <li>
                 <span
-                  className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                    className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left
                   ${
                     location.pathname === "/rh-dashboard"
                       ? "bg-[#08605F1F] font-bold"
@@ -102,14 +104,14 @@ export const Sidebar = () => {
 
             <li>
               <span
-                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left
                   ${
-                    location.pathname === "/cycle-evaluation"
+                    location.pathname === "/avaliacao/autoavaliacao"
                       ? "bg-[#08605F1F] font-bold"
                       : "hover:bg-[#08605F1F]"
                   }
                 `}
-                onClick={() => navigate("/cycle-evaluation")}
+                onClick={() => navigate("/avaliacao/autoavaliacao")}
               >
                 <img src={Frame1} alt="Frame 1" className="mr-2 w-5 h-5" />
                 Avaliação de ciclo
@@ -117,7 +119,7 @@ export const Sidebar = () => {
             </li>
             <li>
               <span
-                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left
                   ${
                     location.pathname === "/evolution"
                       ? "bg-[#08605F1F] font-bold"
@@ -132,7 +134,7 @@ export const Sidebar = () => {
             </li>
             <li>
               <span
-                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left
                   ${
                     location.pathname === "/gestor/collaborators"
                       ? "bg-[#08605F1F] font-bold"
@@ -143,6 +145,36 @@ export const Sidebar = () => {
               >
                 <img src={Frame2} alt="Frame 2" className="mr-2 w-5 h-5" />
                 Gestor - Colaboradores
+              </span>
+            </li>
+            <li>
+              <span
+                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left
+                  ${
+                    location.pathname === "/rh/criterios"
+                      ? "bg-[#08605F1F] font-bold"
+                      : "hover:bg-[#08605F1F]"
+                  }
+                `}
+                onClick={() => navigate("/rh/criterios")}
+              >
+                <img src={Frame3} alt="Frame 3" className="mr-2 w-5 h-5" />
+                Critérios de Avaliação
+              </span>
+            </li>
+            <li>
+              <span
+                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left
+                  ${
+                    location.pathname === "/comite/equalizacoes"
+                      ? "bg-[#08605F1F] font-bold"
+                      : "hover:bg-[#08605F1F]"
+                  }
+                `}
+                onClick={() => navigate("/comite/equalizacoes")}
+              >
+                <img src={Frame4} alt="Frame 4" className="mr-2 w-5 h-5" />
+                Equalizações
               </span>
             </li>
           </ul>
