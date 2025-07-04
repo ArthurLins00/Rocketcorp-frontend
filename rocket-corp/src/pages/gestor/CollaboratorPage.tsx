@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Header } from '../../components/collaborators/collaboratorHeader';
+import { Header } from '../../components/collaborators/CollaboratorHeader';
 import { SegmentedControl } from '../../components/collaborators/CollaboratorSegmentedControl';
 import Avaliacao360Page from './Evaluation360Page';
-import HistoricoPage from './HistoryPage';
+import { HistoricoPage } from './HistoryPage';
 import type { CriterionBlock } from '../../models/criterions';
 import type { Collaborator } from '../../models/collaborator';
 

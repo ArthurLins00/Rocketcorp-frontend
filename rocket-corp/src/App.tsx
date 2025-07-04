@@ -23,6 +23,7 @@ import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
 
+import { HistoricoPage } from "./pages/gestor/HistoryPage";
 
 export default function App() {
   const location = useLocation();
