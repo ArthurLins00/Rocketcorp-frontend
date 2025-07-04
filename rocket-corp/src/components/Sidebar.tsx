@@ -130,6 +130,21 @@ export const Sidebar = () => {
                 Evolução
               </span>
             </li>
+            <li>
+              <span
+                className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer block w-[12rem] text-left
+                  ${
+                    location.pathname === "/gestor/collaborators"
+                      ? "bg-[#08605F1F] font-bold"
+                      : "hover:bg-[#08605F1F]"
+                  }
+                `}
+                onClick={() => navigate("/gestor/collaborators")}
+              >
+                <img src={Frame2} alt="Frame 2" className="mr-2 w-5 h-5" />
+                Gestor - Colaboradores
+              </span>
+            </li>
           </ul>
         </nav>
       </div>

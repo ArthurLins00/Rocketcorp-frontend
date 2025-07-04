@@ -30,7 +30,7 @@ export default function App() {
 
   return (
     <UserTypeProvider>
-      <div className="flex min-h-screen bg-gray-50 text-gray-800">
+      <div className="flex min-h-screen text-gray-800">
         <Sidebar />
 
       <div className="flex flex-col flex-1">
