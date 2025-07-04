@@ -7,6 +7,7 @@ import Ellipse11 from "../assets/Ellipse 11.svg";
 import Frame3 from "../assets/Frame (3).svg";
 import Frame1 from "../assets/Frame (1).svg";
 import Frame6 from "../assets/Frame (6).svg";
+import { buscarDadosDashboardUser } from "../services/dashboardService";
 
 const DashboardColaborador = () => {
   type CycleStatus =
@@ -14,11 +15,25 @@ const DashboardColaborador = () => {
     | "AGUARDANDO RESULTADO"
     | "RESULTADOS DISPONIVEIS";
   const [status, setStatus] = useState<CycleStatus>("RESULTADOS DISPONIVEIS");
+  const [colaborador, setColaborador] = useState<any>(null);
+
   useEffect(() => {
     setTimeout(() => {
       setStatus("RESULTADOS DISPONIVEIS");
     }, 500);
   }, []);
+
+  useEffect(() => {
+    buscarDadosDashboardUser("13")
+      .then((dados) => {
+        // console.log("Dados do colaborador:", dados);
+        setColaborador(dados);
+      })
+      .catch((erro) => {
+        console.error(erro);
+      });
+  }, []);
+
   let bgColor, textColor, subtitle, title, iconLeft, subTextColor;
 
   if (status === "EM ANDAMENTO") {
@@ -48,7 +63,8 @@ const DashboardColaborador = () => {
       <main className="flex-row p-10">
         <div className="mb-6">
           <span className="text-lg ml-2">
-            <strong>Olá</strong>, Colaborador!
+            <strong>Olá</strong>,{" "}
+            {colaborador ? colaborador.name : "carregando..."}!
           </span>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:auto-rows-min">

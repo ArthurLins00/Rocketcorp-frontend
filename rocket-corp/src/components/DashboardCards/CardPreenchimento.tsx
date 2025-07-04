@@ -1,6 +1,10 @@
 import { DashboardInfoCard } from "./DashboardInfoCards";
 
-export const CardPreenchimento = () => (
+type Props = {
+  porcentagemPreenchimento: number;
+};
+
+export const CardPreenchimento = ({ porcentagemPreenchimento }: Props) => (
   <DashboardInfoCard
     title="Preenchimento de avaliação"
     bgColor="bg-white"
@@ -11,7 +15,10 @@ export const CardPreenchimento = () => (
       <div className="flex items-start gap-2 flex-1">
         <span className="block w-1 h-10 bg-[#08605F] rounded-full mt-1" />
         <span className="text-sm text-[#4F4F4F] leading-tight">
-          <span className="font-bold text-black">60%</span> dos seus liderados
+          <span className="font-bold text-black">
+            {porcentagemPreenchimento}%
+          </span>{" "}
+          dos seus liderados
           <br />
           já fizeram suas avaliações
         </span>
@@ -40,8 +47,8 @@ export const CardPreenchimento = () => (
               strokeLinecap="round"
             />
           </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-[#08605F] font-bold text-lg">
-            60%
+          <span className="absolute inset-0 flex items-center justify-center text-[#08605F] font-bold text-sm">
+            {porcentagemPreenchimento}%
           </span>
         </div>
       </div>

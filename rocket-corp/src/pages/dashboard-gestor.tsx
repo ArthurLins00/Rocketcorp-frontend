@@ -7,30 +7,142 @@ import Frame1 from "../assets/Frame (1).svg";
 import Frame6 from "../assets/Frame (6).svg";
 import { CardNotaAtual } from "../components/DashboardCards/CardNotaAtual";
 import { CardPreenchimento } from "../components/DashboardCards/CardPreenchimento";
-import { CardRevisoesPendentes } from "../components/DashboardCards/CadRevisoesPendentes";
-import { collaborators } from "../mocks/mockedCollaboratorCard";
 import { CollaboratorCard } from "../models/CollaboratorCard";
+import {
+  buscarDadosDashboardUser,
+  buscarAvaliacoesDoAvaliador,
+  buscarDadosCiclo,
+  buscarCicloAtual,
+  buscarMentorados,
+  buscarAutoavaliacoes,
+  buscarAvaliacoes360,
+} from "../services/dashboardService";
+import { calcularPorcentagemTodosTipos } from "../utils/porcentagensAvaliacoes";
+import { CardAvaliacoesPendentes } from "../components/DashboardCards/CardAvaliacoesPendentes";
+import { calcularNumAvalPendentesAvaliador } from "../utils/porcentagensAvaliacoes";
+import type { AvaliacaoCompleta } from "../types/AvaliacaoCompleta";
+import type { Avaliacao360 } from "../types/Avaliacao360";
+import type { User } from "../types/User";
 
 const DashboardGestor = () => {
-  type CycleStatus =
-    | "EM ANDAMENTO"
-    | "AGUARDANDO RESULTADO"
-    | "RESULTADOS DISPONIVEIS";
-  const [status, setStatus] = useState<CycleStatus>("RESULTADOS DISPONIVEIS");
+  const [status, setStatus] = useState<string>("aberto");
+  const [gestor, setGestor] = useState<User>();
+  const [avaliacoesComDados, setAvaliacoesComDados] = useState<any[]>([]);
+  const [porcentagem, setPorcentagem] = useState(0);
+  const [numAvalPendentes, setNumAvalPendentes] = useState(0);
+
+  //Buscar dados do gestor
   useEffect(() => {
-    setTimeout(() => {
-      setStatus("RESULTADOS DISPONIVEIS");
-    }, 500);
+    buscarDadosDashboardUser(26)
+      .then((dados) => {
+        console.log("Dados do gestor:", dados);
+        setGestor(dados);
+      })
+      .catch((erro) => {
+        console.error(erro);
+      });
   }, []);
+
+  //Buscar ciclo atual - quebrado
+  useEffect(() => {
+    buscarCicloAtual()
+      .then((ciclo) => {
+        console.log("Ciclo atual:", ciclo);
+        setStatus(ciclo.status);
+      })
+      .catch((erro) => {
+        console.error(erro);
+      });
+  }, []);
+
+  //Buscar mentorados e suas avaliacoes
+  useEffect(() => {
+    if (!gestor?.id) return;
+
+    Promise.all([
+      buscarMentorados(gestor.id),
+      buscarAutoavaliacoes(),
+      buscarAvaliacoes360(),
+    ])
+      .then(([mentorados, autoAvaliacoes, avaliacoes360]) => {
+        console.log("Mentorados:", mentorados);
+        console.log("Avaliações:", autoAvaliacoes);
+        console.log("Avaliações:", avaliacoes360);
+
+        const porcent = calcularPorcentagemTodosTipos(
+          mentorados,
+          autoAvaliacoes,
+          avaliacoes360
+        );
+        console.log("Porcent:", porcent);
+        setPorcentagem(porcent);
+
+        // Calcular porcentagem de avaliações 360 pendentes do avaliador
+        const numAvalPendentes = calcularNumAvalPendentesAvaliador(
+          mentorados,
+          avaliacoes360,
+          gestor.id
+        );
+        setNumAvalPendentes(numAvalPendentes);
+      })
+      .catch((erro) => {
+        console.error(erro);
+      });
+  }, [gestor]);
+
+  useEffect(() => {
+    console.log("Porcentagem atualizada:", porcentagem);
+  }, [porcentagem]);
+
+  useEffect(() => {
+    buscarAvaliacoesDoAvaliador(26)
+      .then(async (avaliacoesData) => {
+        console.log("Avaliações recebidas:", avaliacoesData);
+
+        const avaliacoesCompletas = await Promise.all(
+          avaliacoesData.map(async (avaliacao: Avaliacao360) => {
+            console.log(
+              "Buscando dados do colaborador ID:",
+              avaliacao.idAvaliado
+            );
+
+            const dadosColaborador = await buscarDadosDashboardUser(
+              avaliacao.idAvaliado
+            );
+
+            // console.log("Dados do colaborador recebidos:", dadosColaborador);
+
+            const dadosDoCiclo = await buscarDadosCiclo(
+              avaliacao.idAvaliado,
+              avaliacao.idCiclo
+            );
+
+            console.log("Dados do ciclo:", dadosDoCiclo);
+
+            return { ...avaliacao, ...dadosColaborador, ...dadosDoCiclo };
+          })
+        );
+
+        console.log(
+          "Avaliações completas com dados dos colaboradores:",
+          avaliacoesCompletas
+        );
+        setAvaliacoesComDados(avaliacoesCompletas);
+      })
+      .catch((erro) => {
+        console.error(erro);
+      });
+  }, []);
+
   let bgColor, textColor, subtitle, title, iconLeft, subTextColor;
 
-  if (status === "EM ANDAMENTO") {
+  if (status === "aberto") {
     bgColor = "bg-[#08605F]";
     textColor = "text-white";
     subtitle = "15 dias restantes";
     title = "Ciclo de avaliação em andamento";
     iconLeft = <img src={Frame3} alt="Ícone" className="w-10 h-10" />;
-  } else if (status === "AGUARDANDO RESULTADO") {
+  } else if (status === "planejamento") {
     bgColor = "bg-white";
     textColor = "text-black";
     subTextColor = "text-black";
@@ -51,7 +163,7 @@ const DashboardGestor = () => {
       <main className="flex-row p-10">
         <div className="mb-6">
           <span className="text-lg ml-2">
-            <strong>Olá</strong>, Gestor!
+            <strong>Olá</strong>, {gestor ? gestor.name : "carregando..."}!
           </span>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:auto-rows-min">
@@ -65,7 +177,7 @@ const DashboardGestor = () => {
               iconLeft={iconLeft}
               subTextColor={subTextColor}
               iconRight={
-                status === "EM ANDAMENTO" ? (
+                status === "aberto" ? (
                   <img src={Frame4} alt="seta" className="w-10 h-10" />
                 ) : (
                   <div className="relative flex items-center justify-center w-10 h-10">
@@ -85,8 +197,8 @@ const DashboardGestor = () => {
         <div className="flex flex-col gap-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             <CardNotaAtual />
-            <CardPreenchimento />
-            <CardRevisoesPendentes />
+            <CardPreenchimento porcentagemPreenchimento={porcentagem} />
+            <CardAvaliacoesPendentes porcentagemPendentes={numAvalPendentes} />
           </div>
           <div>
             <div className="bg-white rounded-xl p-4 shadow-sm w-full">
@@ -100,15 +212,15 @@ const DashboardGestor = () => {
                 </a>
               </div>
               <div className="max-h-80 overflow-y-auto pr-1 custom-scrollbar">
-                {collaborators.map((item) => (
+                {avaliacoesComDados?.map((item: AvaliacaoCompleta) => (
                   <CollaboratorCard
                     key={item.id}
-                    name={item.name}
-                    role={item.role}
-                    initials={item.initials}
-                    status={item.status}
-                    selfRating={item.selfRating}
-                    managerRating={item.managerRating}
+                    name={item.avaliado?.name || "Carregando..."}
+                    role={item.unidade || "Carregando..."}
+                    initials="AC"
+                    status="EM ANDAMENTO"
+                    selfRating={4}
+                    managerRating={5}
                     onlyManager
                   />
                 ))}
