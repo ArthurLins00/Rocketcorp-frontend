@@ -1,6 +1,7 @@
-import type { CollaboratorCardProps } from "./CollaboratorCardProps";
+import type { CollaboratorCardProps } from "../../models/CollaboratorCardProps";
 
 export const SmallerCollaboratorCard: React.FC<CollaboratorCardProps> = ({
+  id, // TODO: Use id for navigation when making component clickable
   name,
   role,
   initials,

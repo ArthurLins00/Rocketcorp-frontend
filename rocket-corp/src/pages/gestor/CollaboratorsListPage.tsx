@@ -29,15 +29,15 @@ export const CollaboratorsPage = () => {
         <>
         <div className="flex flex-col">
             <CollaboratorsHeader />
-            <div className="flex flex-col w-full h-full pt-7">
+            <div className="flex flex-col w-full h-full pt-7 px-5">
                 <CollaboratorsListSearchbar onSearch={handleSearch} />
             </div>
             {loading ? (
                 <p>Carregando...</p>
             ) : (
-                <div className="grid gap-4 mt-4">
+                <div className="grid gap-4 mt-4 px-5">
                     {cards.map(c => (
-                        <CollaboratorCard key={c.initials + c.name} {...c} />
+                        <CollaboratorCard key={c.id} {...c} />
                     ))}
                 </div>
             )}

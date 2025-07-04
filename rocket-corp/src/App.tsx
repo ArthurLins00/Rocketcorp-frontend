@@ -30,7 +30,7 @@ export default function App() {
 
   return (
     <UserTypeProvider>
-      <div className="flex min-h-screen bg-gray-50 text-gray-800">
+      <div className="flex min-h-screen text-gray-800">
         <Sidebar />
 
       <div className="flex flex-col flex-1">
@@ -50,15 +50,12 @@ export default function App() {
               <Route path="/rh-dashboard" element={<DashboardRH />} />
               <Route path="/gestor-dashboard" element={<DashboardGestor />} />
               <Route path="/cycle-evaluation" element={<CycleEvaluation />} />            
-              <Route
-                path="/gestor/id/colaboradores"
-                element={<CollaboratorsPage />}
-              />
               <Route path="/criterios" element={<CriteriaManagementPage />} />
               <Route path="/login" element={<LoginPage />} />
-              <Route path="/" element={<CollaboratorPage />} />
               <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
 
+              <Route path="/gestor/collaborators" element={<CollaboratorsPage />} />
+              <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} />
             </Routes>
           </main>
         </div>
