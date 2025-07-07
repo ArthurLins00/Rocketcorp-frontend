@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
+import { enviarAvaliacao } from '../services/avaliacaoService';
 
 export type AutoavaliacaoItem = {
   idAvaliador: string;
@@ -62,7 +63,7 @@ const getInitialResponses = (
         idAvaliador,
         idAvaliado: idAvaliador,
         idCiclo,
-        criterioId: criterion.id,
+        criterioId: criterion.id, // ✅ GARANTIR que criterioId seja o criterion.id
         nota: 0,
         justificativa: "",
       };
@@ -73,10 +74,20 @@ const getInitialResponses = (
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      return {
-        ...allCriteria,
-        ...parsed,
-      };
+      // ✅ MESCLAR mas garantindo que os campos obrigatórios estejam corretos
+      const merged: AutoavaliacaoState = {};
+      Object.keys(allCriteria).forEach(key => {
+        merged[key] = {
+          ...allCriteria[key], // ✅ Campos padrão com IDs corretos
+          ...parsed[key],      // ✅ Dados salvos do usuário (nota, justificativa)
+          // ✅ Forçar campos que podem estar incorretos
+          idAvaliador,
+          idAvaliado: idAvaliador,
+          idCiclo,
+          criterioId: key // ✅ GARANTIR que criterioId seja sempre o key correto
+        };
+      });
+      return merged;
     }
   } catch {
     return allCriteria;
@@ -111,6 +122,11 @@ export default function AutoavaliacaoForm({
         [criterioId]: {
           ...prev[criterioId],
           [field]: value,
+          // ✅ GARANTIR que os IDs não se percam ao atualizar
+          idAvaliador,
+          idAvaliado: idAvaliador,
+          idCiclo,
+          criterioId: criterioId // ✅ MANTER o criterioId correto
         },
       };
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
@@ -219,8 +235,62 @@ export default function AutoavaliacaoForm({
     );
   };
 
+  // Função de teste para enviar apenas autoavaliação
+  const handleTesteEnvio = async () => {
+    try {
+      console.log('🧪 TESTE: Iniciando envio da autoavaliação...');
+      console.log('🧪 TESTE: Estado atual responses:', responses);
+      
+      const autoavaliacaoData = getAutoavaliacoesFormatadas(responses);
+      console.log('🧪 TESTE: Dados formatados:', autoavaliacaoData);
+      
+      // ✅ VERIFICAR se os criterioId estão corretos
+      autoavaliacaoData.forEach((item, index) => {
+        console.log(`🧪 Item ${index}:`, {
+          criterioId: item.criterioId,
+          nota: item.nota,
+          justificativa: item.justificativa?.substring(0, 20) + '...'
+        });
+      });
+      
+      // Criar objeto no mesmo formato que o Header espera
+      const dadosParaEnvio = {
+        autoavaliacao: autoavaliacaoData,
+        avaliacao360: {},
+        referencias: {},
+        mentoring: null
+      };
+      
+      console.log('🧪 TESTE: Enviando dados:', dadosParaEnvio);
+      
+      const response = await enviarAvaliacao(dadosParaEnvio);
+      console.log('🧪 TESTE: Sucesso!', response);
+      alert('✅ Autoavaliação enviada com sucesso!');
+      
+    } catch (error) {
+      console.error('🧪 TESTE: Erro no envio:', error);
+      alert(`❌ Erro ao enviar: ${error.message}`);
+    }
+  };
+
   return (
     <div className="p-6 space-y-12 bg-white relative border rounded-xl">
+      {/* Botão de teste - remover após debug */}
+      <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-yellow-700 font-medium">🧪 Modo Teste</p>
+            <p className="text-yellow-600 text-sm">Botão temporário para testar envio da autoavaliação</p>
+          </div>
+          <button
+            onClick={handleTesteEnvio}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Testar Envio Autoavaliação
+          </button>
+        </div>
+      </div>
+
       {sections.map((section) =>
         renderSection(section.title, section.criteria)
       )}
