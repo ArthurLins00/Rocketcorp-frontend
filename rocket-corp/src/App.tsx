@@ -1,6 +1,5 @@
 import "./App.css";
 import { Dashboard } from "./pages/dashboard";
-import { Evolution } from "./pages/evolution";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { Sidebar } from "./components/Sidebar";
 import Header from "./components/Header";
@@ -24,6 +23,7 @@ import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import { EvolutionPage } from "./pages/EvolutionPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
+import ImportHistoryPage from "./pages/rh/ImportHistoryPage";
 
 export default function App() {
   const location = useLocation();
@@ -66,6 +66,7 @@ export default function App() {
 
               <Route path="/gestor/collaborators" element={<CollaboratorsPage />} />
               <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} />
+              <Route path="/rh/ImportHistoryPage" element={<ImportHistoryPage />} />
             </Routes>
           </main>
         </div>
