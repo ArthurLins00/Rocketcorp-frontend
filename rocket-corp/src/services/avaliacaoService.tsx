@@ -1,3 +1,5 @@
+import { User } from "lucide-react";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 // Mapeamento de critérios baseado na seed (IDs reais do banco)
@@ -49,6 +51,75 @@ function getCriterioId(criterioString: string): number {
   return id || 1;
 }
 
+// ✅ Nova função específica para enviar apenas Avaliação 360
+export async function enviarAvaliacao360(avaliacao360Data: any) {
+  try {
+    console.log('=== ENVIANDO AVALIAÇÃO 360 ===');
+    console.log('Dados recebidos:', avaliacao360Data);
+
+    if (!avaliacao360Data || Object.keys(avaliacao360Data).length === 0) {
+      throw new Error('Nenhuma avaliação 360 para enviar');
+    }
+
+    // Converter dados para formato do backend
+    const avaliacoes360 = Object.values(avaliacao360Data).map((item: any, index: number) => {
+      console.log(`Processando avaliação 360 ${index}:`, item);
+      
+      const converted = {
+        idAvaliador: Number(item.idAvaliador),
+        idAvaliado: Number(item.idAvaliado),
+        idCiclo: convertCicloToNumber(item.idCiclo),
+        nota: Number(item.nota),
+        pontosFortes: item.pontosFortes,
+        pontosMelhora: item.pontosMelhoria, // Note: pontosMelhoria -> pontosMelhora
+        nomeProjeto: item.nomeProjeto,
+        periodoMeses: Number(item.periodoMeses) || 1,
+        trabalhariaNovamente: MOTIVACAO_MAP[Number(item.trabalhariaNovamente)] || 'INDIFERENTE'
+      };
+      
+      console.log(`Avaliação 360 ${index} convertida:`, converted);
+      return converted;
+    });
+
+    // Preparar payload para o endpoint /bulk
+    const bulkPayload = {
+      avaliacoes360: avaliacoes360
+    };
+
+    console.log('Payload para /avaliacao/bulk:', JSON.stringify(bulkPayload, null, 2));
+
+    // Enviar para o endpoint bulk
+    const response = await fetch(`${API_BASE_URL}/avaliacao/bulk`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bulkPayload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Erro na requisição:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Erro ao enviar avaliações 360: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Avaliações 360 enviadas com sucesso:', result);
+    
+    return {
+      success: true,
+      data: result,
+      message: `${avaliacoes360.length} avaliação(ões) 360 enviada(s) com sucesso!`
+    };
+
+  } catch (error) {
+    console.error('❌ Erro no envio da avaliação 360:', error);
+    throw error;
+  }
+}
+
 export async function enviarAvaliacao(dados: any) {
   try {
     console.log('=== DADOS RECEBIDOS PARA ENVIO ===');
@@ -71,8 +142,8 @@ export async function enviarAvaliacao(dados: any) {
           console.log(`Item ${index} original:`, item);
           
           const converted = {
-            idAvaliador: 1, // Usar ID válido do banco
-            idAvaliado: 1,  // Para autoavaliação, mesmo ID
+            idAvaliador: item.idAvaliador, // Usar ID válido do banco
+            idAvaliado: item.idAvaliador,  // Para autoavaliação, mesmo ID
             idCiclo: convertCicloToNumber(item.idCiclo),
             criterioId: getCriterioId(item.criterioId),
             nota: Number(item.nota),
@@ -95,17 +166,17 @@ export async function enviarAvaliacao(dados: any) {
       );
     }
 
-    // 2. Enviar avaliações 360
+    // 2. ✅ Enviar avaliações 360 usando o endpoint /bulk
     if (dados.avaliacao360 && Object.keys(dados.avaliacao360).length > 0) {
       console.log('=== PROCESSANDO AVALIAÇÕES 360 ===');
       const avaliacoes360 = Object.values(dados.avaliacao360).map((item: any, index: number) => {
         const converted = {
-          idAvaliador: 1,
-          idAvaliado: 2,
+          idAvaliador: Number(item.idAvaliador),
+          idAvaliado: Number(item.idAvaliado),
           idCiclo: convertCicloToNumber(item.idCiclo),
           nota: Number(item.nota),
           pontosFortes: item.pontosFortes,
-          pontosMelhora: item.pontosMelhoria,
+          pontosMelhora: item.pontosMelhoria, // pontosMelhoria -> pontosMelhora
           nomeProjeto: item.nomeProjeto,
           periodoMeses: Number(item.periodoMeses) || 1,
           trabalhariaNovamente: MOTIVACAO_MAP[Number(item.trabalhariaNovamente)] || 'INDIFERENTE'
@@ -114,15 +185,18 @@ export async function enviarAvaliacao(dados: any) {
         return converted;
       });
 
-      for (const avaliacao360 of avaliacoes360) {
-        promises.push(
-          fetch(`${API_BASE_URL}/avaliacao/360`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(avaliacao360),
-          })
-        );
-      }
+      // ✅ Usar endpoint /bulk em vez de individual
+      const avaliacao360Bulk = {
+        avaliacoes360: avaliacoes360
+      };
+
+      promises.push(
+        fetch(`${API_BASE_URL}/avaliacao/bulk`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(avaliacao360Bulk),
+        })
+      );
     }
 
     // 3. Enviar referências
@@ -131,8 +205,8 @@ export async function enviarAvaliacao(dados: any) {
       const referenciasBulk = {
         referencias: Object.values(dados.referencias).map((item: any, index: number) => {
           const converted = {
-            idReferenciador: 1,
-            idReferenciado: 2,
+            idReferenciador: Number(item.idAvaliador),
+            idReferenciado: Number(item.idAvaliado),
             idCiclo: convertCicloToNumber(item.idCiclo),
             justificativa: item.justificativa
           };
