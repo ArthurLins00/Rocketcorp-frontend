@@ -247,3 +247,67 @@ export async function enviarAvaliacao(dados: any) {
     throw error;
   }
 }
+
+// ✅ Nova função específica para enviar apenas Referências
+export async function enviarReferencias(referenciasData: any) {
+  try {
+    console.log('=== ENVIANDO REFERÊNCIAS ===');
+    console.log('Dados recebidos:', referenciasData);
+
+    if (!referenciasData || Object.keys(referenciasData).length === 0) {
+      throw new Error('Nenhuma referência para enviar');
+    }
+
+    // Converter dados para formato do backend
+    const referencias = Object.values(referenciasData).map((item: any, index: number) => {
+      console.log(`Processando referência ${index}:`, item);
+      
+      const converted = {
+        idReferenciador: Number(item.idAvaliador),
+        idReferenciado: Number(item.idAvaliado),
+        idCiclo: convertCicloToNumber(item.idCiclo),
+        justificativa: item.justificativa
+      };
+      
+      console.log(`Referência ${index} convertida:`, converted);
+      return converted;
+    });
+
+    // Preparar payload para o endpoint /bulk
+    const bulkPayload = {
+      referencias: referencias
+    };
+
+    console.log('Payload para /referencia/bulk:', JSON.stringify(bulkPayload, null, 2));
+
+    // Enviar para o endpoint bulk
+    const response = await fetch(`${API_BASE_URL}/referencia/bulk`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bulkPayload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Erro na requisição:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Erro ao enviar referências: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Referências enviadas com sucesso:', result);
+    
+    return {
+      success: true,
+      data: result,
+      message: `${referencias.length} referência(s) enviada(s) com sucesso!`
+    };
+
+  } catch (error) {
+    console.error('❌ Erro no envio das referências:', error);
+    throw error;
+  }
+}
