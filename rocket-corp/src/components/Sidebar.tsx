@@ -202,7 +202,12 @@ export const Sidebar = () => {
           </span>
           <span className="text-base text-[#1D1D1D]">Colaborador 1</span>
         </div>
-        <a href="#" className="text-[#08605F] text-base hover:underline">
+        <a href="#" className="text-[#08605F] text-base hover:underline" onClick={() => {
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("refresh_token");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
+        }}>
           Logout
         </a>
       </div>

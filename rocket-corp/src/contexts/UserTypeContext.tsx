@@ -28,10 +28,21 @@ export const UserTypeProvider: React.FC<UserTypeProviderProps> = ({
   const [userType, setUserType] = useState<string[]>(["COLABORADOR"]);
 
   useEffect(() => {
+    // Load user roles from localStorage if available
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        // If backend sends roles, use them. Otherwise, fallback.
+        if (user && user.roles) {
+          setUserType(user.roles);
+        }
+      } catch {}
+    }
     // Simular carregamento do tipo de usuário
-    setTimeout(() => {
-      setUserType(["GESTOR", "RH", "COMITE"]);
-    }, 500);
+    // setTimeout(() => {
+    //   setUserType(["GESTOR", "RH", "COMITE"]);
+    // }, 500);
   }, []);
 
   return (
