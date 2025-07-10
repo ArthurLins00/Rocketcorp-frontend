@@ -5,11 +5,20 @@ import Frame3 from "../assets/Frame (7).svg";
 import Frame4 from "../assets/Frame (8).svg";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUserType } from "../contexts/UserTypeContext";
+import { useState } from "react";
 
 export const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { userType } = useUserType();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
 
   return (
     <aside className="w-[14.5rem] h-[64rem] bg-white border-r-2 border-[#CECDCD] flex flex-col justify-between py-8">
@@ -202,14 +211,30 @@ export const Sidebar = () => {
           </span>
           <span className="text-base text-[#1D1D1D]">Colaborador 1</span>
         </div>
-        <a href="#" className="text-[#08605F] text-base hover:underline" onClick={() => {
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
-          localStorage.removeItem("user");
-          window.location.href = "/login";
-        }}>
+        <a href="#" className="text-[#08605F] text-base hover:underline" onClick={e => { e.preventDefault(); setShowLogoutConfirm(true); }}>
           Logout
         </a>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+            <div className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center">
+              <span className="text-lg font-semibold mb-4">Tem certeza que deseja sair?</span>
+              <div className="flex gap-4">
+                <button
+                  className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                  onClick={handleLogout}
+                >
+                  Sair
+                </button>
+                <button
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );

@@ -8,7 +8,7 @@ export default function LoginPage() {
   const controller = useLoginController();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#08605F] via-[#0B8793] to-[#F1F1F1] py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#F1F1F1] py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 bg-white/90 shadow-2xl rounded-2xl p-10 border border-gray-200">
         {/* Logo/Header */}
         <div className="text-center mb-6">
