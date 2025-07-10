@@ -64,6 +64,7 @@ export default function BrutalFactsPage() {
           <CollaboratorTotalEvaluations 
             totalEvaluations={history.totalEvaluations}
             title="Liderados avaliados"
+            usePeopleIcon={true}
           />
         </div>
       </div>

@@ -1,14 +1,17 @@
 import React from 'react';
+import { IoIosDocument } from 'react-icons/io';
 import { IoMdPeople } from 'react-icons/io';
 
 interface CollaboratorTotalEvaluationsProps {
   totalEvaluations: number;
   title?: string;
+  usePeopleIcon?: boolean;
 }
 
 export const CollaboratorTotalEvaluations: React.FC<CollaboratorTotalEvaluationsProps> = ({ 
   totalEvaluations,
-  title
+  title,
+  usePeopleIcon = false
 }) => {
   const cardColor = '#08605F';
 
@@ -36,11 +39,18 @@ export const CollaboratorTotalEvaluations: React.FC<CollaboratorTotalEvaluations
 
       {/* Second Column */}
       <div className="flex items-center justify-center px-4 gap-2">
-        {/* Users icon */}
-        <IoMdPeople 
-          className="text-4xl"
-          style={{ color: cardColor }}
-        />
+        {/* Icon - Document or People based on prop */}
+        {usePeopleIcon ? (
+          <IoMdPeople 
+            className="text-4xl"
+            style={{ color: cardColor }}
+          />
+        ) : (
+          <IoIosDocument 
+            className="text-4xl"
+            style={{ color: cardColor }}
+          />
+        )}
         
         <div className="flex flex-col items-center">
           {/* Total evaluations */}
