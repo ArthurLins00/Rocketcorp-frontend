@@ -8,13 +8,14 @@ import { salvarEqualizacaoAtualizada, enviarEqualizacaoParaBackend } from "../..
 type Props = {
   equalizacao: Equalizacao;
   onUpdate: (atualizada: Equalizacao) => void;
+  readOnly?: boolean;
 };
 
-export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
+export default function EqualizacaoCard({ equalizacao, onUpdate, readOnly = false }: Props) {
   const [expandido, setExpandido] = useState(false);
   const [notaFinal, setNotaFinal] = useState<number | null>(equalizacao.notaFinal ?? null);
   const [justificativa, setJustificativa] = useState(equalizacao.justificativa || "");
-  const [editando, setEditando] = useState(equalizacao.status === "Pendente");
+  const [editando, setEditando] = useState(equalizacao.status === "Pendente" && !readOnly);
   const [statusLocal, setStatusLocal] = useState(equalizacao.status);
 
   const {
@@ -199,23 +200,33 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
           <div className="space-y-2">
             <span className="text-sm font-semibold mr-1">Nota Final (Comitê):</span>
             {editando ? (
-              <div>
-                <input
-                  type="number"
-                  min={0}
-                  max={5}
-                  step={0.1}
-                  value={notaFinal ?? ""}
-                  onChange={handleNotaChange}
-                  className={`w-20 px-2 py-1 border rounded-md ${
-                    notaFinal && notaFinal > 5 ? "border-red-500" : ""
-                  }`}
-                  placeholder={calcularMedia([notaAutoavaliacao, notaGestor, notaAvaliacao360]).toFixed(1)}
-                />
-                {notaFinal && notaFinal > 5 && (
-                  <p className="text-red-500 text-xs mt-1">A nota máxima é 5.0</p>
-                )}
-              </div>
+              readOnly ? (
+                <p className={`text-lg font-bold ${
+                  statusLocal === "Finalizado" ? "text-[#08605F]" : "text-gray-400"
+                }`}>
+                  {statusLocal === "Finalizado" 
+                    ? (notaFinal ?? calcularMedia([notaAutoavaliacao, notaGestor, notaAvaliacao360])).toFixed(1)
+                    : "-"}
+                </p>
+              ) : (
+                <div>
+                  <input
+                    type="number"
+                    min={0}
+                    max={5}
+                    step={0.1}
+                    value={notaFinal ?? ""}
+                    onChange={handleNotaChange}
+                    className={`w-20 px-2 py-1 border rounded-md ${
+                      notaFinal && notaFinal > 5 ? "border-red-500" : ""
+                    }`}
+                    placeholder={calcularMedia([notaAutoavaliacao, notaGestor, notaAvaliacao360]).toFixed(1)}
+                  />
+                  {notaFinal && notaFinal > 5 && (
+                    <p className="text-red-500 text-xs mt-1">A nota máxima é 5.0</p>
+                  )}
+                </div>
+              )
             ) : (
               <p className={`text-lg font-bold ${
                 statusLocal === "Finalizado" ? "text-[#08605F]" : "text-gray-400"
@@ -230,7 +241,7 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
           {/* Justificativa */}
           <div className="space-y-1">
             <span className="font-semibold text-sm">Justificativa:</span>
-            {editando ? (
+            {editando && !readOnly ? (
               <textarea
                 value={justificativa}
                 onChange={(e) => setJustificativa(e.target.value)}
@@ -244,28 +255,30 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
           </div>
 
           {/* Botões */}
-          <div className="flex justify-end gap-2 pt-2">
-            {editando ? (
-              <button
-                onClick={handleSalvar}
-                className="flex items-center gap-1 px-4 py-2 bg-[#08605F] text-white rounded-md font-medium"
-              >
-                <Save size={16} /> Concluir
-              </button>
-            ) : (
-              <>
-                <button className="flex items-center gap-1 px-4 py-2 border border-[#08605F] text-[#08605F] rounded-md font-medium">
-                  <Download size={16} /> Exportar
-                </button>
+          {!readOnly && (
+            <div className="flex justify-end gap-2 pt-2">
+              {editando ? (
                 <button
-                  onClick={handleEditar}
-                  className="flex items-center gap-1 px-4 py-2 border border-[#08605F] text-[#08605F] rounded-md font-medium"
+                  onClick={handleSalvar}
+                  className="flex items-center gap-1 px-4 py-2 bg-[#08605F] text-white rounded-md font-medium"
                 >
-                  <Pencil size={16} /> Editar resultado
+                  <Save size={16} /> Concluir
                 </button>
-              </>
-            )}
-          </div>
+              ) : (
+                <>
+                  <button className="flex items-center gap-1 px-4 py-2 border border-[#08605F] text-[#08605F] rounded-md font-medium">
+                    <Download size={16} /> Exportar
+                  </button>
+                  <button
+                    onClick={handleEditar}
+                    className="flex items-center gap-1 px-4 py-2 border border-[#08605F] text-[#08605F] rounded-md font-medium"
+                  >
+                    <Pencil size={16} /> Editar resultado
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

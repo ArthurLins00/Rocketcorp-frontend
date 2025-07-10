@@ -24,6 +24,7 @@ import { EvolutionPage } from "./pages/EvolutionPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
 import ImportHistoryPage from "./pages/rh/ImportHistoryPage";
+import BrutalFactsPage from "./pages/gestor/BrutalFactsPage";
 
 export default function App() {
   const location = useLocation();
@@ -67,6 +68,7 @@ export default function App() {
               <Route path="/gestor/collaborators" element={<CollaboratorsPage />} />
               <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} />
               <Route path="/rh/ImportHistoryPage" element={<ImportHistoryPage />} />
+              <Route path="/gestor/brutal-facts" element={<BrutalFactsPage />} />
             </Routes>
           </main>
         </div>
