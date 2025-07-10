@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Star, Trash } from "lucide-react";
+import { Star, Trash, Send } from "lucide-react";
 import AvatarInicial from "./AvatarInicial";
 import { buscarUsuarios } from "../services/userService";
 import type { User } from "../services/userService";
+import { enviarMentoring } from "../services/avaliacaoService"; // ✅ Import da nova função
 
 type MentoringData = {
   idAvaliador: string;
@@ -22,7 +23,15 @@ const LOCAL_STORAGE_KEY = "mentoring";
 const getInitialState = (idAvaliador: string, idCiclo: string): MentoringData => {
   if (typeof window !== "undefined") {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // ✅ CORREÇÃO: Sempre usar os parâmetros atuais para idAvaliador e idCiclo
+      return {
+        ...parsed,
+        idAvaliador, // ✅ Forçar usar o parâmetro atual
+        idCiclo,     // ✅ Forçar usar o parâmetro atual
+      };
+    }
   }
   return { idAvaliador, idAvaliado: "", idCiclo, nota: 0, justificativa: "" };
 };
@@ -38,6 +47,10 @@ export default function MentoringForm({ idAvaliador, idCiclo }: MentoringFormPro
   const [carregandoUsuarios, setCarregandoUsuarios] = useState(false);
   const [usuarioLogado, setUsuarioLogado] = useState<User | null>(null);
   const [mentorAutomatico, setMentorAutomatico] = useState<User | null>(null);
+  
+  // ✅ Estados para envio
+  const [enviando, setEnviando] = useState(false);
+  const [mensagemEnvio, setMensagemEnvio] = useState<string | null>(null);
 
   // ✅ Carregar usuários do banco na montagem do componente
   useEffect(() => {
@@ -92,6 +105,60 @@ export default function MentoringForm({ idAvaliador, idCiclo }: MentoringFormPro
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dados));
   }, [dados]);
 
+  // ✅ Função para testar envio do Mentoring
+  const testarEnvioMentoring = async () => {
+    try {
+      setEnviando(true);
+      setMensagemEnvio(null);
+
+      console.log('🚀 Testando envio da avaliação de Mentoring...');
+      console.log('Dados a serem enviados:', dados);
+
+      if (!dados.idAvaliado || dados.idAvaliado === "") {
+        throw new Error('Nenhum mentor selecionado para avaliar.');
+      }
+
+      // Validar se a avaliação está completa
+      if (!dados.nota || dados.nota === 0) {
+        throw new Error('Avaliação incompleta: nota é obrigatória (1-5)');
+      }
+      if (!dados.justificativa.trim()) {
+        throw new Error('Avaliação incompleta: justificativa é obrigatória');
+      }
+
+      console.log('🔍 Estrutura esperada pelo backend:', {
+        idMentor: Number(dados.idAvaliado),
+        idMentorado: Number(dados.idAvaliador),
+        idCiclo: 2, // convertido de "2025.2"
+        nota: Number(dados.nota),
+        justificativa: dados.justificativa
+      });
+
+      const resultado = await enviarMentoring(dados);
+      
+      setMensagemEnvio(`✅ ${resultado.message}`);
+      console.log('✅ Envio bem-sucedido:', resultado);
+
+      // Limpar localStorage após envio bem-sucedido
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      setDados({
+        idAvaliador,
+        idAvaliado: "",
+        idCiclo,
+        nota: 0,
+        justificativa: "",
+      });
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      setMensagemEnvio(`❌ Erro: ${errorMessage}`);
+      console.error('❌ Erro no envio:', error);
+      console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'N/A');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
   // ✅ Buscar mentor selecionado pelos usuários reais
   const mentorSelecionado = usuarios.find((u) => u.id.toString() === dados.idAvaliado) || mentorAutomatico;
 
@@ -127,6 +194,43 @@ export default function MentoringForm({ idAvaliador, idCiclo }: MentoringFormPro
 
   return (
     <div className="space-y-6">
+      {/* ✅ Botão de teste no topo */}
+      {mentorSelecionado && (
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-medium text-purple-900">Teste de Envio - Avaliação de Mentoring</h3>
+              <p className="text-sm text-purple-700">
+                Avaliação do mentor {mentorSelecionado.name} pronta para envio
+              </p>
+            </div>
+            <button
+              onClick={testarEnvioMentoring}
+              disabled={enviando || !dados.idAvaliado || dados.nota === 0}
+              className={`flex items-center gap-2 px-4 py-2 rounded font-medium ${
+                enviando || !dados.idAvaliado || dados.nota === 0
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-purple-600 text-white hover:bg-purple-700'
+              }`}
+            >
+              <Send size={16} />
+              {enviando ? 'Enviando...' : 'Testar Envio'}
+            </button>
+          </div>
+          
+          {/* ✅ Mensagem de resultado */}
+          {mensagemEnvio && (
+            <div className={`mt-3 p-2 rounded text-sm ${
+              mensagemEnvio.startsWith('✅') 
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {mensagemEnvio}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ✅ Informação sobre mentor automático */}
       {mentorAutomatico && mentorSelecionado?.id === mentorAutomatico.id && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -140,7 +244,7 @@ export default function MentoringForm({ idAvaliador, idCiclo }: MentoringFormPro
       {!mentorSelecionado && (
         <div>
           <label className="block text-sm font-medium mb-2">
-            {usuarioLogado?.mentor // ✅ CORREÇÃO: usar mentor em vez de mentorId
+            {usuarioLogado?.mentor
               ? "Ou escolha outro mentor:" 
               : "Buscar seu mentor:"
             }
@@ -280,3 +384,20 @@ export default function MentoringForm({ idAvaliador, idCiclo }: MentoringFormPro
 export function getMentoringFormatado(dados: MentoringData): MentoringData {
   return dados;
 }
+
+// Função para salvar dados no localStorage
+const saveToLocalStorage = (key: string, mentorId: number, mentoradoId: number, data: any) => {
+  const saved = JSON.parse(localStorage.getItem("mentoring") || "{}");
+  
+  // ✅ Garantir que os dados estão corretos
+  saved[key] = {
+    idMentor: mentorId, // ✅ Deve ser número
+    idMentorado: mentoradoId, // ✅ Deve ser número
+    idCiclo: "2025.2", // ✅ Será convertido depois
+    nota: data.nota, // ✅ Deve ser número
+    justificativa: data.justificativa, // ✅ Deve ser string
+  };
+  
+  localStorage.setItem("mentoring", JSON.stringify(saved));
+  console.log('💾 Mentoring salvo:', saved[key]);
+};

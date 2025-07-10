@@ -273,6 +273,22 @@ export default function AutoavaliacaoForm({
     }
   };
 
+  const saveToLocalStorage = (key: string, criterioId: number, data: any) => {
+    const saved = JSON.parse(localStorage.getItem("autoavaliacao") || "{}");
+    
+    saved[key] = {
+      idAvaliador: 6, // mockado
+      idAvaliado: 6, // mockado
+      idCiclo: "2025.2",
+      nota: data.nota,
+      justificativa: data.justificativa,
+      criterioId: criterioId, // ✅ Deve ser número válido
+    };
+    
+    localStorage.setItem("autoavaliacao", JSON.stringify(saved));
+    console.log('💾 Autoavaliação salva:', saved[key]);
+  };
+
   return (
     <div className="p-6 space-y-12 bg-white relative border rounded-xl">
       {/* Botão de teste - remover após debug */}

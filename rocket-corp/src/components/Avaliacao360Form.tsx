@@ -453,3 +453,21 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
 export function getAvaliacoesFormatadas(state: Avaliacao360State): AvaliacaoColaborador[] {
   return Object.values(state);
 }
+
+const saveToLocalStorage = (key: string, avaliadoId: number, data: any) => {
+  const saved = JSON.parse(localStorage.getItem("avaliacao360") || "{}");
+  
+  saved[key] = {
+    idAvaliador: 6, // mockado
+    idAvaliado: avaliadoId,
+    idCiclo: "2025.2",
+    pontosFortes: data.pontosFortes,
+    pontosMelhora: data.pontosMelhora || data.pontosMelhoria || '', // ✅ Garantir que existe
+    nomeProjeto: data.nomeProjeto,
+    periodoMeses: data.periodoMeses,
+    trabalhariaNovamente: data.trabalhariaNovamente,
+  };
+  
+  localStorage.setItem("avaliacao360", JSON.stringify(saved));
+  console.log('💾 Avaliação 360 salva:', saved[key]);
+};
