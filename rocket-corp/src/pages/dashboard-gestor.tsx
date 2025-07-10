@@ -23,7 +23,6 @@ import { calcularNumAvalPendentesAvaliador } from "../utils/porcentagensAvaliaco
 import type { AvaliacaoCompleta } from "../types/AvaliacaoCompleta";
 import type { Avaliacao360 } from "../types/Avaliacao360";
 import type { User } from "../types/User";
-import { AvaliacaoCompleta } from "../types/AvaliacaoCompleta";
 
 const DashboardGestor = () => {
   const [status, setStatus] = useState<string>("aberto");
