@@ -1,4 +1,5 @@
 export interface CollaboratorCardProps {
+  id: string;
   name: string;
   role: string;
   initials: string;

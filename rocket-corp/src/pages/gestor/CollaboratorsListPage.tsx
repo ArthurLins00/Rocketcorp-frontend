@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getAllCards, searchCards } from '../../controllers/collaboratorsCardController';
-import { CollaboratorsHeader } from "../../components/collaborators/CollaboratorsListHeader";
 import { CollaboratorsListSearchbar } from "../../components/collaborators/CollaboratorsListSearchbar";
 import { CollaboratorCard } from '../../components/collaborators/CollaboratorCard';
 import type { CollaboratorCardProps } from "../../models/CollaboratorCardProps";
@@ -26,23 +25,20 @@ export const CollaboratorsPage = () => {
     
 
     return (
-        <>
         <div className="flex flex-col">
-            <CollaboratorsHeader />
-            <div className="flex flex-col w-full h-full pt-7">
+            <div className="flex flex-col w-full h-full pt-7 px-5">
                 <CollaboratorsListSearchbar onSearch={handleSearch} />
             </div>
             {loading ? (
-                <p>Carregando...</p>
+                <p className="px-5 py-4">Carregando...</p>
             ) : (
-                <div className="grid gap-4 mt-4">
+                <div className="grid gap-4 mt-4 px-5">
                     {cards.map(c => (
-                        <CollaboratorCard key={c.initials + c.name} {...c} />
+                        <CollaboratorCard key={c.id} {...c} />
                     ))}
                 </div>
             )}
         </div>
-        </>
     )   
 }
 

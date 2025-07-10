@@ -1,9 +1,11 @@
+import { useNavigate } from "react-router-dom";
 import frame from "../../assets/RightChevron.svg";
 import type { CollaboratorCardProps } from "../../models/CollaboratorCardProps";
 
 export const CollaboratorCard: React.FC<
   CollaboratorCardProps & { onlyManager?: boolean }
 > = ({
+  id,
   name,
   role,
   initials,
@@ -14,8 +16,17 @@ export const CollaboratorCard: React.FC<
   notaFinal,
   onlyManager = false,
 }) => {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/gestor/collaborator/${id}`);
+  };
+
   return (
-    <div className="flex flex-col items-start gap-4 p-4 bg-white rounded-xl">
+    <div 
+      className="flex flex-col items-start gap-4 p-4 bg-white rounded-xl cursor-pointer hover:shadow-md transition-shadow"
+      onClick={handleCardClick}
+    >
       <header className="flex h-11 items-center gap-6 w-full">
         <div className="flex items-center gap-4 min-w-0">
           <div className="w-10 h-10 bg-slate-200 rounded-full flex-shrink-0 flex items-center justify-center">

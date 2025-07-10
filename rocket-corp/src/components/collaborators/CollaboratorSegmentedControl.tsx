@@ -1,5 +1,3 @@
-import { NavLink } from "react-router-dom";
-
 interface SegmentedControlProps {
     options: string[];
     selectedIndex: number;

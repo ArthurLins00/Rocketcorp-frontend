@@ -12,6 +12,11 @@ export type Ciclo = {
   status: string;
   createdAt: string;
   updatedAt: string;
+  dataAbertura?: Date | null;
+  dataFechamento?: Date | null;
+  dataFinalizacao?: Date | null;
+  dataRevisaoGestor?: Date | null;
+  dataRevisaoComite?: Date | null;
   referencias?: Referencia[];
   avaliacoes?: Avaliacao[];
   avaliacoes360?: Avaliacao360[];

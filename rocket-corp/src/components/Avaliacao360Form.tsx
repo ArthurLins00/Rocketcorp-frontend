@@ -48,6 +48,17 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(avaliacoes));
   }, [avaliacoes]);
 
+  const validatePeriodo = (value: string): string => {
+    if (value === '') return '';
+    
+    const num = parseInt(value);
+    if (isNaN(num)) return '';
+    
+    if (num < 1) return '1';
+    if (num > 12) return '12';
+    return value;
+  };
+
   const handleSelectColaborador = (id: string) => {
     if (!selecionados.includes(id)) {
       setSelecionados((prev) => [...prev, id]);
@@ -79,6 +90,10 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
     campo: keyof AvaliacaoColaborador,
     valor: string | number
   ) => {
+    if (campo === 'periodoMeses' && typeof valor === 'string') {
+      valor = validatePeriodo(valor);
+    }
+  
     setAvaliacoes((prev) => ({
       ...prev,
       [id]: {
@@ -134,7 +149,17 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
       {selecionados.map((id) => {
         const colaborador = colaboradoresDisponiveis.find((c) => c.id === id);
         if (!colaborador) return null;
-        const dados = avaliacoes[id];
+        const dados = avaliacoes[id] || {
+          idAvaliador,
+          idAvaliado: id,
+          idCiclo,
+          nota: 0,
+          pontosFortes: "",
+          pontosMelhoria: "",
+          nomeProjeto: "",
+          periodoMeses: "",
+          trabalhariaNovamente: 0,
+        };
 
         return (
           <div
@@ -150,7 +175,7 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
                 </div>
               </div>
               <span className="bg-gray-200 text-sm font-bold px-2 py-1 rounded">
-                {dados.nota.toFixed(1)}
+                {(dados.nota || 0).toFixed(1)} 
               </span>
             </div>
 
@@ -210,10 +235,18 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
                   min={1}
                   max={12}
                   className="w-full border p-2 rounded"
-                  placeholder="Meses trabalhados"
+                  placeholder="Meses trabalhados (1-12)"
                   value={dados.periodoMeses}
                   onChange={(e) => handleChange(id, "periodoMeses", e.target.value)}
+                  onBlur={(e) => {
+                    if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                      handleChange(id, "periodoMeses", "1");
+                    }
+                  }}
                 />
+                {dados.periodoMeses && (parseInt(dados.periodoMeses) < 1 || parseInt(dados.periodoMeses) > 12) && (
+                  <p className="text-red-500 text-xs mt-1">Digite um valor entre 1 e 12</p>
+                )}
               </div>
             </div>
 

@@ -25,6 +25,44 @@ export default function Header() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const getPageTitle = (pathname: string) => {
+    if (pathname.startsWith("/avaliacao")) {
+      return "Avaliação de Ciclo";
+    }
+    if (pathname === "/dashboard") {
+      return "Dashboard";
+    }
+    if (pathname === "/employee-dashboard") {
+      return "Dashboard do Colaborador";
+    }
+    if (pathname === "/comite-dashboard") {
+      return "Dashboard do Comitê";
+    }
+    if (pathname === "/rh-dashboard") {
+      return "Dashboard do RH";
+    }
+    if (pathname === "/gestor-dashboard") {
+      return "Dashboard do Gestor";
+    }
+    if (pathname === "/cycle-evaluation") {
+      return "Avaliação de Ciclo";
+    }
+    if (pathname.startsWith("/evolution")) {
+      return "Evolução";
+    }
+    if (pathname === "/comite/equalizacoes") {
+      return "Equalizações";
+    }
+    if (pathname === "/gestor/collaborators") {
+      return "Colaboradores";
+    }
+    if (pathname.startsWith("/gestor/collaborator/")) {
+      // For collaborator detail pages, we'll show the collaborator name
+      // This will be handled by the CollaboratorPage component passing the name
+      return "Colaborador";
+    }
+    return "Página Principal";
+  };
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   const handleConcluirEEnviar = () => {
@@ -90,7 +128,11 @@ export default function Header() {
   return (
     <header className="bg-white border-b px-6 py-4 shadow-sm">
       <div className="flex justify-between items-center">
-        <p className="text-gray-800 font-bold">Ciclo {idCiclo}</p>
+        <p className="text-gray-800 font-bold">
+          {location.pathname.startsWith("/gestor/collaborator") || location.pathname === "/gestor/collaborators" 
+            ? getPageTitle(location.pathname) 
+            : `Ciclo ${idCiclo}`}
+        </p>
         {isAvaliacaoPage && (
           <>
             <button
