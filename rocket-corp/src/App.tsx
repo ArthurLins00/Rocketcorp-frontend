@@ -35,6 +35,7 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
   }
   return children;
 }
+// trocar pra pagina nao autorizada
 
 export default function App() {
   const location = useLocation();

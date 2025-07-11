@@ -85,9 +85,11 @@ export function useLoginController() {
                 setIsLoading(false);
                 return;
             }
-            // Save tokens
+            // Save access token in localStorage
             localStorage.setItem("access_token", data.access_token);
-            localStorage.setItem("refresh_token", data.refresh_token);
+            // The refresh token is set in an HTTP-only cookie by the backend for security
+            // and should NOT be stored in localStorage.
+            // refresh token pra salvar no cookie 
             // Fetch user info
             const meRes = await fetch(import.meta.env.VITE_API_URL + "/auth/me", {
                 headers: {
