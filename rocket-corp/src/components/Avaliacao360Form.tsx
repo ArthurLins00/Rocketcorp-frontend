@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
-import { Star, Trash } from "lucide-react";
+import { Star, Trash, Send } from "lucide-react";
 import AvatarInicial from "./AvatarInicial";
-
-const colaboradoresDisponiveis = [
-  { id: "1", nome: "João Silva", cargo: "Desenvolvedor Back-end" },
-  { id: "2", nome: "Maria Oliveira", cargo: "UX Designer" },
-  { id: "3", nome: "Carlos Souza", cargo: "Analista de Dados" },
-];
+import { buscarUsuarios, getMembrosAndGestorByEquipe } from "../services/userService";
+import type { User } from "../services/userService";
+import { enviarAvaliacao360 } from "../services/avaliacaoService"; // ✅ Import da nova função
 
 type AvaliacaoColaborador = {
   idAvaliador: string;
@@ -43,10 +40,145 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao360State>(getInitialState);
   const [termoBusca, setTermoBusca] = useState("");
   const [selecionados, setSelecionados] = useState<string[]>(Object.keys(getInitialState()));
+  
+  // ✅ Estados para usuários do banco
+  const [usuarios, setUsuarios] = useState<User[]>([]);
+  const [carregandoUsuarios, setCarregandoUsuarios] = useState(false);
+  
+  // ✅ Estados para equipe
+  const [usuarioLogado, setUsuarioLogado] = useState<User | null>(null);
+  const [equipeAutomatica, setEquipeAutomatica] = useState<User[]>([]);
+  
+  // ✅ Estados para envio
+  const [enviando, setEnviando] = useState(false);
+  const [mensagemEnvio, setMensagemEnvio] = useState<string | null>(null);
+
+  // ✅ Carregar usuários do banco na montagem do componente
+  useEffect(() => {
+    const carregarUsuarios = async () => {
+      setCarregandoUsuarios(true);
+      try {
+        const usuariosCarregados = await buscarUsuarios();
+        console.log('👥 Usuários carregados no Avaliacao360Form:', usuariosCarregados);
+        setUsuarios(usuariosCarregados);
+
+        // ✅ Encontrar o usuário logado
+        const userLogado = usuariosCarregados.find(u => u.id.toString() === idAvaliador);
+        if (userLogado) {
+          setUsuarioLogado(userLogado);
+          console.log('👤 Usuário logado:', userLogado);
+
+          // ✅ Se o usuário tem equipe definida, carregar membros da equipe + gestor
+          if (userLogado.idEquipe) {
+            console.log('🏢 Usuário pertence à equipe:', userLogado.idEquipe);
+            try {
+              const membrosEquipe = await getMembrosAndGestorByEquipe(userLogado.idEquipe);
+              console.log('👥 Membros da equipe (incluindo gestor) carregados:', membrosEquipe);
+              // ✅ Filtrar apenas membros que não são o próprio usuário
+              const membrosSemUsuario = membrosEquipe.filter(membro => membro.id.toString() !== idAvaliador);
+              setEquipeAutomatica(membrosSemUsuario);
+              console.log('✅ Equipe automática configurada:', membrosSemUsuario);
+
+              // ✅ Adicionar automaticamente os membros da equipe sem duplicidade
+              const novosIds = membrosSemUsuario.map(m => m.id.toString());
+              setSelecionados(prev => Array.from(new Set([...prev, ...novosIds])));
+              setAvaliacoes(prev => {
+                const novo = { ...prev };
+                novosIds.forEach(id => {
+                  if (!novo[id]) {
+                    novo[id] = {
+                      idAvaliador,
+                      idAvaliado: id,
+                      idCiclo,
+                      nota: 0,
+                      pontosFortes: "",
+                      pontosMelhoria: "",
+                      nomeProjeto: "",
+                      periodoMeses: "",
+                      trabalhariaNovamente: 0,
+                    };
+                  }
+                });
+                return novo;
+              });
+            } catch (error) {
+              console.error('❌ Erro ao carregar membros da equipe:', error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar usuários:', error);
+      } finally {
+        setCarregandoUsuarios(false);
+      }
+    };
+
+    carregarUsuarios();
+  }, [idAvaliador]);
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(avaliacoes));
   }, [avaliacoes]);
+
+  // ✅ Função para testar envio da Avaliação 360
+  const testarEnvioAvaliacao360 = async () => {
+    try {
+      setEnviando(true);
+      setMensagemEnvio(null);
+
+      console.log('🚀 Testando envio da Avaliação 360...');
+      console.log('Dados a serem enviados:', avaliacoes);
+
+      if (Object.keys(avaliacoes).length === 0) {
+        throw new Error('Nenhuma avaliação 360 para enviar. Adicione pelo menos um colaborador.');
+      }
+
+      // Validar se todas as avaliações estão completas
+      for (const [id, avaliacao] of Object.entries(avaliacoes)) {
+        if (!avaliacao.nota || avaliacao.nota === 0) {
+          const colaborador = usuarios.find(u => u.id.toString() === id);
+          throw new Error(`Avaliação de ${colaborador?.name || `ID ${id}`} está incompleta: nota é obrigatória`);
+        }
+        if (!avaliacao.pontosFortes.trim()) {
+          const colaborador = usuarios.find(u => u.id.toString() === id);
+          throw new Error(`Avaliação de ${colaborador?.name || `ID ${id}`} está incompleta: pontos fortes é obrigatório`);
+        }
+        if (!avaliacao.pontosMelhoria.trim()) {
+          const colaborador = usuarios.find(u => u.id.toString() === id);
+          throw new Error(`Avaliação de ${colaborador?.name || `ID ${id}`} está incompleta: pontos de melhoria é obrigatório`);
+        }
+        if (!avaliacao.nomeProjeto.trim()) {
+          const colaborador = usuarios.find(u => u.id.toString() === id);
+          throw new Error(`Avaliação de ${colaborador?.name || `ID ${id}`} está incompleta: nome do projeto é obrigatório`);
+        }
+        if (!avaliacao.periodoMeses || parseInt(avaliacao.periodoMeses) < 1) {
+          const colaborador = usuarios.find(u => u.id.toString() === id);
+          throw new Error(`Avaliação de ${colaborador?.name || `ID ${id}`} está incompleta: período em meses é obrigatório`);
+        }
+        if (!avaliacao.trabalhariaNovamente || avaliacao.trabalhariaNovamente === 0) {
+          const colaborador = usuarios.find(u => u.id.toString() === id);
+          throw new Error(`Avaliação de ${colaborador?.name || `ID ${id}`} está incompleta: motivação para trabalhar novamente é obrigatória`);
+        }
+      }
+
+      const resultado = await enviarAvaliacao360(avaliacoes);
+      
+      setMensagemEnvio(`✅ ${resultado.message}`);
+      console.log('✅ Envio bem-sucedido:', resultado);
+
+      // Limpar localStorage após envio bem-sucedido
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      setAvaliacoes({});
+      setSelecionados([]);
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      setMensagemEnvio(`❌ Erro: ${errorMessage}`);
+      console.error('❌ Erro no envio:', error);
+    } finally {
+      setEnviando(false);
+    }
+  };
 
   const validatePeriodo = (value: string): string => {
     if (value === '') return '';
@@ -112,14 +244,67 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
     });
   };
 
-  const resultadosBusca = colaboradoresDisponiveis.filter(
-    (c) =>
-      c.nome.toLowerCase().includes(termoBusca.toLowerCase()) &&
-      !selecionados.includes(c.id)
-  );
+  // ✅ Filtrar usuários baseado na busca e excluir já selecionados e o próprio avaliador
+  const resultadosBusca = usuarios.filter((usuario) => {
+    const matchBusca = usuario.name.toLowerCase().includes(termoBusca.toLowerCase()) ||
+                      usuario.email.toLowerCase().includes(termoBusca.toLowerCase());
+    const naoSelecionado = !selecionados.includes(usuario.id.toString());
+    const naoEhOProprio = usuario.id.toString() !== idAvaliador;
+    
+    return matchBusca && naoSelecionado && naoEhOProprio;
+  });
 
   return (
     <div className="space-y-6">
+      {/* ✅ Botão de teste no topo */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-medium text-blue-900">Teste de Envio - Avaliação 360</h3>
+            <p className="text-sm text-blue-700">
+              {Object.keys(avaliacoes).length} avaliação(ões) 360 pronta(s) para envio
+            </p>
+          </div>
+          <button
+            onClick={testarEnvioAvaliacao360}
+            disabled={enviando || Object.keys(avaliacoes).length === 0}
+            className={`flex items-center gap-2 px-4 py-2 rounded font-medium ${
+              enviando || Object.keys(avaliacoes).length === 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            <Send size={16} />
+            {enviando ? 'Enviando...' : 'Testar Envio'}
+          </button>
+        </div>
+        
+        {/* ✅ Mensagem de resultado */}
+        {mensagemEnvio && (
+          <div className={`mt-3 p-2 rounded text-sm ${
+            mensagemEnvio.startsWith('✅') 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-red-100 text-red-800'
+          }`}>
+            {mensagemEnvio}
+          </div>
+        )}
+      </div>
+
+      {/* ✅ Informação sobre equipe automática */}
+      {equipeAutomatica.length > 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          <p className="text-sm text-green-700">
+            <span className="font-medium">🏢 Equipe automática:</span> {equipeAutomatica.length} membro(s) da sua equipe foram adicionado(s) automaticamente para avaliação 360°.
+          </p>
+          {usuarioLogado?.equipe && (
+            <p className="text-xs text-green-600 mt-1">
+              Equipe: {usuarioLogado.equipe.nome}
+            </p>
+          )}
+        </div>
+      )}
+
       <div>
         <input
           type="text"
@@ -127,28 +312,66 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
           className="w-full border p-2 rounded"
           value={termoBusca}
           onChange={(e) => setTermoBusca(e.target.value)}
+          disabled={carregandoUsuarios}
         />
-        {termoBusca && resultadosBusca.length > 0 && (
-          <ul className="border rounded mt-1 bg-white shadow">
-            {resultadosBusca.map((colab) => (
+        
+        {/* ✅ Loading state */}
+        {carregandoUsuarios && (
+          <div className="border rounded mt-1 bg-white shadow p-2">
+            <p className="text-gray-500 text-sm">Carregando usuários...</p>
+          </div>
+        )}
+        
+        {/* ✅ Resultados da busca com usuários reais */}
+        {termoBusca && !carregandoUsuarios && resultadosBusca.length > 0 && (
+          <ul className="border rounded mt-1 bg-white shadow max-h-60 overflow-y-auto">
+            {resultadosBusca.map((usuario) => (
               <li
-                key={colab.id}
-                className="p-2 hover:bg-gray-100 cursor-pointer"
+                key={usuario.id}
+                className="p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
                 onClick={() => {
-                  handleSelectColaborador(colab.id);
+                  handleSelectColaborador(usuario.id.toString());
                   setTermoBusca("");
                 }}
               >
-                {colab.nome}
+                <div className="flex items-center gap-2">
+                  <AvatarInicial nome={usuario.name} />
+                  <div>
+                    <p className="font-medium">{usuario.name}</p>
+                    <p className="text-sm text-gray-500">{usuario.email}</p>
+                    {usuario.trilha && (
+                      <p className="text-xs text-blue-600">{usuario.trilha.name}</p>
+                    )}
+                  </div>
+                </div>
               </li>
             ))}
           </ul>
         )}
+        
+        {/* ✅ Mensagem quando não há resultados */}
+        {termoBusca && !carregandoUsuarios && resultadosBusca.length === 0 && (
+          <div className="border rounded mt-1 bg-white shadow p-2">
+            <p className="text-gray-500 text-sm">Nenhum usuário encontrado</p>
+          </div>
+        )}
       </div>
 
+      {/* ✅ Mensagem quando usuário não tem equipe definida */}
+      {!carregandoUsuarios && !equipeAutomatica.length && usuarioLogado && !usuarioLogado.idEquipe && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-sm text-yellow-700">
+            <span className="font-medium">ℹ️ Informação:</span> Você não possui uma equipe definida oficialmente. 
+            Use a busca acima para escolher colaboradores e avaliá-los.
+          </p>
+        </div>
+      )}
+
       {selecionados.map((id) => {
-        const colaborador = colaboradoresDisponiveis.find((c) => c.id === id);
+        // ✅ Buscar usuário real pelo ID
+        const colaborador = usuarios.find((u) => u.id.toString() === id);
         if (!colaborador) return null;
+        
         const dados = avaliacoes[id] || {
           idAvaliador,
           idAvaliado: id,
@@ -168,10 +391,21 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
           >
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <AvatarInicial nome={colaborador.nome} />
+                <AvatarInicial nome={colaborador.name} />
                 <div>
-                  <p className="font-semibold">{colaborador.nome}</p>
-                  <p className="text-sm text-gray-500">{colaborador.cargo}</p>
+                  <p className="font-semibold">{colaborador.name}</p>
+                  <p className="text-sm text-gray-500">{colaborador.email}</p>
+                  {colaborador.trilha && (
+                    <p className="text-xs text-blue-600">{colaborador.trilha.name}</p>
+                  )}
+                  {/* ✅ Indicador de membro da equipe automática */}
+                  {equipeAutomatica.some(membro => membro.id === colaborador.id) && (
+                    <p className="text-xs text-green-500 font-medium">🏢 Membro da equipe</p>
+                  )}
+                  {/* ✅ Indicador de gestor */}
+                  {equipeAutomatica.find(m => m.id === colaborador.id && m.role?.includes('manager')) && (
+                    <p className="text-xs text-blue-500 font-medium">👑 Gestor</p>
+                  )}
                 </div>
               </div>
               <span className="bg-gray-200 text-sm font-bold px-2 py-1 rounded">
@@ -286,7 +520,7 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
             <button
               onClick={() => removerColaborador(id)}
               className="absolute bottom-4 right-4 text-red-500 hover:text-red-700"
-              aria-label={`Remover avaliação de ${colaborador.nome}`}
+              aria-label={`Remover avaliação de ${colaborador.name}`}
             >
               <Trash size={20} />
             </button>
@@ -296,6 +530,7 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
     </div>
   );
 }
+
 export function getAvaliacoesFormatadas(state: Avaliacao360State): AvaliacaoColaborador[] {
   return Object.values(state);
 }
