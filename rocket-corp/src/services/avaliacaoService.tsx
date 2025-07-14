@@ -1,21 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
-// Mapeamento de critérios baseado na seed (IDs reais do banco)
-const CRITERIO_MAP: { [key: string]: number } = {
-  'sentimentoDeDono': 1,
-  'resiliencia': 2,
-  'organizacao': 3,
-  'aprendizado': 4,
-  'teamPlayer': 5,
-  'qualidade': 6,
-  'prazos': 7,
-  'eficiencia': 8,
-  'criatividade': 9,
-  'gente': 10,
-  'resultados': 11,
-  'evolucao': 12
-};
-
 // Mapeamento de motivação para enum
 const MOTIVACAO_MAP: { [key: number]: string } = {
   1: 'DISCORDO_TOTALMENTE',
@@ -42,15 +26,8 @@ function convertCicloToNumber(ciclo: string): number {
   return cicloMap[ciclo] || 1;
 }
 
-function getCriterioId(criterioString: string): number {
-  console.log('🔍 Mapeando criterioId:', criterioString);
-  const id = CRITERIO_MAP[criterioString];
-  console.log('🔍 ID encontrado:', id);
-  return id || 1;
-}
-
 // ✅ Nova função específica para enviar apenas Avaliação 360
-export async function enviarAvaliacao360(avaliacao360Data: any) {
+export async function enviarAvaliacao360(avaliacao360Data: Record<string, unknown>) {
   try {
     console.log('📤 Iniciando envio de Avaliação 360:', avaliacao360Data);
     
@@ -64,10 +41,10 @@ export async function enviarAvaliacao360(avaliacao360Data: any) {
     const payload = {
       idAvaliador: Number(avaliacao360Data.idAvaliador),
       idAvaliado: Number(avaliacao360Data.idAvaliado),
-      idCiclo: convertCicloToNumber(avaliacao360Data.idCiclo),
-      pontosFortes: avaliacao360Data.pontosFortes,
-      pontosMelhora: avaliacao360Data.pontosMelhora || avaliacao360Data.pontosMelhoria || '',
-      nomeProjeto: avaliacao360Data.nomeProjeto,
+      idCiclo: convertCicloToNumber(avaliacao360Data.idCiclo as string),
+      pontosFortes: avaliacao360Data.pontosFortes as string,
+      pontosMelhora: (avaliacao360Data.pontosMelhora || avaliacao360Data.pontosMelhoria || '') as string,
+      nomeProjeto: avaliacao360Data.nomeProjeto as string,
       periodoMeses: Number(avaliacao360Data.periodoMeses),
       trabalhariaNovamente: convertTrabalhariaToEnum(avaliacao360Data.trabalhariaNovamente),
       // Adicionar nota se existir
@@ -96,33 +73,32 @@ export async function enviarAvaliacao360(avaliacao360Data: any) {
   }
 }
 
-export async function enviarAvaliacao(dados: any) {
+export async function enviarAvaliacao(dados: Record<string, unknown>) {
   try {
     console.log('=== DADOS RECEBIDOS PARA ENVIO ===');
     console.log('Autoavaliação:', dados.autoavaliacao);
     console.log('Avaliação 360:', dados.avaliacao360);
     console.log('Referências:', dados.referencias);
     
-    if (dados.autoavaliacao && dados.autoavaliacao.length > 0) {
+    if (dados.autoavaliacao && Array.isArray(dados.autoavaliacao) && dados.autoavaliacao.length > 0) {
       console.log('Primeira autoavaliação:', dados.autoavaliacao[0]);
-      console.log('CriterioId original:', dados.autoavaliacao[0]?.criterioId);
+      console.log('CriterioId original:', (dados.autoavaliacao[0] as Record<string, unknown>)?.criterioId);
     }
     
-    const promises = [];
+    const promises: Promise<Response>[] = [];
 
-    // 1. Enviar autoavaliações usando o formato correto do BulkCreateAvaliacaoDto
-    if (dados.autoavaliacao && dados.autoavaliacao.length > 0) {
+    // 1. ✅ Enviar autoavaliações usando o formato correto do BulkCreateAvaliacaoDto
+    if (dados.autoavaliacao && Array.isArray(dados.autoavaliacao) && dados.autoavaliacao.length > 0) {
       console.log('=== PROCESSANDO AUTOAVALIAÇÕES ===');
-      const avaliacoesBulk = dados.autoavaliacao.map((item: any, index: number) => {
+      const avaliacoesBulk = (dados.autoavaliacao as Record<string, unknown>[]).map((item: Record<string, unknown>, index: number) => {
         console.log(`Item ${index} original:`, item);
         
         const converted = {
-          idAvaliador: Number(item.idAvaliador), // Converter para número
-          idAvaliado: Number(item.idAvaliador),  // Para autoavaliação, mesmo ID
-          idCiclo: convertCicloToNumber(item.idCiclo),
-          criterioId: getCriterioId(item.criterioId),
+          idUser: Number(item.idAvaliador), // ✅ CORRIGIDO: idAvaliador -> idUser
+          idCiclo: convertCicloToNumber(item.idCiclo as string),
+          criterioId: Number(item.criterioId), // ✅ Usar o ID diretamente
           nota: Number(item.nota),
-          justificativa: item.justificativa
+          justificativa: item.justificativa as string
         };
         
         console.log(`Autoavaliação ${index} convertida:`, converted);
@@ -146,19 +122,20 @@ export async function enviarAvaliacao(dados: any) {
     }
 
     // 2. ✅ Enviar avaliações 360 usando o formato correto do BulkCreateAvaliacaoDto
-    if (dados.avaliacao360 && Object.keys(dados.avaliacao360).length > 0) {
+    if (dados.avaliacao360 && typeof dados.avaliacao360 === 'object' && Object.keys(dados.avaliacao360 as Record<string, unknown>).length > 0) {
       console.log('=== PROCESSANDO AVALIAÇÕES 360 ===');
-      const avaliacoes360 = Object.values(dados.avaliacao360).map((item: any, index: number) => {
+      const avaliacoes360 = Object.values(dados.avaliacao360 as Record<string, unknown>).map((item: unknown, index: number) => {
+        const itemRecord = item as Record<string, unknown>;
         const converted = {
-          idAvaliador: Number(item.idAvaliador),
-          idAvaliado: Number(item.idAvaliado),
-          idCiclo: convertCicloToNumber(item.idCiclo),
-          nota: Number(item.nota),
-          pontosFortes: item.pontosFortes,
-          pontosMelhora: item.pontosMelhoria, // pontosMelhoria -> pontosMelhora
-          nomeProjeto: item.nomeProjeto,
-          periodoMeses: Number(item.periodoMeses) || 1,
-          trabalhariaNovamente: MOTIVACAO_MAP[Number(item.trabalhariaNovamente)] || 'INDIFERENTE'
+          idAvaliador: Number(itemRecord.idAvaliador),
+          idAvaliado: Number(itemRecord.idAvaliado),
+          idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+          nota: Number(itemRecord.nota),
+          pontosFortes: itemRecord.pontosFortes as string,
+          pontosMelhora: itemRecord.pontosMelhoria as string, // ✅ CORRIGIDO: pontosMelhoria -> pontosMelhora
+          nomeProjeto: itemRecord.nomeProjeto as string,
+          periodoMeses: Number(itemRecord.periodoMeses) || 1,
+          trabalhariaNovamente: MOTIVACAO_MAP[Number(itemRecord.trabalhariaNovamente)] || 'INDIFERENTE'
         };
         console.log(`Avaliação 360 ${index} convertida:`, converted);
         return converted;
@@ -178,20 +155,22 @@ export async function enviarAvaliacao(dados: any) {
       );
     }
 
-    // 3. Enviar referências (mantém o mesmo formato pois tem endpoint próprio)
-    if (dados.referencias && Object.keys(dados.referencias).length > 0) {
+    // 3. ✅ Enviar referências usando o endpoint separado
+    if (dados.referencias && typeof dados.referencias === 'object' && Object.keys(dados.referencias as Record<string, unknown>).length > 0) {
       console.log('=== PROCESSANDO REFERÊNCIAS ===');
-      const referencias = Object.values(dados.referencias).map((item: any, index: number) => {
+      const referencias = Object.values(dados.referencias as Record<string, unknown>).map((item: unknown, index: number) => {
+        const itemRecord = item as Record<string, unknown>;
         const converted = {
-          idReferenciador: Number(item.idAvaliador),
-          idReferenciado: Number(item.idAvaliado),
-          idCiclo: convertCicloToNumber(item.idCiclo),
-          justificativa: item.justificativa
+          idReferenciador: Number(itemRecord.idAvaliador),
+          idReferenciado: Number(itemRecord.idAvaliado),
+          idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+          justificativa: itemRecord.justificativa as string
         };
         console.log(`Referência ${index} convertida:`, converted);
         return converted;
       });
 
+      // ✅ Enviar para o endpoint de referências
       promises.push(
         fetch(`${API_BASE_URL}/referencia/bulk`, {
           method: "POST",
@@ -226,7 +205,7 @@ export async function enviarAvaliacao(dados: any) {
 }
 
 // ✅ Nova função específica para enviar apenas Referências
-export async function enviarReferencias(referenciasData: any) {
+export async function enviarReferencias(referenciasData: Record<string, unknown>) {
   try {
     console.log('=== ENVIANDO REFERÊNCIAS ===');
     console.log('Dados recebidos:', referenciasData);
@@ -236,52 +215,46 @@ export async function enviarReferencias(referenciasData: any) {
     }
 
     // Converter dados para formato do backend
-    const referencias = Object.values(referenciasData).map((item: any, index: number) => {
-      console.log(`Processando referência ${index}:`, item);
+    const referencias = Object.values(referenciasData).map((item: unknown, index: number) => {
+      const itemRecord = item as Record<string, unknown>;
+      console.log(`Processando referência ${index}:`, itemRecord);
       
       const converted = {
-        idReferenciador: Number(item.idAvaliador),
-        idReferenciado: Number(item.idAvaliado),
-        idCiclo: convertCicloToNumber(item.idCiclo),
-        justificativa: item.justificativa
+        idReferenciador: Number(itemRecord.idAvaliador),
+        idReferenciado: Number(itemRecord.idAvaliado),
+        idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+        justificativa: itemRecord.justificativa as string
       };
       
       console.log(`Referência ${index} convertida:`, converted);
       return converted;
     });
 
-    console.log('Enviando referências individualmente...');
+    console.log('Enviando referências em lote...');
 
-    // Enviar cada referência individualmente
-    const promises = referencias.map(async (referencia, index) => {
-      console.log(`Enviando referência ${index}:`, referencia);
-      
-      const response = await fetch(`${API_BASE_URL}/referencia`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(referencia), // Enviar cada referência individualmente
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Erro na referência ${index}:`, {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorText
-        });
-        throw new Error(`Erro ao enviar referência ${index}: ${response.status} - ${errorText}`);
-      }
-
-      return response.json();
+    // ✅ Enviar para o endpoint bulk de referências
+    const response = await fetch(`${API_BASE_URL}/referencia/bulk`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(referencias), // Enviar array de referências
     });
 
-    // Aguardar todas as requisições
-    const results = await Promise.all(promises);
-    console.log('✅ Todas as referências enviadas com sucesso:', results);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Erro no envio das referências:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Erro ao enviar referências: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Referências enviadas com sucesso:', result);
     
     return {
       success: true,
-      data: results,
+      data: result,
       message: `${referencias.length} referência(s) enviada(s) com sucesso!`
     };
 
@@ -292,7 +265,7 @@ export async function enviarReferencias(referenciasData: any) {
 }
 
 // ✅ Nova função específica para enviar apenas Mentoring
-export async function enviarMentoring(mentoringData: any) {
+export async function enviarMentoring(mentoringData: Record<string, unknown>) {
   try {
     console.log('=== ENVIANDO MENTORING ===');
     console.log('Dados recebidos:', mentoringData);
@@ -305,9 +278,9 @@ export async function enviarMentoring(mentoringData: any) {
     const mentoringAvaliacao = {
       idMentor: Number(mentoringData.idAvaliado), // mentor sendo avaliado
       idMentorado: Number(mentoringData.idAvaliador), // mentorado avaliando
-      idCiclo: convertCicloToNumber(mentoringData.idCiclo),
+      idCiclo: convertCicloToNumber(mentoringData.idCiclo as string),
       nota: Number(mentoringData.nota),
-      justificativa: mentoringData.justificativa
+      justificativa: mentoringData.justificativa as string
     };
 
     console.log('Mentoring convertido:', mentoringAvaliacao);
@@ -354,7 +327,7 @@ export async function enviarMentoring(mentoringData: any) {
 /**
  * Envia TODAS as avaliações de uma vez usando o endpoint /avaliacao/bulk
  */
-export async function enviarTodasAvaliacoes(idCiclo: string) {
+export async function enviarTodasAvaliacoes() {
   try {
     console.log('=== ENVIANDO TODAS AS AVALIAÇÕES ===');
     
@@ -371,31 +344,38 @@ export async function enviarTodasAvaliacoes(idCiclo: string) {
     console.log('📝 Referências:', rawReferencias); // ✅ Log das referências
 
     // 🔄 Preparar payload unificado
-    const payload: any = {};
+    const payload: Record<string, unknown> = {};
 
     // ✅ Processar autoavaliações
     if (rawAuto && Object.keys(rawAuto).length > 0) {
       const autoavaliacoes = Object.entries(rawAuto)
-        .filter(([key, item]: [string, any]) => {
-          const isValid = item.nota > 0 && 
-                     item.justificativa && 
-                     item.justificativa.trim().length > 0 &&
-                     item.criterioId !== undefined;
+        .filter(([, item]) => {
+          const itemRecord = item as Record<string, unknown>;
+          
+          // ✅ Usar a mesma lógica do AutoavaliacaoForm: filtrar apenas itens preenchidos
+          const notaValida = Number(itemRecord.nota) > 0;
+          const justificativaValida = itemRecord.justificativa && 
+                                     (itemRecord.justificativa as string).trim().length > 0;
+          const criterioIdValido = itemRecord.criterioId !== undefined;
+          
+          const isValid = notaValida && justificativaValida && criterioIdValido;
           
           if (!isValid) {
-            console.log(`⚠️ Autoavaliação ${key} inválida - criterioId:`, item.criterioId);
+            console.log(`⚠️ Autoavaliação não preenchida - criterioId: ${itemRecord.criterioId} (nota: ${itemRecord.nota}, justificativa: "${itemRecord.justificativa}")`);
           }
           
           return isValid;
         })
-        .map(([key, item]: [string, any]) => ({
-          idAvaliador: Number(item.idAvaliador),
-          idAvaliado: Number(item.idAvaliado),
-          idCiclo: convertCicloToNumber(item.idCiclo),
-          nota: Number(item.nota),
-          justificativa: item.justificativa,
-          criterioId: Number(item.criterioId), // Usar o ID diretamente sem mapeamento
-        }));
+        .map(([, item]) => {
+          const itemRecord = item as Record<string, unknown>;
+          return {
+            idUser: Number(itemRecord.idAvaliador), // ✅ CORRIGIDO: idAvaliador -> idUser
+            idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+            nota: Number(itemRecord.nota),
+            justificativa: itemRecord.justificativa as string,
+            criterioId: Number(itemRecord.criterioId), // Usar o ID diretamente sem mapeamento
+          };
+        });
       
       if (autoavaliacoes.length > 0) {
         payload.autoavaliacoes = autoavaliacoes;
@@ -403,35 +383,45 @@ export async function enviarTodasAvaliacoes(idCiclo: string) {
         console.log('🔍 Primeira autoavaliação:', autoavaliacoes[0]);
         console.log('📊 CriterioIds enviados:', autoavaliacoes.map(a => a.criterioId));
       } else {
-        console.log('⚠️ Nenhuma autoavaliação válida encontrada');
+        console.log('⚠️ Nenhuma autoavaliação válida encontrada - verifique se preencheu nota e justificativa');
       }
     }
 
     // ✅ Processar avaliações 360
     if (rawAvaliacao360 && Object.keys(rawAvaliacao360).length > 0) {
       const avaliacoes360 = Object.entries(rawAvaliacao360)
-        .filter(([key, item]: [string, any]) => {
-          const isValid = item.pontosFortes && 
-                 item.trabalhariaNovamente !== undefined;
+        .filter(([, item]) => {
+          const itemRecord = item as Record<string, unknown>;
+          
+          // ✅ Validar campos obrigatórios da avaliação 360
+          const pontosFortesValido = itemRecord.pontosFortes && 
+                                    (itemRecord.pontosFortes as string).trim().length > 0;
+          const trabalhariaNovamenteValido = itemRecord.trabalhariaNovamente !== undefined;
+          const notaValida = itemRecord.nota && Number(itemRecord.nota) > 0;
+          
+          const isValid = pontosFortesValido && trabalhariaNovamenteValido && notaValida;
           
           if (!isValid) {
-            console.log(`⚠️ Avaliação 360 ${key} inválida:`, item);
+            console.log(`⚠️ Avaliação 360 não preenchida - avaliado: ${itemRecord.idAvaliado} (pontosFortes: "${itemRecord.pontosFortes}", trabalhariaNovamente: ${itemRecord.trabalhariaNovamente}, nota: ${itemRecord.nota})`);
           }
           
           return isValid;
         })
-        .map(([key, item]: [string, any]) => ({
-          idAvaliador: Number(item.idAvaliador),
-          idAvaliado: Number(item.idAvaliado),
-          idCiclo: convertCicloToNumber(item.idCiclo),
-          pontosFortes: item.pontosFortes,
-          pontosMelhora: item.pontosMelhora || item.pontosMelhoria || '',
-          nomeProjeto: item.nomeProjeto,
-          periodoMeses: Number(item.periodoMeses),
-          trabalhariaNovamente: convertTrabalhariaToEnum(item.trabalhariaNovamente),
-          // Adicionar a nota se estiver presente
-          nota: item.nota ? Number(item.nota) : undefined
-        }));
+        .map(([, item]) => {
+          const itemRecord = item as Record<string, unknown>;
+          return {
+            idAvaliador: Number(itemRecord.idAvaliador),
+            idAvaliado: Number(itemRecord.idAvaliado),
+            idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+            pontosFortes: itemRecord.pontosFortes as string,
+            pontosMelhora: (itemRecord.pontosMelhora || itemRecord.pontosMelhoria || '') as string, // ✅ CORRIGIDO: pontosMelhoria -> pontosMelhora
+            nomeProjeto: itemRecord.nomeProjeto as string,
+            periodoMeses: Number(itemRecord.periodoMeses),
+            trabalhariaNovamente: convertTrabalhariaToEnum(itemRecord.trabalhariaNovamente),
+            // Adicionar a nota se estiver presente
+            nota: itemRecord.nota ? Number(itemRecord.nota) : undefined
+          };
+        });
   
       if (avaliacoes360.length > 0) {
         payload.avaliacoes360 = avaliacoes360;
@@ -446,7 +436,7 @@ export async function enviarTodasAvaliacoes(idCiclo: string) {
           console.warn('⚠️ Nenhuma avaliação 360 possui nota');
         }
       } else {
-        console.log('⚠️ Nenhuma avaliação 360 válida encontrada');
+        console.log('⚠️ Nenhuma avaliação 360 válida encontrada - verifique se preencheu todos os campos obrigatórios');
       }
     }
 
@@ -455,32 +445,28 @@ export async function enviarTodasAvaliacoes(idCiclo: string) {
       const mentoringArray = Array.isArray(rawMentoring) ? rawMentoring : [rawMentoring];
       
       const mentoring = mentoringArray
-        .filter((item: any) => {
-          const isValid = item.idAvaliador && 
-                         item.idAvaliado && 
-                         item.nota && 
-                         item.justificativa &&
-                         item.idAvaliador !== null &&
-                         item.idAvaliado !== null &&
-                         item.nota !== null;
+        .filter((item: Record<string, unknown>) => {
+          // ✅ Validar campos obrigatórios do mentoring
+          const idAvaliadorValido = item.idAvaliador && item.idAvaliador !== null;
+          const idAvaliadoValido = item.idAvaliado && item.idAvaliado !== null;
+          const notaValida = item.nota && Number(item.nota) > 0;
+          const justificativaValida = item.justificativa && 
+                                     (item.justificativa as string).trim().length > 0;
+          
+          const isValid = idAvaliadorValido && idAvaliadoValido && notaValida && justificativaValida;
           
           if (!isValid) {
-            console.log(`⚠️ Mentoring inválido:`, {
-              idAvaliador: item.idAvaliador,
-              idAvaliado: item.idAvaliado,
-              nota: item.nota,
-              justificativa: item.justificativa
-            });
+            console.log(`⚠️ Mentoring não preenchido - mentor: ${item.idAvaliado} (idAvaliador: ${item.idAvaliador}, idAvaliado: ${item.idAvaliado}, nota: ${item.nota}, justificativa: "${item.justificativa}")`);
           }
           
           return isValid;
         })
-        .map((item: any) => ({
+        .map((item: Record<string, unknown>) => ({
           idMentor: Number(item.idAvaliado),
           idMentorado: Number(item.idAvaliador),
-          idCiclo: convertCicloToNumber(item.idCiclo),
+          idCiclo: convertCicloToNumber(item.idCiclo as string),
           nota: Number(item.nota),
-          justificativa: item.justificativa,
+          justificativa: item.justificativa as string,
         }));
 
       if (mentoring.length > 0) {
@@ -488,7 +474,7 @@ export async function enviarTodasAvaliacoes(idCiclo: string) {
         console.log('✅ Mentoring preparado:', mentoring.length);
         console.log('🔍 Primeiro mentoring:', mentoring[0]);
       } else {
-        console.log('⚠️ Nenhum mentoring válido encontrado');
+        console.log('⚠️ Nenhum mentoring válido encontrado - verifique se preencheu nota e justificativa');
       }
     }
 
@@ -522,59 +508,55 @@ export async function enviarTodasAvaliacoes(idCiclo: string) {
       
       try {
         const referencias = Object.values(rawReferencias)
-          .filter((item: any) => {
-            const isValid = item.idAvaliador && 
-                           item.idAvaliado && 
-                           item.justificativa &&
-                           item.idAvaliador !== null &&
-                           item.idAvaliado !== null;
+          .filter((item: unknown) => {
+            const itemRecord = item as Record<string, unknown>;
+            
+            // ✅ Validar campos obrigatórios das referências
+            const idAvaliadorValido = itemRecord.idAvaliador && itemRecord.idAvaliador !== null;
+            const idAvaliadoValido = itemRecord.idAvaliado && itemRecord.idAvaliado !== null;
+            const justificativaValida = itemRecord.justificativa && 
+                                       (itemRecord.justificativa as string).trim().length > 0;
+            
+            const isValid = idAvaliadorValido && idAvaliadoValido && justificativaValida;
             
             if (!isValid) {
-              console.log(`⚠️ Referência inválida:`, {
-                idAvaliador: item.idAvaliador,
-                idAvaliado: item.idAvaliado,
-                justificativa: item.justificativa
-              });
+              console.log(`⚠️ Referência não preenchida - referenciado: ${itemRecord.idAvaliado} (idAvaliador: ${itemRecord.idAvaliador}, idAvaliado: ${itemRecord.idAvaliado}, justificativa: "${itemRecord.justificativa}")`);
             }
             
             return isValid;
           })
-          .map((item: any) => ({
-            idReferenciador: Number(item.idAvaliador),
-            idReferenciado: Number(item.idAvaliado),
-            idCiclo: convertCicloToNumber(item.idCiclo),
-            justificativa: item.justificativa,
-          }));
+          .map((item: unknown) => {
+            const itemRecord = item as Record<string, unknown>;
+            return {
+              idReferenciador: Number(itemRecord.idAvaliador),
+              idReferenciado: Number(itemRecord.idAvaliado),
+              idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+              justificativa: itemRecord.justificativa as string,
+            };
+          });
 
         if (referencias.length > 0) {
           console.log('📝 Referências preparadas:', referencias.length);
           console.log('🔍 Primeira referência:', referencias[0]);
 
-          // Enviar referências individualmente
-          const referenciaPromises = referencias.map(async (referencia, index) => {
-            console.log(`Enviando referência ${index}:`, referencia);
-            
-            const refResponse = await fetch(`${API_BASE_URL}/referencia`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(referencia),
-            });
-
-            if (!refResponse.ok) {
-              const errorText = await refResponse.text();
-              console.error(`Erro na referência ${index}:`, {
-                status: refResponse.status,
-                statusText: refResponse.statusText,
-                error: errorText
-              });
-              throw new Error(`Erro ao enviar referência ${index}: ${refResponse.status} - ${errorText}`);
-            }
-
-            return refResponse.json();
+          // ✅ Enviar para o endpoint bulk de referências
+          const refResponse = await fetch(`${API_BASE_URL}/referencia/bulk`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ referencias }),
           });
 
-          // Aguardar todas as referências
-          referenciasResult = await Promise.all(referenciaPromises);
+          if (!refResponse.ok) {
+            const errorText = await refResponse.text();
+            console.error(`Erro no envio das referências:`, {
+              status: refResponse.status,
+              statusText: refResponse.statusText,
+              error: errorText
+            });
+            throw new Error(`Erro ao enviar referências: ${refResponse.status} - ${errorText}`);
+          }
+
+          referenciasResult = await refResponse.json();
           console.log('✅ Referências enviadas com sucesso:', referenciasResult);
         } else {
           console.log('⚠️ Nenhuma referência válida encontrada');
@@ -592,9 +574,9 @@ export async function enviarTodasAvaliacoes(idCiclo: string) {
     if (payload.mentoring) localStorage.removeItem("mentoring");
     if (referenciasResult) localStorage.removeItem("referencias"); // ✅ Limpar referências se enviadas
 
-    const totalItens = (payload.autoavaliacoes?.length || 0) + 
-                       (payload.avaliacoes360?.length || 0) + 
-                       (payload.mentoring?.length || 0) +
+    const totalItens = ((payload.autoavaliacoes as unknown[])?.length || 0) + 
+                       ((payload.avaliacoes360 as unknown[])?.length || 0) + 
+                       ((payload.mentoring as unknown[])?.length || 0) +
                        (referenciasResult?.length || 0); // ✅ Incluir referências no total
 
     return {
@@ -613,7 +595,7 @@ export async function enviarTodasAvaliacoes(idCiclo: string) {
 }
 
 // ✅ Função para converter trabalharia novamente para enum
-function convertTrabalhariaToEnum(value: any): string {
+function convertTrabalhariaToEnum(value: unknown): string {
   if (typeof value === 'number') {
     switch (value) {
       case 1: return 'DISCORDO_TOTALMENTE';
