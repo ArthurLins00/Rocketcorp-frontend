@@ -116,35 +116,93 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
     );
   };
 
-  const handleSalvar = () => {
+  const handleSalvar = async () => {
     const notaFinalizada =
       notaFinal ??
       calcularMedia([notaAutoavaliacao, notaGestor, notaAvaliacao360]);
+
+    // Ensure nota final is positive (minimum 0.1 if calculated as 0)
+    const notaFinalValidada = notaFinalizada > 0 ? notaFinalizada : 0.1;
+    const justificativaFinal = justificativa.trim() || "Equalização finalizada";
+
     const atualizada: Equalizacao = {
       ...equalizacao,
-      notaFinal: notaFinalizada,
-      justificativa,
+      notaFinal: notaFinalValidada,
+      justificativa: justificativaFinal,
       status: "Finalizado",
     };
 
-    salvarEqualizacaoAtualizada(atualizada);
-    enviarEqualizacaoParaBackend(atualizada);
-    onUpdate(atualizada);
-    setEditando(false);
-    setStatusLocal("Finalizado");
+    try {
+      // If this is an existing equalização (has valid ID), update it
+      if (
+        atualizada.idEqualizacao &&
+        !isNaN(parseInt(atualizada.idEqualizacao))
+      ) {
+        await salvarEqualizacaoAtualizada(atualizada);
+        console.log("Equalização atualizada no backend");
+      } else {
+        // If it's a new equalização (no valid ID), create it
+        const result = await enviarEqualizacaoParaBackend(atualizada);
+
+        // Update the equalização with the returned ID if available
+        if (result.success && result.id) {
+          atualizada.idEqualizacao = result.id.toString();
+          console.log("Updated equalizacao with backend ID:", result.id);
+        }
+      }
+
+      onUpdate(atualizada);
+      setEditando(false);
+      setStatusLocal("Finalizado");
+    } catch (error) {
+      console.error("Erro ao salvar equalização:", error);
+      // Handle error (maybe show a toast or error message)
+    }
   };
 
-  const handleEditar = () => {
+  const handleEditar = async () => {
+    // Ensure we have valid values for required fields
+    const notaFinalizada =
+      notaFinal ??
+      calcularMedia([notaAutoavaliacao, notaGestor, notaAvaliacao360]);
+    // Ensure nota final is positive (minimum 0.1 if calculated as 0)
+    const notaFinalValidada = notaFinalizada > 0 ? notaFinalizada : 0.1;
+    const justificativaFinal =
+      justificativa.trim() || "Equalização sendo editada";
+
     const atualizada: Equalizacao = {
       ...equalizacao,
+      notaFinal: notaFinalValidada,
+      justificativa: justificativaFinal,
       status: "Pendente",
     };
 
-    salvarEqualizacaoAtualizada(atualizada);
-    enviarEqualizacaoParaBackend(atualizada);
-    setEditando(true);
-    setStatusLocal("Pendente");
-    onUpdate(atualizada);
+    try {
+      // If this is an existing equalização (has valid ID), update it
+      if (
+        atualizada.idEqualizacao &&
+        !isNaN(parseInt(atualizada.idEqualizacao))
+      ) {
+        await salvarEqualizacaoAtualizada(atualizada);
+        console.log("Equalização atualizada no backend");
+      } else {
+        // If it's a new equalização (no valid ID), create it
+        const result = await enviarEqualizacaoParaBackend(atualizada);
+
+        // Update the equalização with the returned ID if available
+        if (result.success && result.id) {
+          atualizada.idEqualizacao = result.id.toString();
+          console.log("Updated equalizacao with backend ID:", result.id);
+        }
+      }
+
+      setEditando(true);
+      setStatusLocal("Pendente");
+      onUpdate(atualizada);
+    } catch (error) {
+      console.error("Erro ao editar equalização:", error);
+      // Handle error (maybe show a toast or error message)
+    }
   };
 
   return (
