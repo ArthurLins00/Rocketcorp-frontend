@@ -23,6 +23,8 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
   );
   const [editando, setEditando] = useState(equalizacao.status === "Pendente");
   const [statusLocal, setStatusLocal] = useState(equalizacao.status);
+  // Track the current ID, updating it when we get a real ID from backend
+  const [currentId, setCurrentId] = useState(equalizacao.idEqualizacao);
 
   const {
     nomeAvaliado,
@@ -127,19 +129,22 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
 
     const atualizada: Equalizacao = {
       ...equalizacao,
+      idEqualizacao: currentId, // Use the current ID state instead of prop
       notaFinal: notaFinalValidada,
       justificativa: justificativaFinal,
       status: "Finalizado",
     };
 
     try {
-      // If this is an existing equalização (has valid ID), update it
-      if (
-        atualizada.idEqualizacao &&
-        !isNaN(parseInt(atualizada.idEqualizacao))
-      ) {
+      // Check if we have a valid numeric ID (not temporary like temp_7_1)
+      const hasValidId =
+        currentId &&
+        !currentId.startsWith("temp_") &&
+        !isNaN(parseInt(currentId));
+
+      // If this is an existing equalização (has valid numeric ID), update it
+      if (hasValidId) {
         await salvarEqualizacaoAtualizada(atualizada);
-        console.log("Equalização atualizada no backend");
       } else {
         // If it's a new equalização (no valid ID), create it
         const result = await enviarEqualizacaoParaBackend(atualizada);
@@ -147,7 +152,7 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
         // Update the equalização with the returned ID if available
         if (result.success && result.id) {
           atualizada.idEqualizacao = result.id.toString();
-          console.log("Updated equalizacao with backend ID:", result.id);
+          setCurrentId(result.id.toString()); // Update our local ID state
         }
       }
 
@@ -161,6 +166,12 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
   };
 
   const handleEditar = async () => {
+    // Check if we have a valid numeric ID (not temporary like temp_7_1)
+    const hasValidId =
+      currentId &&
+      !currentId.startsWith("temp_") &&
+      !isNaN(parseInt(currentId));
+
     // Ensure we have valid values for required fields
     const notaFinalizada =
       notaFinal ??
@@ -172,19 +183,16 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
 
     const atualizada: Equalizacao = {
       ...equalizacao,
+      idEqualizacao: currentId, // Use the current ID state instead of prop
       notaFinal: notaFinalValidada,
       justificativa: justificativaFinal,
       status: "Pendente",
     };
 
     try {
-      // If this is an existing equalização (has valid ID), update it
-      if (
-        atualizada.idEqualizacao &&
-        !isNaN(parseInt(atualizada.idEqualizacao))
-      ) {
+      // If this is an existing equalização (has valid numeric ID), update it
+      if (hasValidId) {
         await salvarEqualizacaoAtualizada(atualizada);
-        console.log("Equalização atualizada no backend");
       } else {
         // If it's a new equalização (no valid ID), create it
         const result = await enviarEqualizacaoParaBackend(atualizada);
@@ -192,7 +200,7 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
         // Update the equalização with the returned ID if available
         if (result.success && result.id) {
           atualizada.idEqualizacao = result.id.toString();
-          console.log("Updated equalizacao with backend ID:", result.id);
+          setCurrentId(result.id.toString()); // Update our local ID state
         }
       }
 

@@ -3,7 +3,7 @@ import type { Equalizacao } from "../../types/Equalizacao";
 // const STORAGE_KEY = "equalizacoes";
 
 // TODO: Move to .env or config
-const API_URL = "http://localhost:3000/equalizacao/ciclo/1";
+const API_URL = "http://localhost:3000/equalizacao/current-cycle";
 const API_URL_CREATE = "http://localhost:3000/equalizacao";
 
 export async function getEqualizacoes(): Promise<Equalizacao[]> {
@@ -49,9 +49,9 @@ export async function salvarEqualizacaoAtualizada(
       justificativa: justificativa,
     };
 
-    // console.log("Sending UpdateEqualizacaoDto:", updateDto);
-    // console.log("JSON body:", JSON.stringify(updateDto));
-    // console.log("Request URL:", API_URL_CREATE);
+    console.log("Sending UpdateEqualizacaoDto:", updateDto);
+    console.log("JSON body:", JSON.stringify(updateDto));
+    console.log("Request URL:", API_URL_CREATE);
 
     const response = await fetch(API_URL_CREATE, {
       method: "PATCH",
@@ -61,10 +61,10 @@ export async function salvarEqualizacaoAtualizada(
       body: JSON.stringify(updateDto),
     });
 
-    // console.log("Response status:", response.status);
+    console.log("Response status:", response.status);
 
     const responseText = await response.text();
-    // console.log("Raw response:", responseText);
+    console.log("Raw response:", responseText);
 
     if (!response.ok) {
       console.error("Full error response:", responseText);
@@ -82,7 +82,7 @@ export async function salvarEqualizacaoAtualizada(
       result = { message: "Equalização atualizada com sucesso" };
     }
 
-    // console.log("Equalização atualizada com sucesso:", result);
+    console.log("Equalização atualizada com sucesso:", result);
 
     return {
       success: true,
@@ -105,7 +105,7 @@ export async function enviarEqualizacaoParaBackend(equalizacao: Equalizacao) {
     const notaFinalValidada = notaFinal > 0 ? notaFinal : 0.1;
 
     const createDto = {
-      idCiclo: 1,
+      idCiclo: parseInt(equalizacao.idCiclo),
       idAvaliador: parseInt(equalizacao.idAvaliador),
       idAvaliado: parseInt(equalizacao.idAvaliado),
       notaFinal: notaFinalValidada,

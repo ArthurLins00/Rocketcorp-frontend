@@ -3,6 +3,8 @@ export type Equalizacao = {
   idAvaliador: string;
   idAvaliado: string;
 
+  idCiclo: string;
+
   nomeAvaliado: string;
   cargoAvaliado: string;
 
