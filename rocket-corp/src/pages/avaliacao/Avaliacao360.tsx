@@ -2,7 +2,7 @@ import Avaliacao360Form from "../../components/Avaliacao360Form";
 
 export default function Avaliacao360() {
   const idCiclo = "2025.2";
-  const idAvaliador = "6";
+  const idAvaliador = "16";
 
   return (
     <main className="p-6">
