@@ -24,11 +24,14 @@ import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import { EvolutionPage } from "./pages/EvolutionPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
+import AdminCycles from "./pages/admin/admin-cycles";
 
 export default function App() {
   const location = useLocation();
   const isAvaliacaoRoute = location.pathname.startsWith("/avaliacao");
-  const isCollaboratorDetailRoute = location.pathname.startsWith("/gestor/collaborator/");
+  const isCollaboratorDetailRoute = location.pathname.startsWith(
+    "/gestor/collaborator/"
+  );
 
   return (
     <UserTypeProvider>
@@ -59,13 +62,26 @@ export default function App() {
               />
               <Route path="/comite-dashboard" element={<DashboardComite />} />
               <Route path="/rh-dashboard" element={<DashboardRH />} />
-              <Route path="/gestor-dashboard" element={<DashboardGestor />} />         
-              <Route path="/rh/criterios" element={<CriteriaManagementPage />} />
+              <Route path="/gestor-dashboard" element={<DashboardGestor />} />
+              <Route
+                path="/rh/criterios"
+                element={<CriteriaManagementPage />}
+              />
               <Route path="/login" element={<LoginPage />} />
-              <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
+              <Route
+                path="/comite/equalizacoes"
+                element={<EqualizacoesPage />}
+              />
 
-              <Route path="/gestor/collaborators" element={<CollaboratorsPage />} />
-              <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} />
+              <Route
+                path="/gestor/collaborators"
+                element={<CollaboratorsPage />}
+              />
+              <Route
+                path="/gestor/collaborator/:id"
+                element={<CollaboratorPage />}
+              />
+              <Route path="/admin-cycles" element={<AdminCycles />} />
             </Routes>
           </main>
         </div>

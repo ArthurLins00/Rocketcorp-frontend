@@ -1,4 +1,3 @@
-import { Avaliacao } from "./Avaliacao";
 export type Cycle = {
   id: number;
   name: string;
@@ -7,12 +6,15 @@ export type Cycle = {
   status: string;
   createdAt: Date;
   updatedAt: Date;
-  dataAbertura?: Date | null;
-  dataFechamento?: Date | null;
+  dataAberturaAvaliacao?: Date | null;
+  dataFechamentoAvaliacao?: Date | null;
+  dataAberturaRevisaoGestor?: Date | null;
+  dataFechamentoRevisaoGestor?: Date | null;
+  dataAberturaRevisaoComite?: Date | null;
+  dataFechamentoRevisaoComite?: Date | null;
   dataFinalizacao?: Date | null;
-  dataRevisaoGestor?: Date | null;
-  dataRevisaoComite?: Date | null;
-  avaliacoes?: Avaliacao[]; // Avaliacao[]
+  //corrigir esses tipos quando integrar
+  avaliacoes?: unknown[]; // Avaliacao[]
   avaliacoes360?: unknown[]; // Avaliacao360[]
   criterios?: unknown[]; // Criterio[]
   referencias?: unknown[]; // referencia[]
