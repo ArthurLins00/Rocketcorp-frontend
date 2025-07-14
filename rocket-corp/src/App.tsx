@@ -24,18 +24,72 @@ import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import { EvolutionPage } from "./pages/EvolutionPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import NotAuthorizedPage from "./pages/NotAuthorizedPage";
+import { authenticatedFetch } from "./utils/auth";
 
-// Helper to check auth
-function RequireAuth({ children }: { children: React.ReactElement }) {
-  const token = localStorage.getItem("access_token");
+function RequireAuth({ children, requiredRole }: { children: React.ReactElement, requiredRole?: string }) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [hasRole, setHasRole] = useState<boolean | null>(null);
   const location = useLocation();
-  if (!token) {
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await authenticatedFetch(import.meta.env.VITE_API_URL + "/auth/me");
+        if (res && res.ok) {
+          const data = await res.json();
+          if (data.message && data.message.toLowerCase().includes("user details retrieved successfully")) {
+            setIsAuthenticated(true);
+            if (requiredRole) {
+              const userStr = localStorage.getItem("user");
+              let userRoles: string[] = [];
+              if (userStr) {
+                try {
+                  const userObj = JSON.parse(userStr);
+                  userRoles = userObj.role || [];
+                  console.log("User roles from localStorage:", userRoles);
+                } catch {}
+                // console.log("User roles from localStorage:", userRoles);
+              } else {
+                console.warn("No user data found in localStorage");
+              }
+              
+              if (Array.isArray(userRoles)) {
+                setHasRole(userRoles.includes(requiredRole));
+              } else {
+                setHasRole(userRoles === requiredRole);
+              }
+            } else {
+              setHasRole(true);
+            }
+          } else {
+            setIsAuthenticated(false);
+            setHasRole(false);
+          }
+        } else {
+          setIsAuthenticated(false);
+          setHasRole(false);
+        }
+      } catch {
+        setIsAuthenticated(false);
+        setHasRole(false);
+      }
+    };
+    checkAuth();
+  }, [requiredRole]);
+
+  if (isAuthenticated === null || hasRole === null) {
+    return <div>Carregando...</div>;
+  }
+  if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  if (!hasRole) {
+    return <NotAuthorizedPage />;
   }
   return children;
 }
-// trocar pra pagina nao autorizada
 
 export default function App() {
   const location = useLocation();
@@ -44,14 +98,18 @@ export default function App() {
   const isLoginPage = location.pathname === "/login";
 
   if (isLoginPage) {
-    // Only render login page, no sidebar/header/topbar
     return (
       <UserTypeProvider>
         <LoginPage />
       </UserTypeProvider>
     );
   }
-
+  {/*
+    pra usar o RequireAuth, basta chamar sua tela entre <RequireAuth> </RequireAuth>,
+    e se a tela for protegida para certos cargos, use <RequireAuth requiredRole="cargo"> </RequireAuth>
+    exemplo:
+    <Route path="/gestor/collaborator/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
+  */}
   return (
     <UserTypeProvider>
       <div className="flex min-h-screen bg-[#F1F1F1] text-gray-800">
@@ -62,37 +120,23 @@ export default function App() {
           <main className="flex-1">
             <Routes>
               <Route path="/login" element={<LoginPage />} />
-              {/* To protect routes, wrap with RequireAuth. For now, leave commented for production speed. */}
-              {/* <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} /> */}
+              <Route path="/not-authorized" element={<NotAuthorizedPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              {/* <Route path="/employee-dashboard" element={<RequireAuth><DashboardColaborador /></RequireAuth>} /> */}
               <Route path="/employee-dashboard" element={<DashboardColaborador />} />
-              {/* <Route path="/comite-dashboard" element={<RequireAuth><DashboardComite /></RequireAuth>} /> */}
               <Route path="/comite-dashboard" element={<DashboardComite />} />
-              {/* <Route path="/rh-dashboard" element={<RequireAuth><DashboardRH /></RequireAuth>} /> */}
               <Route path="/rh-dashboard" element={<DashboardRH />} />
-              {/* <Route path="/gestor-dashboard" element={<RequireAuth><DashboardGestor /></RequireAuth>} /> */}
               <Route path="/gestor-dashboard" element={<DashboardGestor />} />
-              {/* <Route path="/avaliacao/autoavaliacao" element={<RequireAuth><AutoAvaliacao /></RequireAuth>} /> */}
               <Route path="/avaliacao/autoavaliacao" element={<AutoAvaliacao />} />
-              {/* <Route path="/avaliacao/avaliacao360" element={<RequireAuth><Avaliacao360 /></RequireAuth>} /> */}
               <Route path="/avaliacao/avaliacao360" element={<Avaliacao360 />} />
-              {/* <Route path="/avaliacao/mentoring" element={<RequireAuth><Mentoring /></RequireAuth>} /> */}
               <Route path="/avaliacao/mentoring" element={<Mentoring />} />
-              {/* <Route path="/avaliacao/referencias" element={<RequireAuth><Referencias /></RequireAuth>} /> */}
               <Route path="/avaliacao/referencias" element={<Referencias />} />
-              {/* <Route path="/evolution-page" element={<RequireAuth><EvolutionPage /></RequireAuth>} /> */}
               <Route path="/evolution-page" element={<EvolutionPage />} />
-              {/* <Route path="/rh/criterios" element={<RequireAuth><CriteriaManagementPage /></RequireAuth>} /> */}
               <Route path="/rh/criterios" element={<CriteriaManagementPage />} />
-              {/* <Route path="/comite/equalizacoes" element={<RequireAuth><EqualizacoesPage /></RequireAuth>} /> */}
               <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
-              {/* <Route path="/gestor/collaborators" element={<RequireAuth><CollaboratorsPage /></RequireAuth>} /> */}
               <Route path="/gestor/collaborators" element={<CollaboratorsPage />} />
-              {/* <Route path="/gestor/collaborator/:id" element={<RequireAuth><CollaboratorPage /></RequireAuth>} /> */}
-              <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} />
-              {/* Default route: redirect to login if not authenticated */}
-              <Route path="*" element={<Navigate to="/login" replace />} />
+              <Route path="/gestor/collaborator/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
+              {/* <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} /> */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
         </div>

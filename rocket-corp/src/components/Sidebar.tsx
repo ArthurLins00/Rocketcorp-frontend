@@ -5,6 +5,14 @@ import Frame3 from "../assets/Frame (7).svg";
 import Frame4 from "../assets/Frame (8).svg";
 import { useSidebarController } from "../controllers/sidebarController";
 
+{/* 
+	colocar os cargos necessários para seu item de sidebar aparecer no show,
+	por exemplo, se quiser que o seu item só apareça para o gestor, coloque:
+	show: ({ userType }: { userType: string[] }) => userType.includes("manager"),
+	ou se quiser que apareça para o colaborador, coloque:
+	show: ({ userType }: { userType: string[] }) => userType.includes("user")
+*/}
+
 const sidebarItems = [
 	{
 		label: "Dashboard do colaborador",
@@ -17,19 +25,19 @@ const sidebarItems = [
 		path: "/gestor-dashboard",
 		icon: Frame,
 		show: ({ userType }: { userType: string[] }) =>
-			userType.includes("GESTOR"),
+			userType.includes("manager"),
 	},
 	{
 		label: "Dashboard do comitê",
 		path: "/comite-dashboard",
 		icon: Frame,
-		show: ({ userType }: { userType: string[] }) => userType.includes("COMITE"),
+		show: ({ userType }: { userType: string[] }) => userType.includes("committee"),
 	},
 	{
 		label: "Dashboard do RH",
 		path: "/rh-dashboard",
 		icon: Frame,
-		show: ({ userType }: { userType: string[] }) => userType.includes("RH"),
+		show: ({ userType }: { userType: string[] }) => userType.includes("rh"),
 	},
 	{
 		label: "Avaliação de ciclo",
@@ -88,10 +96,10 @@ export const Sidebar = () => {
 				<nav>
 					<ul className="flex flex-col gap-2 pl-5">
 						{/* To enable filtering by userType, uncomment the next line and comment the one below */}
-						{/* {sidebarItems
+						{sidebarItems
               .filter(item => item.show({ userType }))
-              .map(item => ( */}
-						{sidebarItems.map(item => (
+              .map(item => (
+						// {sidebarItems.map(item => (
 							<li key={item.path}>
 								<span
 									className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left ${
@@ -118,7 +126,7 @@ export const Sidebar = () => {
 					<span className="bg-[#CECDCD] text-[#1D1D1D] font-bold rounded-full w-8 h-8 flex items-center justify-center mr-2">
 						CN
 					</span>
-					<span className="text-base text-[#1D1D1D]">Colaborador 1</span>
+					<span className="text-base text-[#1D1D1D]">{localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!).name : "Colaborador 1"}</span>
 				</div>
 				<a
 					href="#"
