@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 import { enviarAvaliacao } from '../services/avaliacaoService';
+import { buscarUsuarios } from "../services/userService";
 
 export type AutoavaliacaoItem = {
   idAvaliador: string;
   idAvaliado: string;
   idCiclo: string;
-  criterioId: string;
+  criterioId: number; // Alterado para number para compatibilidade com o backend
   nota: number;
   justificativa: string;
 };
@@ -15,85 +16,103 @@ type AutoavaliacaoState = {
   [criterioId: string]: AutoavaliacaoItem;
 };
 
-type Criterion = {
-  id: string;
-  label: string;
+// Novo tipo para representar os critérios vindos do backend
+type Criterio = {
+  id: number;
+  name: string;
+  tipo: string;
+  peso: number;
+  description: string;
+  enabled: boolean;
 };
 
-const sections: { title: string; criteria: Criterion[] }[] = [
-  {
-    title: "Critérios de Postura",
-    criteria: [
-      { id: "sentimentoDeDono", label: "Sentimento de Dono" },
-      { id: "resiliencia", label: "Resiliência nas adversidades" },
-      { id: "organizacao", label: "Organização do trabalho" },
-      { id: "aprendizado", label: "Capacidade de aprender" },
-      { id: "teamPlayer", label: "Ser 'team player'" },
-    ],
-  },
-  {
-    title: "Critérios de Execução",
-    criteria: [
-      { id: "qualidade", label: "Entregar com qualidade" },
-      { id: "prazos", label: "Atender aos prazos" },
-      { id: "eficiencia", label: "Fazer mais com menos" },
-      { id: "criatividade", label: "Pensar fora da caixa" },
-    ],
-  },
-  {
-    title: "Critérios de Gente e Gestão",
-    criteria: [
-      { id: "gente", label: "Gente" },
-      { id: "resultados", label: "Resultados" },
-      { id: "evolucao", label: "Evolução da Rocket Corp" },
-    ],
-  },
-];
+// Agrupamento por tipo de critério
+type CriteriosAgrupados = {
+  comportamental: Criterio[];
+  tecnico: Criterio[];
+  gestao: Criterio[];
+  negocios: Criterio[];
+  [key: string]: Criterio[];
+};
 
 const LOCAL_STORAGE_KEY = "autoavaliacao";
+
+// Função para buscar os critérios da trilha do usuário
+async function buscarCriteriosDaTrilha(userId: string): Promise<CriteriosAgrupados> {
+  try {
+    // Primeiro, buscar o usuário para obter a trilhaId
+    const usuarios = await buscarUsuarios();
+    const usuario = usuarios.find(u => u.id === Number(userId));
+    
+    if (!usuario || !usuario.trilhaId) {
+      console.warn('⚠️ Usuário não tem trilha associada:', usuario);
+      throw new Error("Usuário não encontrado ou não possui trilha associada");
+    }
+    
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    
+    console.log('🔍 Buscando critérios para:', {
+      usuario: usuario.name,
+      trilhaId: usuario.trilhaId,
+      trilhaNome: usuario.trilha?.name || 'N/A'
+    });
+    
+    // Buscar critérios da trilha do usuário que estejam habilitados
+    const response = await fetch(`${API_BASE_URL}/criterio/trilha/${usuario.trilhaId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar critérios: ${response.statusText}`);
+    }
+    
+    const criterios: Criterio[] = await response.json();
+    console.log(`📋 Critérios recebidos (${criterios.length}):`, criterios);
+    
+    // Filtrar apenas critérios habilitados
+    const criteriosHabilitados = criterios.filter(c => c.enabled);
+    console.log(`✅ Critérios habilitados (${criteriosHabilitados.length}/${criterios.length})`);
+    
+    // Agrupar por tipo
+    const criteriosAgrupados: CriteriosAgrupados = {
+      comportamental: [],
+      tecnico: [],
+      gestao: [],
+      negocios: []
+    };
+    
+    criteriosHabilitados.forEach(criterio => {
+      if (!criteriosAgrupados[criterio.tipo]) {
+        criteriosAgrupados[criterio.tipo] = [];
+      }
+      criteriosAgrupados[criterio.tipo].push(criterio);
+    });
+    
+    // Mostrar contagem por tipo
+    console.log('📊 Critérios por tipo:');
+    Object.entries(criteriosAgrupados).forEach(([tipo, criterios]) => {
+      console.log(`   - ${tipo}: ${criterios.length}`);
+    });
+    
+    return criteriosAgrupados;
+  } catch (error) {
+    console.error('❌ Erro ao buscar critérios da trilha:', error);
+    return { comportamental: [], tecnico: [], gestao: [], negocios: [] };
+  }
+}
 
 const getInitialResponses = (
   idAvaliador: string,
   idCiclo: string
 ): AutoavaliacaoState => {
-  const allCriteria: AutoavaliacaoState = {};
-  sections.forEach((section) => {
-    section.criteria.forEach((criterion) => {
-      allCriteria[criterion.id] = {
-        idAvaliador,
-        idAvaliado: idAvaliador,
-        idCiclo,
-        criterioId: criterion.id, // ✅ GARANTIR que criterioId seja o criterion.id
-        nota: 0,
-        justificativa: "",
-      };
-    });
-  });
-
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
-      const parsed = JSON.parse(saved);
-      // ✅ MESCLAR mas garantindo que os campos obrigatórios estejam corretos
-      const merged: AutoavaliacaoState = {};
-      Object.keys(allCriteria).forEach(key => {
-        merged[key] = {
-          ...allCriteria[key], // ✅ Campos padrão com IDs corretos
-          ...parsed[key],      // ✅ Dados salvos do usuário (nota, justificativa)
-          // ✅ Forçar campos que podem estar incorretos
-          idAvaliador,
-          idAvaliado: idAvaliador,
-          idCiclo,
-          criterioId: key // ✅ GARANTIR que criterioId seja sempre o key correto
-        };
-      });
-      return merged;
+      return JSON.parse(saved);
     }
-  } catch {
-    return allCriteria;
+  } catch (error) {
+    console.error('Erro ao carregar dados do localStorage:', error);
   }
 
-  return allCriteria;
+  return {};
 };
 
 export default function AutoavaliacaoForm({
@@ -106,6 +125,77 @@ export default function AutoavaliacaoForm({
   const [responses, setResponses] = useState<AutoavaliacaoState>(() =>
     getInitialResponses(idAvaliador, idCiclo)
   );
+  const [criteriosAgrupados, setCriteriosAgrupados] = useState<CriteriosAgrupados>({
+    comportamental: [],
+    tecnico: [],
+    gestao: [],
+    negocios: []
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Buscar critérios ao carregar o componente
+  useEffect(() => {
+    const fetchCriterios = async () => {
+      try {
+        console.log('🔄 Iniciando carregamento de critérios para usuário:', idAvaliador);
+        setIsLoading(true);
+        setError(null);
+        
+        const criterios = await buscarCriteriosDaTrilha(idAvaliador);
+        setCriteriosAgrupados(criterios);
+        
+        // Contar critérios totais
+        const totalCriterios = Object.values(criterios).reduce(
+          (sum, grupo) => sum + grupo.length, 0
+        );
+        console.log(`✅ Carregamento completo: ${totalCriterios} critérios no total`);
+        
+        // Inicializar respostas para os critérios carregados se não existirem no localStorage
+        const savedResponses = { ...responses };
+        let novosRegistros = 0;
+        let atualizados = 0;
+        
+        // Para cada critério, garantir que existe uma entrada em savedResponses
+        Object.values(criterios).forEach(grupo => {
+          grupo.forEach(criterio => {
+            const criterioId = criterio.id.toString();
+            if (!savedResponses[criterioId]) {
+              savedResponses[criterioId] = {
+                idAvaliador,
+                idAvaliado: idAvaliador,
+                idCiclo,
+                criterioId: criterio.id,
+                nota: 0,
+                justificativa: "",
+              };
+              novosRegistros++;
+            } else {
+              // Garantir que os campos obrigatórios estejam corretos
+              savedResponses[criterioId] = {
+                ...savedResponses[criterioId],
+                idAvaliador,
+                idAvaliado: idAvaliador,
+                idCiclo,
+                criterioId: criterio.id
+              };
+              atualizados++;
+            }
+          });
+        });
+        
+        console.log(`📝 Respostas inicializadas: ${novosRegistros} novas, ${atualizados} atualizadas`);
+        setResponses(savedResponses);
+      } catch (error) {
+        console.error('❌ Erro ao buscar critérios:', error);
+        setError('Não foi possível carregar os critérios. Tente novamente mais tarde.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCriterios();
+  }, [idAvaliador, idCiclo]);
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(responses));
@@ -122,11 +212,11 @@ export default function AutoavaliacaoForm({
         [criterioId]: {
           ...prev[criterioId],
           [field]: value,
-          // ✅ GARANTIR que os IDs não se percam ao atualizar
+          // Garantir que os IDs não se percam ao atualizar
           idAvaliador,
           idAvaliado: idAvaliador,
           idCiclo,
-          criterioId: criterioId // ✅ MANTER o criterioId correto
+          criterioId: Number(criterioId) // Converter para número
         },
       };
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
@@ -134,10 +224,24 @@ export default function AutoavaliacaoForm({
     });
   };
 
-  const renderSection = (sectionTitle: string, criteria: Criterion[]) => {
-    const filledCount = criteria.filter(
+  // Função para traduzir os tipos de critério para títulos mais amigáveis
+  const getTitleForTipo = (tipo: string): string => {
+    const titles: Record<string, string> = {
+      comportamental: "Critérios Comportamentais",
+      tecnico: "Critérios Técnicos",
+      gestao: "Critérios de Gestão",
+      negocios: "Critérios de Negócios"
+    };
+    
+    return titles[tipo] || `Critérios de ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+  };
+
+  const renderSection = (tipo: string, criterios: Criterio[]) => {
+    if (criterios.length === 0) return null;
+
+    const filledCount = criterios.filter(
       (c) => {
-        const response = responses[c.id];
+        const response = responses[c.id.toString()];
         return (
           response?.nota > 0 &&
           response?.justificativa && 
@@ -146,13 +250,13 @@ export default function AutoavaliacaoForm({
       }
     ).length;
   
-    const total = criteria.length;
+    const total = criterios.length;
   
     const average =
       filledCount > 0
         ? (
-            criteria.reduce((acc, c) => {
-              const item = responses[c.id];
+            criterios.reduce((acc, c) => {
+              const item = responses[c.id.toString()];
               if (
                 item &&
                 item.nota > 0 &&
@@ -173,9 +277,9 @@ export default function AutoavaliacaoForm({
     };
 
     return (
-      <div key={sectionTitle} className="space-y-6">
+      <div key={tipo} className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">{sectionTitle}</h2>
+          <h2 className="text-xl font-semibold">{getTitleForTipo(tipo)}</h2>
           <div className="flex items-center gap-2">
             <span className="bg-gray-200 text-sm font-bold px-2 py-1 rounded">
               {average}
@@ -188,18 +292,22 @@ export default function AutoavaliacaoForm({
           </div>
         </div>
 
-        {criteria.map((criterion) => {
-          const item = responses[criterion.id];
+        {criterios.map((criterio) => {
+          const criterioId = criterio.id.toString();
+          const item = responses[criterioId];
           const nota = item?.nota ?? 0;
           const justificativa = item?.justificativa ?? "";
 
           return (
             <div
-              key={criterion.id}
+              key={criterioId}
               className="border rounded-xl p-4 space-y-3"
             >
               <div className="flex justify-between items-center">
-                <p className="font-medium">{criterion.label}</p>
+                <div>
+                  <p className="font-medium">{criterio.name}</p>
+                  <p className="text-sm text-gray-500">{criterio.description}</p>
+                </div>
                 <span className="bg-gray-200 text-sm font-bold px-2 py-1 rounded">
                   {nota.toFixed(1)}
                 </span>
@@ -215,7 +323,7 @@ export default function AutoavaliacaoForm({
                     fill={star <= nota ? "#facc15" : "none"}
                     stroke="#facc15"
                     className="cursor-pointer"
-                    onClick={() => updateField(criterion.id, "nota", star)}
+                    onClick={() => updateField(criterioId, "nota", star)}
                   />
                 ))}
               </div>
@@ -225,7 +333,7 @@ export default function AutoavaliacaoForm({
                 placeholder="Justifique sua nota"
                 value={justificativa}
                 onChange={(e) =>
-                  updateField(criterion.id, "justificativa", e.target.value)
+                  updateField(criterioId, "justificativa", e.target.value)
                 }
               />
             </div>
@@ -235,7 +343,7 @@ export default function AutoavaliacaoForm({
     );
   };
 
-  // Função de teste para enviar apenas autoavaliação
+  // Função para enviar apenas autoavaliação
   const handleTesteEnvio = async () => {
     try {
       console.log('🧪 TESTE: Iniciando envio da autoavaliação...');
@@ -244,18 +352,25 @@ export default function AutoavaliacaoForm({
       const autoavaliacaoData = getAutoavaliacoesFormatadas(responses);
       console.log('🧪 TESTE: Dados formatados:', autoavaliacaoData);
       
-      // ✅ VERIFICAR se os criterioId estão corretos
+      // Verificar se os criterioId estão corretos
       autoavaliacaoData.forEach((item, index) => {
         console.log(`🧪 Item ${index}:`, {
           criterioId: item.criterioId,
+          tipo: typeof item.criterioId,
           nota: item.nota,
           justificativa: item.justificativa?.substring(0, 20) + '...'
         });
       });
       
+      // Garantir que criterioId seja número
+      const dadosVerificados = autoavaliacaoData.map(item => ({
+        ...item,
+        criterioId: Number(item.criterioId)
+      }));
+      
       // Criar objeto no mesmo formato que o Header espera
       const dadosParaEnvio = {
-        autoavaliacao: autoavaliacaoData,
+        autoavaliacao: dadosVerificados,
         avaliacao360: {},
         referencias: {},
         mentoring: null
@@ -273,26 +388,70 @@ export default function AutoavaliacaoForm({
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-12 bg-white border rounded-xl flex justify-center items-center min-h-[300px]">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600 mb-4"></div>
+          <p>Carregando critérios da sua trilha...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-white border rounded-xl">
+        <div className="bg-red-100 border-l-4 border-red-500 p-4">
+          <p className="text-red-700">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Verificar se existem critérios
+  const hasCriterios = Object.values(criteriosAgrupados).some(grupo => grupo.length > 0);
+
+  if (!hasCriterios) {
+    return (
+      <div className="p-6 bg-white border rounded-xl">
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4">
+          <p className="text-yellow-700 font-medium">Nenhum critério encontrado</p>
+          <p className="text-yellow-600">Não encontramos critérios disponíveis para sua trilha. Entre em contato com seu gestor.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-12 bg-white relative border rounded-xl">
       {/* Botão de teste - remover após debug */}
       <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-yellow-700 font-medium">🧪 Modo Teste</p>
-            <p className="text-yellow-600 text-sm">Botão temporário para testar envio da autoavaliação</p>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-700 font-medium">🧪 Modo Teste</p>
+              <p className="text-yellow-600 text-sm">Botão temporário para testar envio da autoavaliação</p>
+            </div>
+            <button
+              onClick={handleTesteEnvio}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Testar Envio Autoavaliação
+            </button>
           </div>
-          <button
-            onClick={handleTesteEnvio}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-          >
-            Testar Envio Autoavaliação
-          </button>
         </div>
       </div>
 
-      {sections.map((section) =>
-        renderSection(section.title, section.criteria)
+      {/* Renderizar cada seção de critérios */}
+      {Object.entries(criteriosAgrupados).map(([tipo, criterios]) =>
+        renderSection(tipo, criterios)
       )}
     </div>
   );
@@ -301,7 +460,12 @@ export default function AutoavaliacaoForm({
 export function getAutoavaliacoesFormatadas(
   state: AutoavaliacaoState
 ): AutoavaliacaoItem[] {
-  return Object.values(state).filter(
+  const filtered = Object.values(state).filter(
     (item) => item.nota > 0 && item.justificativa.trim().length > 0
   );
+  
+  console.log('📊 Autoavaliações formatadas:', filtered.length);
+  console.log('📊 IDs dos critérios:', filtered.map(item => item.criterioId));
+  
+  return filtered;
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Star, Trash, Send } from "lucide-react";
 import AvatarInicial from "./AvatarInicial";
-import { buscarUsuarios } from "../services/userService";
+import { buscarUsuarios, getMembrosAndGestorByEquipe } from "../services/userService";
 import type { User } from "../services/userService";
 import { enviarAvaliacao360 } from "../services/avaliacaoService"; // ✅ Import da nova função
 
@@ -45,6 +45,10 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
   const [usuarios, setUsuarios] = useState<User[]>([]);
   const [carregandoUsuarios, setCarregandoUsuarios] = useState(false);
   
+  // ✅ Estados para equipe
+  const [usuarioLogado, setUsuarioLogado] = useState<User | null>(null);
+  const [equipeAutomatica, setEquipeAutomatica] = useState<User[]>([]);
+  
   // ✅ Estados para envio
   const [enviando, setEnviando] = useState(false);
   const [mensagemEnvio, setMensagemEnvio] = useState<string | null>(null);
@@ -57,6 +61,51 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
         const usuariosCarregados = await buscarUsuarios();
         console.log('👥 Usuários carregados no Avaliacao360Form:', usuariosCarregados);
         setUsuarios(usuariosCarregados);
+
+        // ✅ Encontrar o usuário logado
+        const userLogado = usuariosCarregados.find(u => u.id.toString() === idAvaliador);
+        if (userLogado) {
+          setUsuarioLogado(userLogado);
+          console.log('👤 Usuário logado:', userLogado);
+
+          // ✅ Se o usuário tem equipe definida, carregar membros da equipe + gestor
+          if (userLogado.idEquipe) {
+            console.log('🏢 Usuário pertence à equipe:', userLogado.idEquipe);
+            try {
+              const membrosEquipe = await getMembrosAndGestorByEquipe(userLogado.idEquipe);
+              console.log('👥 Membros da equipe (incluindo gestor) carregados:', membrosEquipe);
+              // ✅ Filtrar apenas membros que não são o próprio usuário
+              const membrosSemUsuario = membrosEquipe.filter(membro => membro.id.toString() !== idAvaliador);
+              setEquipeAutomatica(membrosSemUsuario);
+              console.log('✅ Equipe automática configurada:', membrosSemUsuario);
+
+              // ✅ Adicionar automaticamente os membros da equipe sem duplicidade
+              const novosIds = membrosSemUsuario.map(m => m.id.toString());
+              setSelecionados(prev => Array.from(new Set([...prev, ...novosIds])));
+              setAvaliacoes(prev => {
+                const novo = { ...prev };
+                novosIds.forEach(id => {
+                  if (!novo[id]) {
+                    novo[id] = {
+                      idAvaliador,
+                      idAvaliado: id,
+                      idCiclo,
+                      nota: 0,
+                      pontosFortes: "",
+                      pontosMelhoria: "",
+                      nomeProjeto: "",
+                      periodoMeses: "",
+                      trabalhariaNovamente: 0,
+                    };
+                  }
+                });
+                return novo;
+              });
+            } catch (error) {
+              console.error('❌ Erro ao carregar membros da equipe:', error);
+            }
+          }
+        }
       } catch (error) {
         console.error('❌ Erro ao carregar usuários:', error);
       } finally {
@@ -65,7 +114,7 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
     };
 
     carregarUsuarios();
-  }, []);
+  }, [idAvaliador]);
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(avaliacoes));
@@ -242,6 +291,20 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
         )}
       </div>
 
+      {/* ✅ Informação sobre equipe automática */}
+      {equipeAutomatica.length > 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          <p className="text-sm text-green-700">
+            <span className="font-medium">🏢 Equipe automática:</span> {equipeAutomatica.length} membro(s) da sua equipe foram adicionado(s) automaticamente para avaliação 360°.
+          </p>
+          {usuarioLogado?.equipe && (
+            <p className="text-xs text-green-600 mt-1">
+              Equipe: {usuarioLogado.equipe.nome}
+            </p>
+          )}
+        </div>
+      )}
+
       <div>
         <input
           type="text"
@@ -294,6 +357,16 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
         )}
       </div>
 
+      {/* ✅ Mensagem quando usuário não tem equipe definida */}
+      {!carregandoUsuarios && !equipeAutomatica.length && usuarioLogado && !usuarioLogado.idEquipe && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-sm text-yellow-700">
+            <span className="font-medium">ℹ️ Informação:</span> Você não possui uma equipe definida oficialmente. 
+            Use a busca acima para escolher colaboradores e avaliá-los.
+          </p>
+        </div>
+      )}
+
       {selecionados.map((id) => {
         // ✅ Buscar usuário real pelo ID
         const colaborador = usuarios.find((u) => u.id.toString() === id);
@@ -324,6 +397,14 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
                   <p className="text-sm text-gray-500">{colaborador.email}</p>
                   {colaborador.trilha && (
                     <p className="text-xs text-blue-600">{colaborador.trilha.name}</p>
+                  )}
+                  {/* ✅ Indicador de membro da equipe automática */}
+                  {equipeAutomatica.some(membro => membro.id === colaborador.id) && (
+                    <p className="text-xs text-green-500 font-medium">🏢 Membro da equipe</p>
+                  )}
+                  {/* ✅ Indicador de gestor */}
+                  {equipeAutomatica.find(m => m.id === colaborador.id && m.role?.includes('manager')) && (
+                    <p className="text-xs text-blue-500 font-medium">👑 Gestor</p>
                   )}
                 </div>
               </div>

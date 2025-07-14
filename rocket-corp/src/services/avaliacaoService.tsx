@@ -1,22 +1,4 @@
-import { User } from "lucide-react";
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-
-// Mapeamento de critérios baseado na seed (IDs reais do banco)
-const CRITERIO_MAP: { [key: string]: number } = {
-  'sentimentoDeDono': 1,
-  'resiliencia': 2,
-  'organizacao': 3,
-  'aprendizado': 4,
-  'teamPlayer': 5,
-  'qualidade': 6,
-  'prazos': 7,
-  'eficiencia': 8,
-  'criatividade': 9,
-  'gente': 10,
-  'resultados': 11,
-  'evolucao': 12
-};
 
 // Mapeamento de motivação para enum
 const MOTIVACAO_MAP: { [key: number]: string } = {
@@ -44,182 +26,156 @@ function convertCicloToNumber(ciclo: string): number {
   return cicloMap[ciclo] || 1;
 }
 
-function getCriterioId(criterioString: string): number {
-  console.log('🔍 Mapeando criterioId:', criterioString);
-  const id = CRITERIO_MAP[criterioString];
-  console.log('🔍 ID encontrado:', id);
-  return id || 1;
-}
-
 // ✅ Nova função específica para enviar apenas Avaliação 360
-export async function enviarAvaliacao360(avaliacao360Data: any) {
+export async function enviarAvaliacao360(avaliacao360Data: Record<string, unknown>) {
   try {
-    console.log('=== ENVIANDO AVALIAÇÃO 360 ===');
-    console.log('Dados recebidos:', avaliacao360Data);
-
-    if (!avaliacao360Data || Object.keys(avaliacao360Data).length === 0) {
-      throw new Error('Nenhuma avaliação 360 para enviar');
+    console.log('📤 Iniciando envio de Avaliação 360:', avaliacao360Data);
+    
+    // Adicionar verificação de nota
+    if (avaliacao360Data.nota) {
+      console.log('📝 Nota detectada na avaliação 360:', avaliacao360Data.nota);
+    } else {
+      console.warn('⚠️ Avaliação 360 sem nota!');
     }
-
-    // Converter dados para formato do backend
-    const avaliacoes360 = Object.values(avaliacao360Data).map((item: any, index: number) => {
-      console.log(`Processando avaliação 360 ${index}:`, item);
-      
-      const converted = {
-        idAvaliador: Number(item.idAvaliador),
-        idAvaliado: Number(item.idAvaliado),
-        idCiclo: convertCicloToNumber(item.idCiclo),
-        nota: Number(item.nota),
-        pontosFortes: item.pontosFortes,
-        pontosMelhora: item.pontosMelhoria, // Note: pontosMelhoria -> pontosMelhora
-        nomeProjeto: item.nomeProjeto,
-        periodoMeses: Number(item.periodoMeses) || 1,
-        trabalhariaNovamente: MOTIVACAO_MAP[Number(item.trabalhariaNovamente)] || 'INDIFERENTE'
-      };
-      
-      console.log(`Avaliação 360 ${index} convertida:`, converted);
-      return converted;
-    });
-
-    // Preparar payload para o endpoint /bulk
-    const bulkPayload = {
-      avaliacoes360: avaliacoes360
+    
+    const payload = {
+      idAvaliador: Number(avaliacao360Data.idAvaliador),
+      idAvaliado: Number(avaliacao360Data.idAvaliado),
+      idCiclo: convertCicloToNumber(avaliacao360Data.idCiclo as string),
+      pontosFortes: avaliacao360Data.pontosFortes as string,
+      pontosMelhora: (avaliacao360Data.pontosMelhora || avaliacao360Data.pontosMelhoria || '') as string,
+      nomeProjeto: avaliacao360Data.nomeProjeto as string,
+      periodoMeses: Number(avaliacao360Data.periodoMeses),
+      trabalhariaNovamente: convertTrabalhariaToEnum(avaliacao360Data.trabalhariaNovamente),
+      // Adicionar nota se existir
+      nota: avaliacao360Data.nota ? Number(avaliacao360Data.nota) : undefined
     };
-
-    console.log('Payload para /avaliacao/bulk:', JSON.stringify(bulkPayload, null, 2));
-
-    // Enviar para o endpoint bulk
-    const response = await fetch(`${API_BASE_URL}/avaliacao/bulk`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bulkPayload),
+    
+    console.log('📤 Enviando payload Avaliação 360:', payload);
+    
+    const response = await fetch(`${API_BASE_URL}/avaliacao/360`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
-
+    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Erro na requisição:`, {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText
-      });
-      throw new Error(`Erro ao enviar avaliações 360: ${response.status} - ${errorText}`);
+      throw new Error(`Falha ao enviar avaliação 360: ${response.status} - ${errorText}`);
     }
-
-    const result = await response.json();
-    console.log('✅ Avaliações 360 enviadas com sucesso:', result);
     
-    return {
-      success: true,
-      data: result,
-      message: `${avaliacoes360.length} avaliação(ões) 360 enviada(s) com sucesso!`
-    };
-
+    const result = await response.json();
+    console.log('✅ Avaliação 360 enviada com sucesso:', result);
+    return result;
   } catch (error) {
-    console.error('❌ Erro no envio da avaliação 360:', error);
+    console.error('❌ Erro ao enviar avaliação 360:', error);
     throw error;
   }
 }
 
-export async function enviarAvaliacao(dados: any) {
+export async function enviarAvaliacao(dados: Record<string, unknown>) {
   try {
     console.log('=== DADOS RECEBIDOS PARA ENVIO ===');
     console.log('Autoavaliação:', dados.autoavaliacao);
     console.log('Avaliação 360:', dados.avaliacao360);
     console.log('Referências:', dados.referencias);
     
-    if (dados.autoavaliacao && dados.autoavaliacao.length > 0) {
+    if (dados.autoavaliacao && Array.isArray(dados.autoavaliacao) && dados.autoavaliacao.length > 0) {
       console.log('Primeira autoavaliação:', dados.autoavaliacao[0]);
-      console.log('CriterioId original:', dados.autoavaliacao[0]?.criterioId);
+      console.log('CriterioId original:', (dados.autoavaliacao[0] as Record<string, unknown>)?.criterioId);
     }
     
-    const promises = [];
+    const promises: Promise<Response>[] = [];
 
-    // 1. Enviar autoavaliações
-    if (dados.autoavaliacao && dados.autoavaliacao.length > 0) {
+    // 1. ✅ Enviar autoavaliações usando o formato correto do BulkCreateAvaliacaoDto
+    if (dados.autoavaliacao && Array.isArray(dados.autoavaliacao) && dados.autoavaliacao.length > 0) {
       console.log('=== PROCESSANDO AUTOAVALIAÇÕES ===');
-      const avaliacoesBulk = {
-        avaliacoes: dados.autoavaliacao.map((item: any, index: number) => {
-          console.log(`Item ${index} original:`, item);
-          
-          const converted = {
-            idAvaliador: item.idAvaliador, // Usar ID válido do banco
-            idAvaliado: item.idAvaliador,  // Para autoavaliação, mesmo ID
-            idCiclo: convertCicloToNumber(item.idCiclo),
-            criterioId: getCriterioId(item.criterioId),
-            nota: Number(item.nota),
-            justificativa: item.justificativa
-          };
-          
-          console.log(`Autoavaliação ${index} convertida:`, converted);
-          return converted;
-        })
-      };
+      const avaliacoesBulk = (dados.autoavaliacao as Record<string, unknown>[]).map((item: Record<string, unknown>, index: number) => {
+        console.log(`Item ${index} original:`, item);
+        
+        const converted = {
+          idUser: Number(item.idAvaliador), // ✅ CORRIGIDO: idAvaliador -> idUser
+          idCiclo: convertCicloToNumber(item.idCiclo as string),
+          criterioId: Number(item.criterioId), // ✅ Usar o ID diretamente
+          nota: Number(item.nota),
+          justificativa: item.justificativa as string
+        };
+        
+        console.log(`Autoavaliação ${index} convertida:`, converted);
+        return converted;
+      });
 
-      console.log('Payload completo para /avaliacao/bulk:', JSON.stringify(avaliacoesBulk, null, 2));
+      // ✅ Enviar no formato correto do BulkCreateAvaliacaoDto
+      const bulkPayload = {
+        autoavaliacoes: avaliacoesBulk
+      };
+      
+      console.log('Payload para /avaliacao/bulk:', JSON.stringify(bulkPayload, null, 2));
       
       promises.push(
         fetch(`${API_BASE_URL}/avaliacao/bulk`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(avaliacoesBulk),
+          body: JSON.stringify(bulkPayload), // Enviar com a estrutura correta
         })
       );
     }
 
-    // 2. ✅ Enviar avaliações 360 usando o endpoint /bulk
-    if (dados.avaliacao360 && Object.keys(dados.avaliacao360).length > 0) {
+    // 2. ✅ Enviar avaliações 360 usando o formato correto do BulkCreateAvaliacaoDto
+    if (dados.avaliacao360 && typeof dados.avaliacao360 === 'object' && Object.keys(dados.avaliacao360 as Record<string, unknown>).length > 0) {
       console.log('=== PROCESSANDO AVALIAÇÕES 360 ===');
-      const avaliacoes360 = Object.values(dados.avaliacao360).map((item: any, index: number) => {
+      const avaliacoes360 = Object.values(dados.avaliacao360 as Record<string, unknown>).map((item: unknown, index: number) => {
+        const itemRecord = item as Record<string, unknown>;
         const converted = {
-          idAvaliador: Number(item.idAvaliador),
-          idAvaliado: Number(item.idAvaliado),
-          idCiclo: convertCicloToNumber(item.idCiclo),
-          nota: Number(item.nota),
-          pontosFortes: item.pontosFortes,
-          pontosMelhora: item.pontosMelhoria, // pontosMelhoria -> pontosMelhora
-          nomeProjeto: item.nomeProjeto,
-          periodoMeses: Number(item.periodoMeses) || 1,
-          trabalhariaNovamente: MOTIVACAO_MAP[Number(item.trabalhariaNovamente)] || 'INDIFERENTE'
+          idAvaliador: Number(itemRecord.idAvaliador),
+          idAvaliado: Number(itemRecord.idAvaliado),
+          idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+          nota: Number(itemRecord.nota),
+          pontosFortes: itemRecord.pontosFortes as string,
+          pontosMelhora: itemRecord.pontosMelhoria as string, // ✅ CORRIGIDO: pontosMelhoria -> pontosMelhora
+          nomeProjeto: itemRecord.nomeProjeto as string,
+          periodoMeses: Number(itemRecord.periodoMeses) || 1,
+          trabalhariaNovamente: MOTIVACAO_MAP[Number(itemRecord.trabalhariaNovamente)] || 'INDIFERENTE'
         };
         console.log(`Avaliação 360 ${index} convertida:`, converted);
         return converted;
       });
 
-      // ✅ Usar endpoint /bulk em vez de individual
-      const avaliacao360Bulk = {
+      // ✅ Enviar no formato correto do BulkCreateAvaliacaoDto
+      const bulkPayload = {
         avaliacoes360: avaliacoes360
       };
-
+      
       promises.push(
         fetch(`${API_BASE_URL}/avaliacao/bulk`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(avaliacao360Bulk),
+          body: JSON.stringify(bulkPayload), // Enviar com a estrutura correta
         })
       );
     }
 
-    // 3. Enviar referências
-    if (dados.referencias && Object.keys(dados.referencias).length > 0) {
+    // 3. ✅ Enviar referências usando o endpoint separado
+    if (dados.referencias && typeof dados.referencias === 'object' && Object.keys(dados.referencias as Record<string, unknown>).length > 0) {
       console.log('=== PROCESSANDO REFERÊNCIAS ===');
-      const referenciasBulk = {
-        referencias: Object.values(dados.referencias).map((item: any, index: number) => {
-          const converted = {
-            idReferenciador: Number(item.idAvaliador),
-            idReferenciado: Number(item.idAvaliado),
-            idCiclo: convertCicloToNumber(item.idCiclo),
-            justificativa: item.justificativa
-          };
-          console.log(`Referência ${index} convertida:`, converted);
-          return converted;
-        })
-      };
+      const referencias = Object.values(dados.referencias as Record<string, unknown>).map((item: unknown, index: number) => {
+        const itemRecord = item as Record<string, unknown>;
+        const converted = {
+          idReferenciador: Number(itemRecord.idAvaliador),
+          idReferenciado: Number(itemRecord.idAvaliado),
+          idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+          justificativa: itemRecord.justificativa as string
+        };
+        console.log(`Referência ${index} convertida:`, converted);
+        return converted;
+      });
 
+      // ✅ Enviar para o endpoint de referências
       promises.push(
         fetch(`${API_BASE_URL}/referencia/bulk`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(referenciasBulk),
+          body: JSON.stringify(referencias), // Referências mantém formato array
         })
       );
     }
@@ -249,7 +205,7 @@ export async function enviarAvaliacao(dados: any) {
 }
 
 // ✅ Nova função específica para enviar apenas Referências
-export async function enviarReferencias(referenciasData: any) {
+export async function enviarReferencias(referenciasData: Record<string, unknown>) {
   try {
     console.log('=== ENVIANDO REFERÊNCIAS ===');
     console.log('Dados recebidos:', referenciasData);
@@ -259,37 +215,33 @@ export async function enviarReferencias(referenciasData: any) {
     }
 
     // Converter dados para formato do backend
-    const referencias = Object.values(referenciasData).map((item: any, index: number) => {
-      console.log(`Processando referência ${index}:`, item);
+    const referencias = Object.values(referenciasData).map((item: unknown, index: number) => {
+      const itemRecord = item as Record<string, unknown>;
+      console.log(`Processando referência ${index}:`, itemRecord);
       
       const converted = {
-        idReferenciador: Number(item.idAvaliador),
-        idReferenciado: Number(item.idAvaliado),
-        idCiclo: convertCicloToNumber(item.idCiclo),
-        justificativa: item.justificativa
+        idReferenciador: Number(itemRecord.idAvaliador),
+        idReferenciado: Number(itemRecord.idAvaliado),
+        idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+        justificativa: itemRecord.justificativa as string
       };
       
       console.log(`Referência ${index} convertida:`, converted);
       return converted;
     });
 
-    // Preparar payload para o endpoint /bulk
-    const bulkPayload = {
-      referencias: referencias
-    };
+    console.log('Enviando referências em lote...');
 
-    console.log('Payload para /referencia/bulk:', JSON.stringify(bulkPayload, null, 2));
-
-    // Enviar para o endpoint bulk
+    // ✅ Enviar para o endpoint bulk de referências
     const response = await fetch(`${API_BASE_URL}/referencia/bulk`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bulkPayload),
+      body: JSON.stringify(referencias), // Enviar array de referências
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Erro na requisição:`, {
+      console.error(`Erro no envio das referências:`, {
         status: response.status,
         statusText: response.statusText,
         error: errorText
@@ -310,4 +262,356 @@ export async function enviarReferencias(referenciasData: any) {
     console.error('❌ Erro no envio das referências:', error);
     throw error;
   }
+}
+
+// ✅ Nova função específica para enviar apenas Mentoring
+export async function enviarMentoring(mentoringData: Record<string, unknown>) {
+  try {
+    console.log('=== ENVIANDO MENTORING ===');
+    console.log('Dados recebidos:', mentoringData);
+
+    if (!mentoringData || !mentoringData.idAvaliado || mentoringData.idAvaliado === "") {
+      throw new Error('Nenhuma avaliação de mentoring para enviar');
+    }
+
+    // ✅ Converter dados para formato de mentoring
+    const mentoringAvaliacao = {
+      idMentor: Number(mentoringData.idAvaliado), // mentor sendo avaliado
+      idMentorado: Number(mentoringData.idAvaliador), // mentorado avaliando
+      idCiclo: convertCicloToNumber(mentoringData.idCiclo as string),
+      nota: Number(mentoringData.nota),
+      justificativa: mentoringData.justificativa as string
+    };
+
+    console.log('Mentoring convertido:', mentoringAvaliacao);
+
+    // ✅ Enviar no formato correto do BulkCreateAvaliacaoDto
+    const bulkPayload = {
+      mentoring: [mentoringAvaliacao]
+    };
+
+    console.log('Payload para /avaliacao/bulk:', JSON.stringify(bulkPayload, null, 2));
+
+    // Enviar para o endpoint bulk
+    const response = await fetch(`${API_BASE_URL}/avaliacao/bulk`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bulkPayload), // Enviar com a estrutura correta
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Erro na requisição:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Erro ao enviar avaliação de mentoring: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Avaliação de mentoring enviada com sucesso:', result);
+    
+    return {
+      success: true,
+      data: result,
+      message: 'Avaliação de mentoring enviada com sucesso!'
+    };
+
+  } catch (error) {
+    console.error('❌ Erro no envio da avaliação de mentoring:', error);
+    throw error;
+  }
+}
+
+/**
+ * Envia TODAS as avaliações de uma vez usando o endpoint /avaliacao/bulk
+ */
+export async function enviarTodasAvaliacoes() {
+  try {
+    console.log('=== ENVIANDO TODAS AS AVALIAÇÕES ===');
+    
+    // 🔄 Coletar dados do localStorage
+    const rawAuto = JSON.parse(localStorage.getItem("autoavaliacao") || "{}");
+    const rawAvaliacao360 = JSON.parse(localStorage.getItem("avaliacao360") || "{}");
+    const rawMentoring = JSON.parse(localStorage.getItem("mentoring") || "{}");
+    const rawReferencias = JSON.parse(localStorage.getItem("referencias") || "{}"); // ✅ Adicionar referências
+    
+    console.log('🔍 Dados brutos do localStorage:');
+    console.log('📝 Autoavaliações:', rawAuto);
+    console.log('📝 Avaliações 360:', rawAvaliacao360);
+    console.log('📝 Mentoring:', rawMentoring);
+    console.log('📝 Referências:', rawReferencias); // ✅ Log das referências
+
+    // 🔄 Preparar payload unificado
+    const payload: Record<string, unknown> = {};
+
+    // ✅ Processar autoavaliações
+    if (rawAuto && Object.keys(rawAuto).length > 0) {
+      const autoavaliacoes = Object.entries(rawAuto)
+        .filter(([, item]) => {
+          const itemRecord = item as Record<string, unknown>;
+          
+          // ✅ Usar a mesma lógica do AutoavaliacaoForm: filtrar apenas itens preenchidos
+          const notaValida = Number(itemRecord.nota) > 0;
+          const justificativaValida = itemRecord.justificativa && 
+                                     (itemRecord.justificativa as string).trim().length > 0;
+          const criterioIdValido = itemRecord.criterioId !== undefined;
+          
+          const isValid = notaValida && justificativaValida && criterioIdValido;
+          
+          if (!isValid) {
+            console.log(`⚠️ Autoavaliação não preenchida - criterioId: ${itemRecord.criterioId} (nota: ${itemRecord.nota}, justificativa: "${itemRecord.justificativa}")`);
+          }
+          
+          return isValid;
+        })
+        .map(([, item]) => {
+          const itemRecord = item as Record<string, unknown>;
+          return {
+            idUser: Number(itemRecord.idAvaliador), // ✅ CORRIGIDO: idAvaliador -> idUser
+            idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+            nota: Number(itemRecord.nota),
+            justificativa: itemRecord.justificativa as string,
+            criterioId: Number(itemRecord.criterioId), // Usar o ID diretamente sem mapeamento
+          };
+        });
+      
+      if (autoavaliacoes.length > 0) {
+        payload.autoavaliacoes = autoavaliacoes;
+        console.log('✅ Autoavaliações preparadas:', autoavaliacoes.length);
+        console.log('🔍 Primeira autoavaliação:', autoavaliacoes[0]);
+        console.log('📊 CriterioIds enviados:', autoavaliacoes.map(a => a.criterioId));
+      } else {
+        console.log('⚠️ Nenhuma autoavaliação válida encontrada - verifique se preencheu nota e justificativa');
+      }
+    }
+
+    // ✅ Processar avaliações 360
+    if (rawAvaliacao360 && Object.keys(rawAvaliacao360).length > 0) {
+      const avaliacoes360 = Object.entries(rawAvaliacao360)
+        .filter(([, item]) => {
+          const itemRecord = item as Record<string, unknown>;
+          
+          // ✅ Validar campos obrigatórios da avaliação 360
+          const pontosFortesValido = itemRecord.pontosFortes && 
+                                    (itemRecord.pontosFortes as string).trim().length > 0;
+          const trabalhariaNovamenteValido = itemRecord.trabalhariaNovamente !== undefined;
+          const notaValida = itemRecord.nota && Number(itemRecord.nota) > 0;
+          
+          const isValid = pontosFortesValido && trabalhariaNovamenteValido && notaValida;
+          
+          if (!isValid) {
+            console.log(`⚠️ Avaliação 360 não preenchida - avaliado: ${itemRecord.idAvaliado} (pontosFortes: "${itemRecord.pontosFortes}", trabalhariaNovamente: ${itemRecord.trabalhariaNovamente}, nota: ${itemRecord.nota})`);
+          }
+          
+          return isValid;
+        })
+        .map(([, item]) => {
+          const itemRecord = item as Record<string, unknown>;
+          return {
+            idAvaliador: Number(itemRecord.idAvaliador),
+            idAvaliado: Number(itemRecord.idAvaliado),
+            idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+            pontosFortes: itemRecord.pontosFortes as string,
+            pontosMelhora: (itemRecord.pontosMelhora || itemRecord.pontosMelhoria || '') as string, // ✅ CORRIGIDO: pontosMelhoria -> pontosMelhora
+            nomeProjeto: itemRecord.nomeProjeto as string,
+            periodoMeses: Number(itemRecord.periodoMeses),
+            trabalhariaNovamente: convertTrabalhariaToEnum(itemRecord.trabalhariaNovamente),
+            // Adicionar a nota se estiver presente
+            nota: itemRecord.nota ? Number(itemRecord.nota) : undefined
+          };
+        });
+  
+      if (avaliacoes360.length > 0) {
+        payload.avaliacoes360 = avaliacoes360;
+        console.log('✅ Avaliações 360 preparadas:', avaliacoes360.length);
+        console.log('🔍 Primeira avaliação 360:', avaliacoes360[0]);
+        
+        // Verificar se tem nota
+        const temNota = avaliacoes360.some(a => a.nota !== undefined);
+        if (temNota) {
+          console.log('📊 Notas das avaliações 360:', avaliacoes360.map(a => a.nota));
+        } else {
+          console.warn('⚠️ Nenhuma avaliação 360 possui nota');
+        }
+      } else {
+        console.log('⚠️ Nenhuma avaliação 360 válida encontrada - verifique se preencheu todos os campos obrigatórios');
+      }
+    }
+
+    // ✅ Processar mentoring
+    if (rawMentoring && Object.keys(rawMentoring).length > 0) {
+      const mentoringArray = Array.isArray(rawMentoring) ? rawMentoring : [rawMentoring];
+      
+      const mentoring = mentoringArray
+        .filter((item: Record<string, unknown>) => {
+          // ✅ Validar campos obrigatórios do mentoring
+          const idAvaliadorValido = item.idAvaliador && item.idAvaliador !== null;
+          const idAvaliadoValido = item.idAvaliado && item.idAvaliado !== null;
+          const notaValida = item.nota && Number(item.nota) > 0;
+          const justificativaValida = item.justificativa && 
+                                     (item.justificativa as string).trim().length > 0;
+          
+          const isValid = idAvaliadorValido && idAvaliadoValido && notaValida && justificativaValida;
+          
+          if (!isValid) {
+            console.log(`⚠️ Mentoring não preenchido - mentor: ${item.idAvaliado} (idAvaliador: ${item.idAvaliador}, idAvaliado: ${item.idAvaliado}, nota: ${item.nota}, justificativa: "${item.justificativa}")`);
+          }
+          
+          return isValid;
+        })
+        .map((item: Record<string, unknown>) => ({
+          idMentor: Number(item.idAvaliado),
+          idMentorado: Number(item.idAvaliador),
+          idCiclo: convertCicloToNumber(item.idCiclo as string),
+          nota: Number(item.nota),
+          justificativa: item.justificativa as string,
+        }));
+
+      if (mentoring.length > 0) {
+        payload.mentoring = mentoring;
+        console.log('✅ Mentoring preparado:', mentoring.length);
+        console.log('🔍 Primeiro mentoring:', mentoring[0]);
+      } else {
+        console.log('⚠️ Nenhum mentoring válido encontrado - verifique se preencheu nota e justificativa');
+      }
+    }
+
+    // 🚨 Verificar se há dados válidos para enviar
+    if (!payload.autoavaliacoes && !payload.avaliacoes360 && !payload.mentoring) {
+      throw new Error('Nenhuma avaliação válida encontrada para enviar. Verifique se todos os campos obrigatórios foram preenchidos.');
+    }
+
+    console.log('📦 Payload final:', JSON.stringify(payload, null, 2));
+
+    // 🚀 Enviar avaliações para o backend
+    const response = await fetch(`${API_BASE_URL}/avaliacao/bulk`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Erro na resposta:', errorText);
+      throw new Error(`Erro ao enviar avaliações: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Todas as avaliações enviadas com sucesso:', result);
+
+    // ✅ Enviar referências separadamente (se existirem)
+    let referenciasResult = null;
+    if (rawReferencias && Object.keys(rawReferencias).length > 0) {
+      console.log('🔄 Enviando referências...');
+      
+      try {
+        const referencias = Object.values(rawReferencias)
+          .filter((item: unknown) => {
+            const itemRecord = item as Record<string, unknown>;
+            
+            // ✅ Validar campos obrigatórios das referências
+            const idAvaliadorValido = itemRecord.idAvaliador && itemRecord.idAvaliador !== null;
+            const idAvaliadoValido = itemRecord.idAvaliado && itemRecord.idAvaliado !== null;
+            const justificativaValida = itemRecord.justificativa && 
+                                       (itemRecord.justificativa as string).trim().length > 0;
+            
+            const isValid = idAvaliadorValido && idAvaliadoValido && justificativaValida;
+            
+            if (!isValid) {
+              console.log(`⚠️ Referência não preenchida - referenciado: ${itemRecord.idAvaliado} (idAvaliador: ${itemRecord.idAvaliador}, idAvaliado: ${itemRecord.idAvaliado}, justificativa: "${itemRecord.justificativa}")`);
+            }
+            
+            return isValid;
+          })
+          .map((item: unknown) => {
+            const itemRecord = item as Record<string, unknown>;
+            return {
+              idReferenciador: Number(itemRecord.idAvaliador),
+              idReferenciado: Number(itemRecord.idAvaliado),
+              idCiclo: convertCicloToNumber(itemRecord.idCiclo as string),
+              justificativa: itemRecord.justificativa as string,
+            };
+          });
+
+        if (referencias.length > 0) {
+          console.log('📝 Referências preparadas:', referencias.length);
+          console.log('🔍 Primeira referência:', referencias[0]);
+
+          // ✅ Enviar para o endpoint bulk de referências
+          const refResponse = await fetch(`${API_BASE_URL}/referencia/bulk`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ referencias }),
+          });
+
+          if (!refResponse.ok) {
+            const errorText = await refResponse.text();
+            console.error(`Erro no envio das referências:`, {
+              status: refResponse.status,
+              statusText: refResponse.statusText,
+              error: errorText
+            });
+            throw new Error(`Erro ao enviar referências: ${refResponse.status} - ${errorText}`);
+          }
+
+          referenciasResult = await refResponse.json();
+          console.log('✅ Referências enviadas com sucesso:', referenciasResult);
+        } else {
+          console.log('⚠️ Nenhuma referência válida encontrada');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao enviar referências:', error);
+        // Não falhar tudo se só as referências falharem
+        console.log('⚠️ Continuando apesar do erro nas referências...');
+      }
+    }
+
+    // 🧹 Limpar localStorage apenas se tudo foi enviado com sucesso
+    if (payload.autoavaliacoes) localStorage.removeItem("autoavaliacao");
+    if (payload.avaliacoes360) localStorage.removeItem("avaliacao360");
+    if (payload.mentoring) localStorage.removeItem("mentoring");
+    if (referenciasResult) localStorage.removeItem("referencias"); // ✅ Limpar referências se enviadas
+
+    const totalItens = ((payload.autoavaliacoes as unknown[])?.length || 0) + 
+                       ((payload.avaliacoes360 as unknown[])?.length || 0) + 
+                       ((payload.mentoring as unknown[])?.length || 0) +
+                       (referenciasResult?.length || 0); // ✅ Incluir referências no total
+
+    return {
+      success: true,
+      data: {
+        avaliacoes: result,
+        referencias: referenciasResult
+      },
+      message: `Avaliações enviadas com sucesso! (${totalItens} itens)` // ✅ Incluir referências na mensagem
+    };
+
+  } catch (error) {
+    console.error('❌ Erro no envio unificado:', error);
+    throw error;
+  }
+}
+
+// ✅ Função para converter trabalharia novamente para enum
+function convertTrabalhariaToEnum(value: unknown): string {
+  if (typeof value === 'number') {
+    switch (value) {
+      case 1: return 'DISCORDO_TOTALMENTE';
+      case 2: return 'DISCORDO_PARCIALMENTE';
+      case 3: return 'INDIFERENTE';
+      case 4: return 'CONCORDO_PARCIALMENTE';
+      case 5: return 'CONCORDO_TOTALMENTE';
+      default: return 'INDIFERENTE';
+    }
+  }
+  
+  // Se já for string, retornar como está
+  if (typeof value === 'string') {
+    return value;
+  }
+  
+  // Valor padrão
+  return 'INDIFERENTE';
 }
