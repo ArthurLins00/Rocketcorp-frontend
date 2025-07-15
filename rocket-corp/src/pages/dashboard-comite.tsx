@@ -5,43 +5,77 @@ import { DashboardCollaboratorCard } from "../components/DashboardCards/Dashboar
 import { useEffect, useState } from "react";
 import {
   buscaAllUsers,
+  buscarAllMentores,
   buscarAutoavaliacoes,
-  buscarAvaliacoes360,
+  buscarCicloAtual,
+  buscarDadosDashboardUser,
 } from "../services/dashboardService";
 import { calcularAvalPendentesComite } from "../utils/porcentagensAvaliacoes";
+import type { User } from "../types/User";
+
+interface Ciclo {
+  id: number;
+  dataFechamentoRevisaoComite: string | null;
+}
+
 const DashboardComite = () => {
   const [porcentagem, setPorcentagem] = useState<number>(0);
+  const [cicloAtual, setCicloAtual] = useState<Ciclo | null>(null);
+  const [numEqualizacoePend, setEqualizacoesPend] = useState<number | null>(0);
+  const [comite, setcomite] = useState<User | null>(null);
+
+  useEffect(() => {
+    buscarDadosDashboardUser(36)
+      .then((dados) => {
+        setcomite(dados);
+      })
+      .catch((erro) => {
+        console.error(erro);
+      });
+  }, []);
+  // Buscar ciclo atual
+  useEffect(() => {
+    buscarCicloAtual()
+      .then((ciclo) => {
+        setCicloAtual(ciclo);
+      })
+      .catch((erro) => {
+        console.error("Erro ao buscar ciclo atual:", erro);
+      });
+  }, []);
 
   //Buscar mentorados e suas avaliacoes
   useEffect(() => {
-    Promise.all([
-      buscaAllUsers(),
-      buscarAutoavaliacoes(),
-      buscarAvaliacoes360(),
-    ])
-      .then(([users, autoAvaliacoes, avaliacoes360]) => {
-        console.log("Users:", users);
-        console.log("Auto Avaliações:", autoAvaliacoes);
-        console.log("Avaliações 360:", avaliacoes360);
+    Promise.all([buscaAllUsers(), buscarAutoavaliacoes(), buscarAllMentores()])
+      .then(([users, autoAvaliacoes, mentores]) => {
+        // console.log("Users:", users);
+        // console.log("Auto Avaliações:", autoAvaliacoes);
+        // console.log("Avaliações 360:", avaliacoes360);
+        const numMentores = mentores.length;
+        console.log("NUMERPO DE MENTORES", numMentores);
+        const usersTam = users.length;
+
+        setEqualizacoesPend(usersTam - numMentores);
 
         // Calcular porcentagem de avaliações 360 pendentes do avaliador
         const porcentPendentes = calcularAvalPendentesComite(
           users,
           autoAvaliacoes,
-          avaliacoes360
+          mentores
         );
         setPorcentagem(porcentPendentes);
       })
       .catch((erro) => {
         console.error(erro);
       });
-  });
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-background">
       <main className="flex-row p-10">
         <div className="mb-6">
           <span className="text-lg ml-2">
-            <strong>Olá</strong>, Comitê!
+            <strong>Olá</strong>, {comite ? comite.name : "carregando..."}!
           </span>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:auto-rows-min">
@@ -51,9 +85,15 @@ const DashboardComite = () => {
         {/* Grid de 3 colunas para os cards */}
         <div className="flex flex-col gap-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            <CardPrazo />
+            <CardPrazo
+              dataFechamentoRevisaoGestor={
+                cicloAtual?.dataFechamentoRevisaoComite
+              }
+            />
             <CardPreenchimento porcentagemPreenchimento={porcentagem} />
-            <CardEqualizacoesPendentes />
+            <CardEqualizacoesPendentes
+              numEqualizacoesPend={numEqualizacoePend}
+            />
           </div>
           <div>
             <DashboardCollaboratorCard />

@@ -72,3 +72,15 @@ export async function buscarAllMentores() {
   const response = await fetch(`http://localhost:3000/users/mentores`);
   return response.json();
 }
+
+export async function buscarLastFinalizado() {
+  const response = await fetch(`http://localhost:3000/cicle/last-finalizado`);
+  return response.json();
+}
+
+export async function buscaLiderados(idGestor: number) {
+  const response = await fetch(
+    `http://localhost:3000/users/${idGestor}/liderados`
+  );
+  return response.json();
+}

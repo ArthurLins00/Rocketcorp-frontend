@@ -34,7 +34,7 @@ const DashboardRH = () => {
   const [cicloAtual, setCicloAtual] = useState<Ciclo | null>(null);
 
   useEffect(() => {
-    buscarDadosDashboardUser(36)
+    buscarDadosDashboardUser(45)
       .then((dados) => {
         setRH(dados);
       })
@@ -84,7 +84,7 @@ const DashboardRH = () => {
           avaliacoes360,
           rh.id,
           mentores
-        );
+        )[0];
         setNumAvalPendentes(numAvalPendentes);
       })
       .catch((erro) => {

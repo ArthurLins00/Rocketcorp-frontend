@@ -28,7 +28,7 @@ export function calcularNumAvalPendentesAvaliador(
   avaliacoes360: Avaliacao360[],
   idAvaliado: number,
   mentores: User[]
-): number {
+): number[] {
   const total = liderados.length;
   console.log(avaliacoes360);
 
@@ -42,7 +42,12 @@ export function calcularNumAvalPendentesAvaliador(
     return fez360;
   });
   // o -1 no final se refere à propria pessoa
-  return Math.round(total - lideradosComTodos.length - mentores.length - 1);
+  const numAvalPendRH = Math.round(
+    total - lideradosComTodos.length - mentores.length - 1
+  );
+  const numAvalPendGestor = total - lideradosComTodos.length;
+
+  return [numAvalPendRH, numAvalPendGestor];
 }
 
 export function calcularAvalPendentesComite(

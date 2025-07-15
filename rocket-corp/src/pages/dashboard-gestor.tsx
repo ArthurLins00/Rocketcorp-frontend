@@ -16,6 +16,9 @@ import {
   buscarMentorados,
   buscarAutoavaliacoes,
   buscarAvaliacoes360,
+  buscarLastFinalizado,
+  buscaLiderados,
+  buscarAllMentores,
 } from "../services/dashboardService";
 import { calcularPorcentagemTodosTipos } from "../utils/porcentagensAvaliacoes";
 import { CardAvaliacoesPendentes } from "../components/DashboardCards/CardAvaliacoesPendentes";
@@ -23,17 +26,20 @@ import { calcularNumAvalPendentesAvaliador } from "../utils/porcentagensAvaliaco
 import type { AvaliacaoCompleta } from "../types/AvaliacaoCompleta";
 import type { Avaliacao360 } from "../types/Avaliacao360";
 import type { User } from "../types/User";
+import type { Ciclo } from "../types/Ciclo";
+import { CardRevisoesPendentes } from "../components/DashboardCards/CadRevisoesPendentes";
 
 const DashboardGestor = () => {
   const [status, setStatus] = useState<string>("aberto");
   const [gestor, setGestor] = useState<User>();
-  const [avaliacoesComDados, setAvaliacoesComDados] = useState<any[]>([]);
+  // const [avaliacoesComDados, setAvaliacoesComDados] = useState<any[]>([]);
   const [porcentagem, setPorcentagem] = useState(0);
   const [numAvalPendentes, setNumAvalPendentes] = useState(0);
+  const [cicloUltimo, setCicloUltimo] = useState<Ciclo | null>(null);
 
   //Buscar dados do gestor
   useEffect(() => {
-    buscarDadosDashboardUser(26)
+    buscarDadosDashboardUser(41)
       .then((dados) => {
         console.log("Dados do gestor:", dados);
         setGestor(dados);
@@ -43,12 +49,23 @@ const DashboardGestor = () => {
       });
   }, []);
 
-  //Buscar ciclo atual - quebrado
+  //Buscar ciclo atual
   useEffect(() => {
     buscarCicloAtual()
       .then((ciclo) => {
         console.log("Ciclo atual:", ciclo);
         setStatus(ciclo.status);
+      })
+      .catch((erro) => {
+        console.error(erro);
+      });
+  }, []);
+
+  //Buscar ultimo ciclo finalizado
+  useEffect(() => {
+    buscarLastFinalizado()
+      .then((ciclo) => {
+        setCicloUltimo(ciclo);
       })
       .catch((erro) => {
         console.error(erro);
@@ -62,30 +79,35 @@ const DashboardGestor = () => {
     Promise.all([
       //mudar esse buscar mentorados
       buscarMentorados(gestor.id),
+      buscarAllMentores(),
       buscarAutoavaliacoes(),
       buscarAvaliacoes360(),
+      buscaLiderados(gestor.id),
     ])
-      .then(([mentorados, autoAvaliacoes, avaliacoes360]) => {
-        console.log("Mentorados:", mentorados);
-        console.log("Avaliações:", autoAvaliacoes);
-        console.log("Avaliações:", avaliacoes360);
+      .then(
+        ([mentorados, mentores, autoAvaliacoes, avaliacoes360, liderados]) => {
+          console.log("Mentorados:", mentorados);
+          console.log("Avaliações:", autoAvaliacoes);
+          console.log("Avaliações:", avaliacoes360);
 
-        const porcent = calcularPorcentagemTodosTipos(
-          mentorados,
-          autoAvaliacoes,
-          avaliacoes360
-        );
-        console.log("Porcent:", porcent);
-        setPorcentagem(porcent);
+          const porcent = calcularPorcentagemTodosTipos(
+            liderados,
+            autoAvaliacoes
+          );
+          console.log("Porcent:", porcent);
+          setPorcentagem(porcent);
 
-        // Calcular porcentagem de avaliações 360 pendentes do avaliador
-        const numAvalPendentes = calcularNumAvalPendentesAvaliador(
-          mentorados,
-          avaliacoes360,
-          gestor.id
-        );
-        setNumAvalPendentes(numAvalPendentes);
-      })
+          // Calcular porcentagem de avaliações 360 pendentes do avaliador
+          const numAvalPendentes = calcularNumAvalPendentesAvaliador(
+            liderados,
+            avaliacoes360,
+            gestor.id,
+            mentores
+          )[1];
+          console.log("numero avalicoes pendentes", numAvalPendentes);
+          setNumAvalPendentes(numAvalPendentes);
+        }
+      )
       .catch((erro) => {
         console.error(erro);
       });
@@ -95,45 +117,45 @@ const DashboardGestor = () => {
     console.log("Porcentagem atualizada:", porcentagem);
   }, [porcentagem]);
 
-  useEffect(() => {
-    buscarAvaliacoesDoAvaliador(26)
-      .then(async (avaliacoesData) => {
-        console.log("Avaliações recebidas:", avaliacoesData);
+  // useEffect(() => {
+  //   buscarAvaliacoesDoAvaliador(26)
+  //     .then(async (avaliacoesData) => {
+  //       console.log("Avaliações recebidas:", avaliacoesData);
 
-        const avaliacoesCompletas = await Promise.all(
-          avaliacoesData.map(async (avaliacao: Avaliacao360) => {
-            console.log(
-              "Buscando dados do colaborador ID:",
-              avaliacao.idAvaliado
-            );
+  //       const avaliacoesCompletas = await Promise.all(
+  //         avaliacoesData.map(async (avaliacao: Avaliacao360) => {
+  //           console.log(
+  //             "Buscando dados do colaborador ID:",
+  //             avaliacao.idAvaliado
+  //           );
 
-            const dadosColaborador = await buscarDadosDashboardUser(
-              avaliacao.idAvaliado
-            );
+  //           const dadosColaborador = await buscarDadosDashboardUser(
+  //             avaliacao.idAvaliado
+  //           );
 
-            // console.log("Dados do colaborador recebidos:", dadosColaborador);
+  //           // console.log("Dados do colaborador recebidos:", dadosColaborador);
 
-            const dadosDoCiclo = await buscarDadosCiclo(
-              avaliacao.idAvaliado,
-              avaliacao.idCiclo
-            );
+  //           const dadosDoCiclo = await buscarDadosCiclo(
+  //             avaliacao.idAvaliado,
+  //             avaliacao.idCiclo
+  //           );
 
-            console.log("Dados do ciclo:", dadosDoCiclo);
+  //           console.log("Dados do ciclo:", dadosDoCiclo);
 
-            return { ...avaliacao, ...dadosColaborador, ...dadosDoCiclo };
-          })
-        );
+  //           return { ...avaliacao, ...dadosColaborador, ...dadosDoCiclo };
+  //         })
+  //       );
 
-        console.log(
-          "Avaliações completas com dados dos colaboradores:",
-          avaliacoesCompletas
-        );
-        setAvaliacoesComDados(avaliacoesCompletas);
-      })
-      .catch((erro) => {
-        console.error(erro);
-      });
-  }, []);
+  //       console.log(
+  //         "Avaliações completas com dados dos colaboradores:",
+  //         avaliacoesCompletas
+  //       );
+  //       setAvaliacoesComDados(avaliacoesCompletas);
+  //     })
+  //     .catch((erro) => {
+  //       console.error(erro);
+  //     });
+  // }, []);
 
   let bgColor, textColor, subtitle, title, iconLeft, subTextColor;
 
@@ -197,9 +219,14 @@ const DashboardGestor = () => {
         {/* Grid de 3 colunas para os cards */}
         <div className="flex flex-col gap-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            <CardNotaAtual />
+            <CardNotaAtual cicloFinalizado={cicloUltimo} />
             <CardPreenchimento porcentagemPreenchimento={porcentagem} />
+
+            {/* aparece um ou outro dependendo do status */}
             <CardAvaliacoesPendentes porcentagemPendentes={numAvalPendentes} />
+
+            {/* numero de liderados - numero de avaliacoes360 gestor PARA liderado  */}
+            <CardRevisoesPendentes />
           </div>
           <div>
             <div className="bg-white rounded-xl p-4 shadow-sm w-full">
@@ -212,7 +239,7 @@ const DashboardGestor = () => {
                   Ver mais
                 </a>
               </div>
-              <div className="max-h-80 overflow-y-auto pr-1 custom-scrollbar">
+              {/* <div className="max-h-80 overflow-y-auto pr-1 custom-scrollbar">
                 {avaliacoesComDados?.map((item: AvaliacaoCompleta) => (
                   <CollaboratorCard
                     key={item.id}
@@ -226,7 +253,7 @@ const DashboardGestor = () => {
                     id={""}
                   />
                 ))}
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

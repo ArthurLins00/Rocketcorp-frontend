@@ -1,7 +1,13 @@
 import { FaUserFriends } from "react-icons/fa";
 import { DashboardInfoCard } from "./DashboardInfoCards";
 
-export const CardEqualizacoesPendentes = () => (
+interface CardEqualizacoesPendentesProps {
+  numEqualizacoesPend?: number | null;
+}
+
+export const CardEqualizacoesPendentes = ({
+  numEqualizacoesPend = 0,
+}: CardEqualizacoesPendentesProps) => (
   <DashboardInfoCard
     title="Equalizações pendentes"
     bgColor="bg-[#08605F]"
@@ -20,7 +26,9 @@ export const CardEqualizacoesPendentes = () => (
       {/* Ícone e número */}
       <div className="flex items-center gap-2 ml-6">
         <FaUserFriends className="text-white text-4xl" />
-        <span className="text-4xl font-bold text-white leading-none">10</span>
+        <span className="text-4xl font-bold text-white leading-none">
+          {numEqualizacoesPend ?? 0}
+        </span>
       </div>
     </div>
   </DashboardInfoCard>
