@@ -136,11 +136,11 @@ export default function App() {
               <Route path="/rh/criterios" element={<CriteriaManagementPage />} />
               <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
               <Route path="/gestor/collaborators" element={<CollaboratorsPage />} />
-              <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} />
+              <Route path="/gestor/collaborator/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
+              {/* <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} /> */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
               <Route path="/rh/ImportHistoryPage" element={<ImportHistoryPage />} />
               <Route path="/gestor/brutal-facts" element={<BrutalFactsPage />} />
-              {/* <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} /> */}
-              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </main>
         </div>

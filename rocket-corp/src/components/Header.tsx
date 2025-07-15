@@ -75,6 +75,11 @@ export default function Header() {
         <h1 className="text-xl font-semibold text-gray-800">
           {getPageTitle(location.pathname)}
         </h1>
+        <p className="text-gray-800 font-bold">
+          {location.pathname.startsWith("/gestor") || location.pathname === "/gestor" || location.pathname === "/rh/ImportHistoryPage"
+            /*? getPageTitle(location.pathname) 
+            : `Ciclo ${idCiclo}`*/}
+        </p>
         {isAvaliacaoPage && (
           <>
             <button
