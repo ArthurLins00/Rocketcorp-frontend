@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ConfirmModal from "./ConfirmModal";
 import ErrorModal from "./ErrorModal";
 import SuccessModal from "./SuccessModal";
 import { enviarTodasAvaliacoes } from "../services/avaliacaoService";
+import { getUsuarioLogado } from '../utils/auth';
 
 export default function Header() {
   const idCiclo = "2025.2"; // mockado
   const location = useLocation();
+  const navigate = useNavigate();
   const isAvaliacaoPage = location.pathname.startsWith("/avaliacao");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -37,17 +39,13 @@ export default function Header() {
   const handleEnviarTudo = async () => {
     setIsLoading(true);
     setShowConfirmModal(false);
-    
     try {
       console.log('🚀 Iniciando envio unificado...');
-      
       // 🔄 Enviar todas as avaliações (autoavaliação, 360, mentoring)
-      const avaliacoesResult = await enviarTodasAvaliacoes(idCiclo);
+      const avaliacoesResult = await enviarTodasAvaliacoes();
       console.log('✅ Avaliações enviadas:', avaliacoesResult);
-
       // 🎉 Sucesso total
       setShowSuccessModal(true);
-
     } catch (error) {
       console.error('❌ Erro no envio:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Erro desconhecido ao enviar avaliações');
@@ -57,13 +55,25 @@ export default function Header() {
     }
   };
 
+  // Função para redirecionar para o dashboard correto
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    const usuario = getUsuarioLogado();
+    const role = usuario?.role;
+    let dashboardPath = "/dashboard";
+    if (role === "colaborador") dashboardPath = "/employee-dashboard";
+    else if (role === "gestor") dashboardPath = "/gestor-dashboard";
+    else if (role === "comite") dashboardPath = "/comite-dashboard";
+    else if (role === "rh") dashboardPath = "/rh-dashboard";
+    navigate(dashboardPath);
+  };
+
   return (
     <header className="bg-white border-b px-6 py-4 shadow-sm">
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-semibold text-gray-800">
           {getPageTitle(location.pathname)}
         </h1>
-        
         {isAvaliacaoPage && (
           <>
             <button
@@ -77,7 +87,6 @@ export default function Header() {
             >
               {isLoading ? 'Enviando...' : 'Concluir e enviar'}
             </button>
-
             <ConfirmModal
               isOpen={showConfirmModal}
               onClose={() => setShowConfirmModal(false)}
@@ -85,16 +94,14 @@ export default function Header() {
               title="Você está quase lá!"
               description="Você tem certeza que deseja enviar todas as suas avaliações? Isso inclui autoavaliações, avaliações 360, mentoring e referências. Após isso, elas não poderão ser editadas."
             />
-
             <ErrorModal
               isOpen={showErrorModal}
               onClose={() => setShowErrorModal(false)}
               message={errorMessage}
             />
-
             <SuccessModal
               isOpen={showSuccessModal}
-              onClose={() => setShowSuccessModal(false)}
+              onClose={handleSuccessClose}
               title="Sucesso!"
               description="Todas as suas avaliações foram enviadas com sucesso! Obrigado por participar do processo de avaliação."
             />

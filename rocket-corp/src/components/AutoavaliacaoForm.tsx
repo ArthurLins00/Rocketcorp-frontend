@@ -37,40 +37,27 @@ type CriteriosAgrupados = {
 
 const LOCAL_STORAGE_KEY = "autoavaliacao";
 
-// Função para buscar os critérios da trilha do usuário
-async function buscarCriteriosDaTrilha(userId: string): Promise<CriteriosAgrupados> {
+// Função para buscar os critérios da trilha do usuário E ciclo
+async function buscarCriteriosDaTrilha(userId: string, cicloId: string): Promise<CriteriosAgrupados> {
   try {
-    // Primeiro, buscar o usuário para obter a trilhaId
+    // Buscar o usuário para obter a trilhaId
     const usuarios = await buscarUsuarios();
     const usuario = usuarios.find(u => u.id === Number(userId));
-    
     if (!usuario || !usuario.trilhaId) {
       console.warn('⚠️ Usuário não tem trilha associada:', usuario);
       throw new Error("Usuário não encontrado ou não possui trilha associada");
     }
-    
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-    
-    console.log('🔍 Buscando critérios para:', {
-      usuario: usuario.name,
-      trilhaId: usuario.trilhaId,
-      trilhaNome: usuario.trilha?.name || 'N/A'
-    });
-    
-    // Buscar critérios da trilha do usuário que estejam habilitados
-    const response = await fetch(`${API_BASE_URL}/criterio/trilha/${usuario.trilhaId}`);
-    
+    // Buscar critérios da trilha do usuário para o ciclo aberto
+    const response = await fetch(`${API_BASE_URL}/criterio/trilha/${usuario.trilhaId}/ciclo/${cicloId}`);
     if (!response.ok) {
       throw new Error(`Erro ao buscar critérios: ${response.statusText}`);
     }
-    
     const criterios: Criterio[] = await response.json();
     console.log(`📋 Critérios recebidos (${criterios.length}):`, criterios);
-    
     // Filtrar apenas critérios habilitados
     const criteriosHabilitados = criterios.filter(c => c.enabled);
     console.log(`✅ Critérios habilitados (${criteriosHabilitados.length}/${criterios.length})`);
-    
     // Agrupar por tipo
     const criteriosAgrupados: CriteriosAgrupados = {
       comportamental: [],
@@ -78,20 +65,17 @@ async function buscarCriteriosDaTrilha(userId: string): Promise<CriteriosAgrupad
       gestao: [],
       negocios: []
     };
-    
     criteriosHabilitados.forEach(criterio => {
       if (!criteriosAgrupados[criterio.tipo]) {
         criteriosAgrupados[criterio.tipo] = [];
       }
       criteriosAgrupados[criterio.tipo].push(criterio);
     });
-    
     // Mostrar contagem por tipo
     console.log('📊 Critérios por tipo:');
     Object.entries(criteriosAgrupados).forEach(([tipo, criterios]) => {
       console.log(`   - ${tipo}: ${criterios.length}`);
     });
-    
     return criteriosAgrupados;
   } catch (error) {
     console.error('❌ Erro ao buscar critérios da trilha:', error);
@@ -136,26 +120,23 @@ export default function AutoavaliacaoForm({
 
   // Buscar critérios ao carregar o componente
   useEffect(() => {
+    if (!idAvaliador || !idCiclo) return;
     const fetchCriterios = async () => {
       try {
-        console.log('🔄 Iniciando carregamento de critérios para usuário:', idAvaliador);
+        console.log('🔄 Iniciando carregamento de critérios para usuário:', idAvaliador, 'e ciclo:', idCiclo);
         setIsLoading(true);
         setError(null);
-        
-        const criterios = await buscarCriteriosDaTrilha(idAvaliador);
+        const criterios = await buscarCriteriosDaTrilha(idAvaliador, idCiclo);
         setCriteriosAgrupados(criterios);
-        
         // Contar critérios totais
         const totalCriterios = Object.values(criterios).reduce(
           (sum, grupo) => sum + grupo.length, 0
         );
         console.log(`✅ Carregamento completo: ${totalCriterios} critérios no total`);
-        
         // Inicializar respostas para os critérios carregados se não existirem no localStorage
         const savedResponses = { ...responses };
         let novosRegistros = 0;
         let atualizados = 0;
-        
         // Para cada critério, garantir que existe uma entrada em savedResponses
         Object.values(criterios).forEach(grupo => {
           grupo.forEach(criterio => {
@@ -183,7 +164,6 @@ export default function AutoavaliacaoForm({
             }
           });
         });
-        
         console.log(`📝 Respostas inicializadas: ${novosRegistros} novas, ${atualizados} atualizadas`);
         setResponses(savedResponses);
       } catch (error) {
@@ -193,8 +173,8 @@ export default function AutoavaliacaoForm({
         setIsLoading(false);
       }
     };
-    
     fetchCriterios();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idAvaliador, idCiclo]);
 
   useEffect(() => {
