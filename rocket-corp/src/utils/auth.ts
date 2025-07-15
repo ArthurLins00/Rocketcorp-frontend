@@ -2,7 +2,7 @@ import { apiFetch } from "./api";
 
 export async function refreshAccessToken() {
     try {
-        const response = await apiFetch(import.meta.env.VITE_API_URL + "/auth/refresh", {
+        const response = await apiFetch("/auth/refresh", {
             method: "POST",
             credentials: "include",
         });
@@ -31,16 +31,26 @@ export async function authenticatedFetch(url: string, options: any = {}, setErro
         if (setError) setError("Erro de rede ou servidor. Tente novamente mais tarde.");
         return null;
     }
-    if (response && response.status === 401) {
-        const token = await refreshAccessToken();
-        if (token) {
-            try {
-                response = await apiFetch(url, options);
-            } catch (err) {
-                if (setError) setError("Erro de rede ou servidor após tentar renovar o acesso.");
+    if (response && (response.status === 401 || response.status === 403)) {
+        if (response.status === 401) {
+            const token = await refreshAccessToken();
+            if (token) {
+                try {
+                    response = await apiFetch(url, options);
+                } catch (err) {
+                    if (setError) setError("Erro de rede ou servidor após tentar renovar o acesso.");
+                    return null;
+                }
+            } else {
+
                 return null;
             }
-        } else {
+        } else if (response.status === 403) {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("user");
+            if (setError) setError("Acesso negado. Você não tem permissão para acessar este recurso.");
+            console.log("Acesso negado. Redirecionando para login.");
+            window.location.href = "/login";
             return null;
         }
     }
