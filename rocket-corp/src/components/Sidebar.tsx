@@ -3,6 +3,7 @@ import Frame1 from "../assets/Frame (1).svg";
 import Frame2 from "../assets/Frame (2).svg";
 import Frame3 from "../assets/Frame (7).svg";
 import Frame4 from "../assets/Frame (8).svg";
+import Frame5 from "../assets/Frame (9).svg";
 import { useSidebarController } from "../controllers/sidebarController";
 
 {/* 
@@ -92,6 +93,12 @@ export const Sidebar = () => {
 			icon: Frame2,
 			show: () => true,
 		},
+		{
+		label: "Importar Histórico",
+		path: "/rh/ImportHistoryPage",
+		icon: Frame5,
+		show: () => true,
+	},
 	];
 
 	return (

@@ -1,6 +1,5 @@
 import "./App.css";
 import { Dashboard } from "./pages/dashboard";
-import { Evolution } from "./pages/evolution";
 import { Navigate, Routes, Route, useLocation } from "react-router-dom";
 import { Sidebar } from "./components/Sidebar";
 import Header from "./components/Header";
@@ -25,6 +24,7 @@ import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import { EvolutionPage } from "./pages/EvolutionPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
+import ImportHistoryPage from "./pages/rh/ImportHistoryPage";
 import React, { useEffect, useState } from "react";
 import NotAuthorizedPage from "./pages/NotAuthorizedPage";
 import { authenticatedFetch } from "./utils/auth";
@@ -140,6 +140,7 @@ export default function App() {
               <Route path="/gestor/collaborator/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
               {/* <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} /> */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/rh/ImportHistoryPage" element={<ImportHistoryPage />} />
             </Routes>
           </main>
         </div>
