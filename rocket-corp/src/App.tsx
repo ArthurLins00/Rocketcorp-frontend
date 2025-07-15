@@ -17,7 +17,8 @@ import DashboardComite from "./pages/dashboard-comite";
 import DashboardRH from "./pages/dashboard-rh";
 import DashboardGestor from "./pages/dashboard-gestor";
 
-import { CollaboratorsListPage } from "./pages/gestor/CollaboratorsListPage";
+import { RhCollaboratorsListPage } from "./pages/rh/RhListOfCollaborators";
+import { GestorCollaboratorsListPage } from "./pages/gestor/GestorListOfCollaborators";
 
 import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
 import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
@@ -133,7 +134,9 @@ export default function App() {
               <Route path="/evolution-page" element={<EvolutionPage />} />
               <Route path="/rh/criterios" element={<CriteriaManagementPage />} />
               <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
-              <Route path="/gestor/collaborators" element={<CollaboratorsListPage />} />
+              {/* <Route path="/rh/collaborators" element={<CollaboratorsListPage />} /> */}
+              <Route path="/rh/collaborators" element={<RequireAuth requiredRole="rh" ><RhCollaboratorsListPage /></RequireAuth>} />
+              <Route path="/gestor/:gestorId/collaborators" element={<RequireAuth requiredRole="manager" ><GestorCollaboratorsListPage /></RequireAuth>} />
               <Route path="/gestor/collaborator/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
               {/* <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} /> */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
