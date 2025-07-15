@@ -1,21 +1,9 @@
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { useState } from "react";
 import ConfirmModal from "./ConfirmModal";
 import ErrorModal from "./ErrorModal";
-
-import {
-  criteriosAutoavaliacao,
-  validarFormulario,
-  validarAvaliacao360,
-  validarMentoring,
-  validarReferencias,
-} from "../utils/validations";
-
-import { mensagensErro } from "../utils/errorMessages";
-import { enviarAvaliacao } from "../services/avaliacaoService";
-
-import { getAutoavaliacoesFormatadas } from "../components/AutoavaliacaoForm";  
 import SuccessModal from "./SuccessModal";
+import { enviarTodasAvaliacoes } from "../services/avaliacaoService";
 
 export default function Header() {
   const idCiclo = "2025.2"; // mockado
@@ -24,115 +12,59 @@ export default function Header() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getPageTitle = (pathname: string) => {
-    if (pathname.startsWith("/avaliacao")) {
-      return "Avaliação de Ciclo";
-    }
-    if (pathname === "/dashboard") {
-      return "Dashboard";
-    }
-    if (pathname === "/employee-dashboard") {
-      return "Dashboard do Colaborador";
-    }
-    if (pathname === "/comite-dashboard") {
-      return "Dashboard do Comitê";
-    }
-    if (pathname === "/rh-dashboard") {
-      return "Dashboard do RH";
-    }
-    if (pathname === "/gestor-dashboard") {
-      return "Dashboard do Gestor";
-    }
-    if (pathname === "/cycle-evaluation") {
-      return "Avaliação de Ciclo";
-    }
-    if (pathname.startsWith("/evolution")) {
-      return "Evolução";
-    }
-    if (pathname === "/comite/equalizacoes") {
-      return "Equalizações";
-    }
-    if (pathname === "/gestor/collaborators") {
-      return "Colaboradores";
-    }
-    if (pathname.startsWith("/gestor/collaborator/")) {
-      // For collaborator detail pages, we'll show the collaborator name
-      // This will be handled by the CollaboratorPage component passing the name
-      return "Colaborador";
-    }
+    if (pathname.startsWith("/avaliacao")) return "Avaliação de Desempenho";
+    if (pathname === "/dashboard") return "Dashboard";
+    if (pathname === "/employee-dashboard") return "Dashboard do Funcionário";
+    if (pathname === "/comite-dashboard") return "Dashboard do Comitê";
+    if (pathname === "/rh-dashboard") return "Dashboard do RH";
+    if (pathname === "/gestor-dashboard") return "Dashboard do Gestor";
+    if (pathname === "/cycle-evaluation") return "Avaliação de Ciclo";
+    if (pathname.startsWith("/evolution")) return "Evolução";
+    if (pathname === "/comite/equalizacoes") return "Equalizações";
+    if (pathname === "/gestor/collaborators") return "Colaboradores";
+    if (pathname.startsWith("/gestor/collaborator/")) return "Detalhes do Colaborador";
     if (pathname === "/rh/ImportHistoryPage") {
       return "Importar Histórico";
     }
     return "Página Principal";
   };
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  
+
   const handleConcluirEEnviar = () => {
-    const rawAuto = JSON.parse(localStorage.getItem("autoavaliacao") || "{}");
-    const autoavaliacao = getAutoavaliacoesFormatadas(rawAuto);
-    const totalAuto = Object.keys(rawAuto).length;
-
-    const avaliacao360 = JSON.parse(localStorage.getItem("avaliacao360") || "{}");
-
-    const mentoring = JSON.parse(localStorage.getItem("mentoring") || "{}");
-    const referencias = JSON.parse(localStorage.getItem("referencias") || "{}");
-
-    if (autoavaliacao.length !== totalAuto || !validarFormulario(rawAuto, criteriosAutoavaliacao)) {
-      setErrorMessage(mensagensErro.autoavaliacaoIncompleta);
-      setShowErrorModal(true);
-      return;
-    }
-
-    if (!validarAvaliacao360(avaliacao360)) {
-      setErrorMessage(mensagensErro.avaliacao360Incompleta);
-      setShowErrorModal(true);
-      return;
-    }
-
-    if (!validarMentoring(mentoring)) {
-      setErrorMessage(mensagensErro.mentoringIncompleto);
-      setShowErrorModal(true);
-      return;
-    }
-
-    if (!validarReferencias(referencias)) {
-      setErrorMessage(mensagensErro.referenciasIncompletas);
-      setShowErrorModal(true);
-      return;
-    }
-
     setShowConfirmModal(true);
   };
 
-  const handleEnviarAvaliacao = () => {
-    const rawAuto = JSON.parse(localStorage.getItem("autoavaliacao") || "{}");
-    const autoavaliacao = getAutoavaliacoesFormatadas(rawAuto);
+  const handleEnviarTudo = async () => {
+    setIsLoading(true);
+    setShowConfirmModal(false);
+    
+    try {
+      console.log('🚀 Iniciando envio unificado...');
+      
+      // 🔄 Enviar todas as avaliações (autoavaliação, 360, mentoring)
+      const avaliacoesResult = await enviarTodasAvaliacoes(idCiclo);
+      console.log('✅ Avaliações enviadas:', avaliacoesResult);
 
-    const dados = {
-      autoavaliacao,
-      avaliacao360: JSON.parse(localStorage.getItem("avaliacao360") || "{}"),
-      mentoring: JSON.parse(localStorage.getItem("mentoring") || "{}"),
-      referencias: JSON.parse(localStorage.getItem("referencias") || "{}"),
-    };
+      // 🎉 Sucesso total
+      setShowSuccessModal(true);
 
-    enviarAvaliacao(dados)
-      .then(() => {
-        alert("Avaliação enviada com sucesso!");
-        localStorage.clear();
-        window.location.reload();
-      })
-      .catch((err) => {
-        setErrorMessage(err.message);
-        setShowErrorModal(true);
-      });
+    } catch (error) {
+      console.error('❌ Erro no envio:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Erro desconhecido ao enviar avaliações');
+      setShowErrorModal(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <header className="bg-white border-b px-6 py-4 shadow-sm">
       <div className="flex justify-between items-center">
         <p className="text-gray-800 font-bold">
-          {location.pathname.startsWith("/gestor/collaborator") || location.pathname === "/gestor/collaborators" || location.pathname === "/rh/ImportHistoryPage"
+          {location.pathname.startsWith("/gestor") || location.pathname === "/gestor" || location.pathname === "/rh/ImportHistoryPage"
             ? getPageTitle(location.pathname) 
             : `Ciclo ${idCiclo}`}
         </p>
@@ -140,20 +72,22 @@ export default function Header() {
           <>
             <button
               onClick={handleConcluirEEnviar}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+              disabled={isLoading}
+              className={`px-4 py-2 rounded transition ${
+                isLoading 
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                  : 'bg-green-500 text-white hover:bg-green-600'
+              }`}
             >
-              Concluir e enviar
+              {isLoading ? 'Enviando...' : 'Concluir e enviar'}
             </button>
 
             <ConfirmModal
               isOpen={showConfirmModal}
               onClose={() => setShowConfirmModal(false)}
-              onConfirm={() => {
-                setShowConfirmModal(false);
-                handleEnviarAvaliacao();
-              }}
+              onConfirm={handleEnviarTudo}
               title="Você está quase lá!"
-              description="Você tem certeza que deseja enviar sua avaliação? Após isso, ela não poderá ser editada."
+              description="Você tem certeza que deseja enviar todas as suas avaliações? Isso inclui autoavaliações, avaliações 360, mentoring e referências. Após isso, elas não poderão ser editadas."
             />
 
             <ErrorModal
@@ -165,8 +99,8 @@ export default function Header() {
             <SuccessModal
               isOpen={showSuccessModal}
               onClose={() => setShowSuccessModal(false)}
-              title="Sucesso"
-              description="As alterações foram salvas com sucesso."
+              title="Sucesso!"
+              description="Todas as suas avaliações foram enviadas com sucesso! Obrigado por participar do processo de avaliação."
             />
           </>
         )}
