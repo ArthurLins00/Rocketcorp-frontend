@@ -1,3 +1,54 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    .animate-fade-out {
+        animation: fadeOut 0.5s ease-in forwards;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+}
+
+@layer components {
+    .all-\[unset\] {
+        all: unset;
+    }
+}
+
+:root {
+    --p-font-family: "Inter", Helvetica;
+    --p-font-size: 16px;
+    --p-font-style: normal;
+    --p-font-weight: 400;
+    --p-letter-spacing: 0px;
+    --p-line-height: 28px;
+    --slate-200: rgba(226, 232, 240, 1);
+    --slate-900: rgba(15, 23, 42, 1);
+}
