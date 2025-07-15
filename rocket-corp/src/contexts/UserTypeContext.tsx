@@ -37,8 +37,8 @@ export const UserTypeProvider: React.FC<UserTypeProviderProps> = ({
       try {
         const userObj = JSON.parse(userStr);
         setUser(userObj);
-        if (userObj && userObj.roles) {
-          setUserType(userObj.roles);
+        if (userObj && userObj.role) {
+          setUserType(userObj.role);
         }
       } catch {}
     }
