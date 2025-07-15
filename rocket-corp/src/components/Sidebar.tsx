@@ -13,70 +13,6 @@ import { useSidebarController } from "../controllers/sidebarController";
 	show: ({ userType }: { userType: string[] }) => userType.includes("user")
 */}
 
-const sidebarItems = [
-	{
-		label: "Dashboard do colaborador",
-		path: "/employee-dashboard",
-		icon: Frame,
-		show: () => true,
-	},
-	{
-		label: "Dashboard do gestor",
-		path: "/gestor-dashboard",
-		icon: Frame,
-		show: ({ userType }: { userType: string[] }) =>
-			userType.includes("manager"),
-	},
-	{
-		label: "Dashboard do comitê",
-		path: "/comite-dashboard",
-		icon: Frame,
-		show: ({ userType }: { userType: string[] }) => userType.includes("committee"),
-	},
-	{
-		label: "Dashboard do RH",
-		path: "/rh-dashboard",
-		icon: Frame,
-		show: ({ userType }: { userType: string[] }) => userType.includes("rh"),
-	},
-	{
-		label: "Avaliação de ciclo",
-		path: "/avaliacao/autoavaliacao",
-		icon: Frame1,
-		show: () => true,
-	},
-	{
-		label: "Evolução",
-		path: "/evolution",
-		icon: Frame2,
-		show: () => true,
-	},
-	{
-		label: "Gestor - Colaboradores",
-		path: "/gestor/collaborators",
-		icon: Frame2,
-		show: () => true,
-	},
-	{
-		label: "Critérios de Avaliação",
-		path: "/rh/criterios",
-		icon: Frame3,
-		show: () => true,
-	},
-	{
-		label: "Equalizações",
-		path: "/comite/equalizacoes",
-		icon: Frame4,
-		show: () => true,
-	},
-	{
-		label: "Colaborador - Evolução",
-		path: "/evolution-page",
-		icon: Frame2,
-		show: () => true,
-	},
-];
-
 export const Sidebar = () => {
 	const {
 		navigate,
@@ -85,7 +21,78 @@ export const Sidebar = () => {
 		showLogoutConfirm,
 		setShowLogoutConfirm,
 		handleLogout,
+		userId
 	} = useSidebarController();
+
+	const sidebarItems = [
+		{
+			label: "Dashboard do colaborador",
+			path: "/employee-dashboard",
+			icon: Frame,
+			show: () => true,
+		},
+		{
+			label: "Dashboard do gestor",
+			path: "/gestor-dashboard",
+			icon: Frame,
+			show: ({ userType }: { userType: string[] }) =>
+				userType.includes("manager"),
+		},
+		{
+			label: "Dashboard do comitê",
+			path: "/comite-dashboard",
+			icon: Frame,
+			show: ({ userType }: { userType: string[] }) => userType.includes("committee"),
+		},
+		{
+			label: "Dashboard do RH",
+			path: "/rh-dashboard",
+			icon: Frame,
+			show: ({ userType }: { userType: string[] }) => userType.includes("rh"),
+		},
+		{
+			label: "Avaliação de ciclo",
+			path: "/avaliacao/autoavaliacao",
+			icon: Frame1,
+			show: () => true,
+		},
+		{
+			label: "Evolução",
+			path: "/evolution",
+			icon: Frame2,
+			show: () => true,
+		},
+		{
+			label: "Colaboradores",
+			path: userId ? `/gestor/${userId}/collaborators` : "/gestor/collaborators",
+			icon: Frame2,
+			show: ({ userType }: { userType: string[] }) => userType.includes("manager"),
+		},
+		{
+			label: "Colaboradores",
+			path: "/rh/collaborators",
+			icon: Frame2,
+			show: ({ userType }: { userType: string[] }) => userType.includes("rh"),
+		},
+		{
+			label: "Critérios de Avaliação",
+			path: "/rh/criterios",
+			icon: Frame3,
+			show: () => true,
+		},
+		{
+			label: "Equalizações",
+			path: "/comite/equalizacoes",
+			icon: Frame4,
+			show: () => true,
+		},
+		{
+			label: "Colaborador - Evolução",
+			path: "/evolution-page",
+			icon: Frame2,
+			show: () => true,
+		},
+	];
 
 	return (
 		<aside className="w-[14.5rem] h-[64rem] bg-white border-r-2 border-[#CECDCD] flex flex-col justify-between py-8">

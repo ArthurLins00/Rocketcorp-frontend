@@ -1,5 +1,6 @@
 import type { CollaboratorCardProps } from '../models/CollaboratorCardProps';
 import { apiFetch } from '../utils/api';
+import { authenticatedFetch } from '../utils/auth';
 
 export async function getAllCards(isRhView: boolean): Promise<CollaboratorCardProps[]> {
   // Fetch cicloId from backend
@@ -20,7 +21,8 @@ export async function getAllCards(isRhView: boolean): Promise<CollaboratorCardPr
       url = `/avaliacao/gestor/ciclo/${cicloId}`;
     }
   }
-  const res = await apiFetch(url);
+  const res = await authenticatedFetch(url);
+  if (!res) return [];
   const data = await res.json();
 
   if (isRhView) {
