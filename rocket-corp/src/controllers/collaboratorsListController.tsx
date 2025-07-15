@@ -10,13 +10,22 @@ export async function getAllCards(isRhView: boolean): Promise<CollaboratorCardPr
   if (isRhView) {
     url = `/equalizacao/ciclo/${cicloId}`;
   } else {
-    url = `/avaliacao/gestor/ciclo/${cicloId}`;
+    const user = localStorage.getItem('user');
+    if(user){
+      const userData = JSON.parse(user);
+      url = `/avaliacao/gestor/${userData.id}/ciclo/${cicloId}`;
+      console.log(`Fetching evaluations for user ${userData.id} in cycle ${cicloId}`); 
+    }
+    else{
+      url = `/avaliacao/gestor/ciclo/${cicloId}`;
+    }
   }
   const res = await apiFetch(url);
   const data = await res.json();
 
   if (isRhView) {
     return data.map((item: any) => ({
+      id: item.idEqualizacao,
       name: item.nomeAvaliado,
       cargo: item.cargoAvaliado,
       initials: item.nomeAvaliado ? item.nomeAvaliado.split(' ').map((n: string) => n[0]).join('').toUpperCase() : '',
@@ -28,6 +37,7 @@ export async function getAllCards(isRhView: boolean): Promise<CollaboratorCardPr
     }));
   } else {
     return data.map((item: any) => ({
+      id: item.id,
       name: item.name,
       cargo: item.cargo,
       initials: item.name ? item.name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : '',
