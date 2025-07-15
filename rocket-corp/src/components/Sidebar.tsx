@@ -1,97 +1,14 @@
-import Frame from "../assets/Frame.svg";
-import Frame1 from "../assets/Frame (1).svg";
-import Frame2 from "../assets/Frame (2).svg";
-import Frame3 from "../assets/Frame (7).svg";
-import Frame4 from "../assets/Frame (8).svg";
-import Frame5 from "../assets/Frame (9).svg";
 import { useSidebarController } from "../controllers/sidebarController";
-
-{/* 
-	colocar os cargos necessários para seu item de sidebar aparecer no show,
-	por exemplo, se quiser que o seu item só apareça para o gestor, coloque:
-	show: ({ userType }: { userType: string[] }) => userType.includes("manager"),
-	ou se quiser que apareça para o colaborador, coloque:
-	show: ({ userType }: { userType: string[] }) => userType.includes("user")
-*/}
-
-const sidebarItems = [
-	{
-		label: "Dashboard do colaborador",
-		path: "/employee-dashboard",
-		icon: Frame,
-		show: () => true,
-	},
-	{
-		label: "Dashboard do gestor",
-		path: "/gestor-dashboard",
-		icon: Frame,
-		show: ({ userType }: { userType: string[] }) =>
-			userType.includes("manager"),
-	},
-	{
-		label: "Dashboard do comitê",
-		path: "/comite-dashboard",
-		icon: Frame,
-		show: ({ userType }: { userType: string[] }) => userType.includes("committee"),
-	},
-	{
-		label: "Dashboard do RH",
-		path: "/rh-dashboard",
-		icon: Frame,
-		show: ({ userType }: { userType: string[] }) => userType.includes("rh"),
-	},
-	{
-		label: "Avaliação de ciclo",
-		path: "/avaliacao/autoavaliacao",
-		icon: Frame1,
-		show: () => true,
-	},
-	{
-		label: "Evolução",
-		path: "/evolution",
-		icon: Frame2,
-		show: () => true,
-	},
-	{
-		label: "Gestor - Colaboradores",
-		path: "/gestor/collaborators",
-		icon: Frame2,
-		show: () => true,
-	},
-	{
-		label: "Critérios de Avaliação",
-		path: "/rh/criterios",
-		icon: Frame3,
-		show: () => true,
-	},
-	{
-		label: "Equalizações",
-		path: "/comite/equalizacoes",
-		icon: Frame4,
-		show: () => true,
-	},
-	{
-		label: "Colaborador - Evolução",
-		path: "/evolution-page",
-		icon: Frame2,
-		show: () => true,
-	},
-	{
-		label: "Importar Histórico",
-		path: "/rh/ImportHistoryPage",
-		icon: Frame5,
-		show: () => true,
-	},
-];
 
 export const Sidebar = () => {
 	const {
 		navigate,
 		location,
-		userType,
 		showLogoutConfirm,
 		setShowLogoutConfirm,
 		handleLogout,
+		userId,
+		sidebarItems,
 	} = useSidebarController();
 
 	return (
@@ -102,10 +19,6 @@ export const Sidebar = () => {
 				</div>
 				<nav>
 					<ul className="flex flex-col gap-2 pl-5">
-						{/* To enable filtering by userType, uncomment the next line and comment the one below */}
-						{/*sidebarItems
-              .filter(item => item.show({ userType }))
-              .map(item => (*/}
 						{sidebarItems.map(item => (
 							<li key={item.path}>
 								<span
