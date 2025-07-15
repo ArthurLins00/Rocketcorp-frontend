@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { FormData } from "../models/FormData";
+import { authenticatedFetch } from "../utils/auth";
+import { apiFetch } from "../utils/api";
 
 export function useLoginController() {
     const [showPassword, setShowPassword] = useState(false);
@@ -23,27 +25,90 @@ export function useLoginController() {
         e.preventDefault();
         setIsLoading(true);
         setError("");
-        if (!formData.email || !formData.password) {
+
+        if (!formData.email && !formData.password) {
             setError("Por favor, preencha todos os campos");
             setIsLoading(false);
             return;
         }
-        if (!formData.email.includes("@")) {
-            setError("Por favor, insira um email válido");
+        if (!formData.email) {
+            setError("Por favor, preencha o campo de e-mail");
+            setIsLoading(false);
+            return;
+        }
+        if (!formData.password) {
+            setError("Por favor, preencha o campo de senha");
+            setIsLoading(false);
+            return;
+        }
+
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
+            setError("Por favor, insira um e-mail válido");
             setIsLoading(false);
             return;
         }
         try {
-            // chamada da API de login aqui
-            // simular o login
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            if (formData.email === "demo@example.com" && formData.password === "password") {
-                alert("Login bem sucedido!");
+            const response = await apiFetch(import.meta.env.VITE_API_URL + "/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password,
+                }),
+                credentials: "include",
+            });
+            if (!response) return;
+            const data = await response.json();
+            if (!response.ok) {
+
+                if (
+                    data.message === "Invalid credentials" ||
+                    data.message === "Login ou senha incorretos"
+                ) {
+                    setError("Login ou senha incorretos");
+                } else if (
+                    data.message?.toLowerCase().includes("email must be an email") ||
+                    data.message?.toLowerCase().includes("must be an email")
+                ) {
+                    setError("Por favor, insira um e-mail válido");
+                } else if (
+                    data.message?.toLowerCase().includes("email should not be empty") ||
+                    data.message?.toLowerCase().includes("email is required")
+                ) {
+                    setError("Por favor, preencha o campo de e-mail");
+                } else if (
+                    data.message?.toLowerCase().includes("password should not be empty") ||
+                    data.message?.toLowerCase().includes("password is required")
+                ) {
+                    setError("Por favor, preencha o campo de senha");
+                } else {
+                    setError("Ocorreu um erro ao tentar fazer login. Por favor, tente novamente.");
+                }
+                setIsLoading(false);
+                return;
+            }
+            localStorage.setItem("access_token", data.access_token);
+
+            const [, payloadBase64] = data.access_token.split(".");
+            const payload = JSON.parse(atob(payloadBase64));
+            const userId = payload.user?.userId;
+            if (!userId) {
+                setError("Não foi possível obter o ID do usuário.");
+                setIsLoading(false);
+                return;
+            }
+            const userRes = await authenticatedFetch(`${import.meta.env.VITE_API_URL}/users/${userId}`);
+            if (userRes && userRes.ok) {
+                const userData = await userRes.json();
+                localStorage.setItem("user", JSON.stringify(userData));
+                window.location.href = "/dashboard";
             } else {
-                setError("Login ou senha incorretos");
+                setError("Erro ao buscar informações do usuário.");
             }
         } catch (err) {
-            setError("Um erro ocorreu ao tentar fazer login. Por favor, tente novamente.");
+            setError("Ocorreu um erro ao tentar fazer login. Por favor, tente novamente.");
         } finally {
             setIsLoading(false);
         }
@@ -51,11 +116,11 @@ export function useLoginController() {
 
     return {
         showPassword,
-        setShowPassword,
         isLoading,
         error,
         formData,
         handleInputChange,
         handleSubmit,
+        setShowPassword,
     };
 }

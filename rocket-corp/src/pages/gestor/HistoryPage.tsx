@@ -6,13 +6,15 @@ import { CollaboratorTotalEvaluations } from '../../components/history/Collabora
 import { CollaboratorPerformanceChart } from '../../components/history/CollaboratorPerformanceChart';
 import { EvaluationCycles } from '../../components/history/EvaluationCycles';
 import { useHistoryController } from '../../controllers/historyController';
+import type { Cycle } from './EvaluationPage';
 
 interface HistoricoPageProps {
   collaboratorId?: string; // Optional prop for when used as component
+  ciclo?: Cycle;
 }
 
 export const HistoricoPage: React.FC<HistoricoPageProps> = ({ 
-  collaboratorId: propCollaboratorId 
+  collaboratorId: propCollaboratorId
 }) => {
   const { id } = useParams<{ id: string }>();
   const collaboratorId = propCollaboratorId || id || 'collab-123'; // Use prop first, then route param, then fallback
