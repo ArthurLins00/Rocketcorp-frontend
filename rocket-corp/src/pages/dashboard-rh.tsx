@@ -9,19 +9,32 @@ import {
   buscarAutoavaliacoes,
   buscarAvaliacoes360,
   buscarDadosDashboardUser,
+  buscarAllMentores,
+  buscarCicloAtual,
 } from "../services/dashboardService";
 import {
   calcularAvalPendentesComite,
   calcularNumAvalPendentesAvaliador,
 } from "../utils/porcentagensAvaliacoes";
 
+interface RH {
+  id: number;
+  name: string;
+}
+
+interface Ciclo {
+  id: number;
+  dataFinalizacao: string | null;
+}
+
 const DashboardRH = () => {
-  const [porcentagem, setPorcentagem] = useState<any>(null);
-  const [numAvalPendentes, setNumAvalPendentes] = useState<any>(null);
-  const [rh, setRH] = useState<any>(null);
+  const [porcentagem, setPorcentagem] = useState<number | null>(null);
+  const [numAvalPendentes, setNumAvalPendentes] = useState<number | null>(null);
+  const [rh, setRH] = useState<RH | null>(null);
+  const [cicloAtual, setCicloAtual] = useState<Ciclo | null>(null);
 
   useEffect(() => {
-    buscarDadosDashboardUser("26")
+    buscarDadosDashboardUser(36)
       .then((dados) => {
         setRH(dados);
       })
@@ -31,14 +44,28 @@ const DashboardRH = () => {
   }, []);
 
   useEffect(() => {
+    // Buscar ciclo atual
+    buscarCicloAtual()
+      .then((ciclo) => {
+        setCicloAtual(ciclo);
+      })
+
+      .catch((erro) => {
+        console.error("Erro ao buscar ciclo atual:", erro);
+      });
+  }, []);
+  console.log("CICLO ATUAL", cicloAtual);
+
+  useEffect(() => {
     if (!rh?.id) return;
 
     Promise.all([
       buscaAllUsers(),
       buscarAutoavaliacoes(),
       buscarAvaliacoes360(),
+      buscarAllMentores(),
     ])
-      .then(([users, autoAvaliacoes, avaliacoes360]) => {
+      .then(([users, autoAvaliacoes, avaliacoes360, mentores]) => {
         console.log("Users:", users);
         console.log("Auto Avaliações:", autoAvaliacoes);
         console.log("Avaliações 360:", avaliacoes360);
@@ -47,7 +74,7 @@ const DashboardRH = () => {
         const porcentPendentes = calcularAvalPendentesComite(
           users,
           autoAvaliacoes,
-          avaliacoes360
+          mentores
         );
         setPorcentagem(porcentPendentes);
 
@@ -55,7 +82,8 @@ const DashboardRH = () => {
         const numAvalPendentes = calcularNumAvalPendentesAvaliador(
           users,
           avaliacoes360,
-          rh.id
+          rh.id,
+          mentores
         );
         setNumAvalPendentes(numAvalPendentes);
       })
@@ -69,7 +97,7 @@ const DashboardRH = () => {
       <main className="flex-row p-10">
         <div className="mb-6">
           <span className="text-lg ml-2">
-            <strong>Olá</strong>, RH!
+            <strong>Olá</strong>, {rh ? rh.name : "carregando..."}!
           </span>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:auto-rows-min">
@@ -81,7 +109,9 @@ const DashboardRH = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             <CardPreenchimento porcentagemPreenchimento={porcentagem} />
             <CardAvaliacoesPendentes porcentagemPendentes={numAvalPendentes} />
-            <CardFechamentoDeCiclo />
+            <CardFechamentoDeCiclo
+              dataFinalizacao={cicloAtual?.dataFinalizacao}
+            />
           </div>
           <div className="flex gap-x-6">
             <DashboardSmallerCollaboratorCard />

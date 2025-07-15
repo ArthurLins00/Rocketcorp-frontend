@@ -1,62 +1,54 @@
-import type { Avaliacao } from "../types/Avaliacao";
+import type { Autoavaliacao } from "../types/Autoavaliacao";
 import type { Avaliacao360 } from "../types/Avaliacao360";
 import type { User } from "../types/User";
 
 export function calcularPorcentagemTodosTipos(
-  mentorados: User[],
-  autoAvaliacoes: Avaliacao[],
-  avaliacoes360: Avaliacao360[]
+  liderados: User[],
+  autoAvaliacoes: Autoavaliacao[]
 ): number {
-  const total = mentorados.length;
+  const total = liderados.length;
   if (total === 0) return 0;
 
-  console.log("na funcao calcular porcentagem:", mentorados);
+  console.log("na funcao calcular porcentagem:", liderados);
   console.log(autoAvaliacoes);
-  console.log(avaliacoes360);
 
-  const mentoradosComTodos = mentorados.filter((mentorado) => {
+  const lideradosComTodos = liderados.filter((liderado) => {
     const fezAuto = autoAvaliacoes.some(
-      (avaliacao) => avaliacao.idAvaliado === mentorado.id
+      (avaliacao) => avaliacao.idUser === liderado.id
     );
-    const fez360 = avaliacoes360.some(
-      (avaliacao) => avaliacao.idAvaliado === mentorado.id
-    );
-    // const fezMentoring = avaliacoes.some(
-    //   (avaliacao) =>
-    //     avaliacao.idAvaliado === mentorado.id &&
-    //     avaliacao.tipoAvaliacao === "mentoring"
-    // );
-    return fezAuto && fez360;
+
+    return fezAuto;
   });
 
-  return Math.round((mentoradosComTodos.length / total) * 100);
+  return Math.round((lideradosComTodos.length / total) * 100);
 }
 
 export function calcularNumAvalPendentesAvaliador(
-  mentorados: User[],
+  liderados: User[],
   avaliacoes360: Avaliacao360[],
-  idAvaliado: number
+  idAvaliado: number,
+  mentores: User[]
 ): number {
-  const total = mentorados.length;
+  const total = liderados.length;
   console.log(avaliacoes360);
 
-  const mentoradosComTodos = mentorados.filter((mentorado) => {
-    // Verifica se existe uma avaliação 360 feita pelo mentorado para o gestor
+  const lideradosComTodos = liderados.filter((liderado) => {
+    // Verifica se existe uma avaliação 360 feita pelo liderado para o gestor
     const fez360 = avaliacoes360.some(
       (avaliacao) =>
-        avaliacao.idAvaliador === mentorado.id &&
+        avaliacao.idAvaliador === liderado.id &&
         avaliacao.idAvaliado === idAvaliado
     );
     return fez360;
   });
-
-  return Math.round(total - mentoradosComTodos.length);
+  // o -1 no final se refere à propria pessoa
+  return Math.round(total - lideradosComTodos.length - mentores.length - 1);
 }
 
 export function calcularAvalPendentesComite(
   users: User[],
-  autoAvaliacao: Avaliacao[],
-  avaliacoes360: Avaliacao360[]
+  autoAvaliacao: Autoavaliacao[],
+  mentores: User[]
 ): number {
   const total = users.length;
   if (total === 0) return 0;
@@ -64,17 +56,12 @@ export function calcularAvalPendentesComite(
   const usersComAvaliacaoPreenc = users.filter((user) => {
     // Verifica se o user fez autoavaliação
     const fezAuto = autoAvaliacao.some(
-      (avaliacao) => avaliacao.idAvaliador === user.id
+      (avaliacao) => avaliacao.idUser === user.id
     );
-
-    // Verifica se o user fez avaliação 360
-    const fez360 = avaliacoes360.some(
-      (avaliacao) => avaliacao.idAvaliador === user.id
-    );
-
-    // Retorna true se fez ambos os tipos de avaliação
-    return fezAuto && fez360;
+    return fezAuto;
   });
 
-  return Math.round((usersComAvaliacaoPreenc.length / total) * 100);
+  return Math.round(
+    ((usersComAvaliacaoPreenc.length - 1) / (total - mentores.length - 1)) * 100
+  );
 }

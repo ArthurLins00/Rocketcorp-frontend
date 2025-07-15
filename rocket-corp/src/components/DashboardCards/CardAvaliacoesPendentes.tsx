@@ -2,7 +2,7 @@ import { DashboardInfoCard } from "./DashboardInfoCards";
 import { FaRegEdit } from "react-icons/fa";
 
 type Props = {
-  porcentagemPendentes: number;
+  porcentagemPendentes: number | null;
 };
 
 export const CardAvaliacoesPendentes = ({ porcentagemPendentes }: Props) => (
@@ -28,7 +28,7 @@ export const CardAvaliacoesPendentes = ({ porcentagemPendentes }: Props) => (
           ) : (
             <>
               <span className="font-bold text-black">
-                {porcentagemPendentes} colaboradores
+                {porcentagemPendentes ?? 0} colaboradores
               </span>{" "}
               ainda não
               <br />
@@ -41,7 +41,7 @@ export const CardAvaliacoesPendentes = ({ porcentagemPendentes }: Props) => (
       <div className="flex items-center gap-2 ml-6">
         <FaRegEdit className="text-[#EB5757] text-4xl" />
         <span className="text-4xl font-bold text-[#EB5757] leading-none">
-          {porcentagemPendentes}
+          {porcentagemPendentes ?? 0}
         </span>
       </div>
     </div>

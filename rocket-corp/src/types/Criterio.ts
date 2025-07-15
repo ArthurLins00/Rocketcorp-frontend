@@ -1,4 +1,4 @@
-import type { Avaliacao } from "./Avaliacao";
+import type { Avaliacao } from "./Autoavaliacao";
 import type { Ciclo } from "./Ciclo";
 import type { Trilha } from "./Trilha";
 

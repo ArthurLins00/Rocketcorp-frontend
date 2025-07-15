@@ -2,10 +2,9 @@ import type { Ciclo } from "./Ciclo";
 import type { Criterio } from "./Criterio";
 import type { User } from "./User";
 
-export type Avaliacao = {
+export type Autoavaliacao = {
   id: number;
-  idAvaliador: number;
-  idAvaliado: number;
+  idUser: number;
   idCiclo: number;
   nota?: number | null;
   justificativa: string;

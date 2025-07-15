@@ -67,3 +67,8 @@ export async function buscaAllUsers() {
   const response = await fetch(`http://localhost:3000/users`);
   return response.json();
 }
+
+export async function buscarAllMentores() {
+  const response = await fetch(`http://localhost:3000/users/mentores`);
+  return response.json();
+}

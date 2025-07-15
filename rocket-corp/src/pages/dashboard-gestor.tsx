@@ -60,6 +60,7 @@ const DashboardGestor = () => {
     if (!gestor?.id) return;
 
     Promise.all([
+      //mudar esse buscar mentorados
       buscarMentorados(gestor.id),
       buscarAutoavaliacoes(),
       buscarAvaliacoes360(),

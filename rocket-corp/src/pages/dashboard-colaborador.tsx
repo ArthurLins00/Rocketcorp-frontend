@@ -24,7 +24,7 @@ const DashboardColaborador = () => {
   }, []);
 
   useEffect(() => {
-    buscarDadosDashboardUser("13")
+    buscarDadosDashboardUser(18)
       .then((dados) => {
         // console.log("Dados do colaborador:", dados);
         setColaborador(dados);
