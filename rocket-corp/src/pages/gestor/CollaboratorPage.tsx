@@ -6,10 +6,10 @@ import Avaliacao360Page from './Evaluation360Page';
 import { HistoricoPage } from './HistoryPage';
 import type { CriterionBlock } from '../../models/criterions';
 import type { Collaborator } from '../../models/collaborator';
-
 import { fetchCriteriaBlocks } from '../../controllers/criteriaControllers';
 import { fetchCollaborator, submitManagerEvaluations } from '../../controllers/collaboratorController';
 import { EvaluationPage } from './EvaluationPage';
+import { buscarCicloAberto } from '../../services/cicleService';
 
 const tabs = ['Avaliação', 'Avaliação 360', 'Histórico'];
 export const CollaboratorPage: React.FC = () => {
@@ -19,6 +19,7 @@ export const CollaboratorPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [ciclo, setCiclo] = useState<any>(null);
 
   useEffect(() => {
     if (!id) {
@@ -30,12 +31,14 @@ export const CollaboratorPage: React.FC = () => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [collaboratorData, blocksData] = await Promise.all([
+        const [collaboratorData, blocksData, cicloAberto] = await Promise.all([
           fetchCollaborator(id),
-          fetchCriteriaBlocks()
+          fetchCriteriaBlocks(),
+          buscarCicloAberto()
         ]);
         setCollaborator(collaboratorData);
         setBlocks(blocksData);
+        setCiclo(cicloAberto);
       } catch (err) {
         setError('Erro ao carregar dados do colaborador');
         console.error(err);
@@ -116,13 +119,15 @@ export const CollaboratorPage: React.FC = () => {
               blocks={blocks}
               onScoreChange={handleScoreChange}
               onJustificationChange={handleJustificationChange}
+              ciclo={ciclo}
+              collaborator={collaborator}
             />
           </div>
         )}
 
-        {activeTab === 1 && <Avaliacao360Page />}
+        {activeTab === 1 && <Avaliacao360Page ciclo={ciclo} collaborator={collaborator} />}
 
-        {activeTab === 2 && <HistoricoPage />}
+        {activeTab === 2 && <HistoricoPage collaboratorId={collaborator?.id} ciclo={ciclo} />}
       </div>
     </div>
   );

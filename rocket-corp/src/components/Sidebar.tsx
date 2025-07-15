@@ -103,10 +103,10 @@ export const Sidebar = () => {
 				<nav>
 					<ul className="flex flex-col gap-2 pl-5">
 						{/* To enable filtering by userType, uncomment the next line and comment the one below */}
-						{sidebarItems
+						{/*sidebarItems
               .filter(item => item.show({ userType }))
-              .map(item => (
-						// {sidebarItems.map(item => (
+              .map(item => (*/}
+						{sidebarItems.map(item => (
 							<li key={item.path}>
 								<span
 									className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left ${
