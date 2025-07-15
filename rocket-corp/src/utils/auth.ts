@@ -2,7 +2,7 @@ import { apiFetch } from "./api";
 
 export async function refreshAccessToken() {
     try {
-        const response = await apiFetch(import.meta.env.VITE_API_URL + "/auth/refresh", {
+        const response = await apiFetch("/auth/refresh", {
             method: "POST",
             credentials: "include",
         });

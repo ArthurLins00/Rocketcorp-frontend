@@ -3,7 +3,7 @@ import frame from "../../assets/RightChevron.svg";
 import type { CollaboratorCardProps } from "../../models/CollaboratorCardProps";
 
 export const CollaboratorCard: React.FC<
-  CollaboratorCardProps & { onlyManager?: boolean }
+  CollaboratorCardProps & { isRhView?: boolean }
 > = ({
   id,
   name,
@@ -14,7 +14,7 @@ export const CollaboratorCard: React.FC<
   avaliacao360,
   managerRating,
   notaFinal,
-  onlyManager = false,
+  isRhView = false,
 }) => {
   const navigate = useNavigate();
 
@@ -24,8 +24,10 @@ export const CollaboratorCard: React.FC<
 
   return (
     <div 
-      className="flex flex-col items-start gap-4 p-4 bg-white rounded-xl cursor-pointer hover:shadow-md transition-shadow"
-      onClick={handleCardClick}
+      className={`flex flex-col items-start gap-4 p-4 bg-white rounded-xl${
+        !isRhView ? ' cursor-pointer hover:shadow-md transition-shadow' : ''
+      }`}
+      {...(!isRhView ? { onClick: handleCardClick } : {})}
     >
       <header className="flex h-11 items-center gap-6 w-full">
         <div className="flex items-center gap-4 min-w-0">
@@ -77,7 +79,7 @@ export const CollaboratorCard: React.FC<
               {managerRating != null ? managerRating.toFixed(1) : "-"}
             </span>
           </div>
-          {!onlyManager && (
+          {isRhView && (
             <>
               <span className="font-medium text-[#1c1c1cbf] text-xs">
                 Avaliação 360
