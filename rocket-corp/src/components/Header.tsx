@@ -29,6 +29,9 @@ export default function Header() {
     if (pathname === "/comite/equalizacoes") return "Equalizações";
     if (pathname === "/gestor/collaborators") return "Colaboradores";
     if (pathname.startsWith("/gestor/collaborator/")) return "Detalhes do Colaborador";
+    if (pathname === "/rh/ImportHistoryPage") {
+      return "Importar Histórico";
+    }
     return "Página Principal";
   };
 
@@ -71,9 +74,11 @@ export default function Header() {
   return (
     <header className="bg-white border-b px-6 py-4 shadow-sm">
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-gray-800">
-          {getPageTitle(location.pathname)}
-        </h1>
+        <p className="text-gray-800 font-bold">
+          {location.pathname.startsWith("/gestor") || location.pathname === "/gestor" || location.pathname === "/rh/ImportHistoryPage"
+            ? getPageTitle(location.pathname) 
+            : `Ciclo ${idCiclo}`}
+        </p>
         {isAvaliacaoPage && (
           <>
             <button
