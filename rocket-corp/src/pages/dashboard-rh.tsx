@@ -34,7 +34,7 @@ const DashboardRH = () => {
   const [cicloAtual, setCicloAtual] = useState<Ciclo | null>(null);
 
   useEffect(() => {
-    buscarDadosDashboardUser(45)
+    buscarDadosDashboardUser(5)
       .then((dados) => {
         setRH(dados);
       })

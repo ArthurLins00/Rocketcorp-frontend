@@ -25,7 +25,7 @@ const DashboardComite = () => {
   const [comite, setcomite] = useState<User | null>(null);
 
   useEffect(() => {
-    buscarDadosDashboardUser(36)
+    buscarDadosDashboardUser(5)
       .then((dados) => {
         setcomite(dados);
       })

@@ -39,7 +39,7 @@ const DashboardGestor = () => {
 
   //Buscar dados do gestor
   useEffect(() => {
-    buscarDadosDashboardUser(41)
+    buscarDadosDashboardUser(1)
       .then((dados) => {
         console.log("Dados do gestor:", dados);
         setGestor(dados);
