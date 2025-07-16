@@ -8,7 +8,6 @@ import {
   buscaAllUsers,
   buscarAutoavaliacoes,
   buscarAvaliacoes360,
-  buscarDadosDashboardUser,
   buscarAllMentores,
   buscarCicloAtual,
 } from "../services/dashboardService";
@@ -34,13 +33,17 @@ const DashboardRH = () => {
   const [cicloAtual, setCicloAtual] = useState<Ciclo | null>(null);
 
   useEffect(() => {
-    buscarDadosDashboardUser(5)
-      .then((dados) => {
-        setRH(dados);
-      })
-      .catch((erro) => {
-        console.error(erro);
-      });
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const userObj = JSON.parse(userStr);
+      const userId = userObj.id ?? null;
+      console.log("User object from localStorage:", userObj);
+      console.log("User id from localStorage:", userId);
+
+      setRH(userObj);
+    } else {
+      console.warn("No user data found in localStorage");
+    }
   }, []);
 
   useEffect(() => {

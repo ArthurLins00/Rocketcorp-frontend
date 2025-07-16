@@ -7,11 +7,7 @@ import Frame1 from "../assets/Frame (1).svg";
 import Frame6 from "../assets/Frame (6).svg";
 import { CardNotaAtual } from "../components/DashboardCards/CardNotaAtual";
 import { CardPreenchimento } from "../components/DashboardCards/CardPreenchimento";
-import { CollaboratorCard } from "../models/CollaboratorCard";
 import {
-  buscarDadosDashboardUser,
-  buscarAvaliacoesDoAvaliador,
-  buscarDadosCiclo,
   buscarCicloAtual,
   buscarMentorados,
   buscarAutoavaliacoes,
@@ -19,15 +15,16 @@ import {
   buscarLastFinalizado,
   buscaLiderados,
   buscarAllMentores,
+  buscaEqualizacao,
 } from "../services/dashboardService";
 import { calcularPorcentagemTodosTipos } from "../utils/porcentagensAvaliacoes";
 import { CardAvaliacoesPendentes } from "../components/DashboardCards/CardAvaliacoesPendentes";
 import { calcularNumAvalPendentesAvaliador } from "../utils/porcentagensAvaliacoes";
-import type { AvaliacaoCompleta } from "../types/AvaliacaoCompleta";
-import type { Avaliacao360 } from "../types/Avaliacao360";
+
 import type { User } from "../types/User";
 import type { Ciclo } from "../types/Ciclo";
 import { CardRevisoesPendentes } from "../components/DashboardCards/CadRevisoesPendentes";
+import type { Equalizacao } from "../types/Equalizacao";
 
 const DashboardGestor = () => {
   const [status, setStatus] = useState<string>("aberto");
@@ -36,24 +33,28 @@ const DashboardGestor = () => {
   const [porcentagem, setPorcentagem] = useState(0);
   const [numAvalPendentes, setNumAvalPendentes] = useState(0);
   const [cicloUltimo, setCicloUltimo] = useState<Ciclo | null>(null);
+  const [equalizacaoGestor, setEqualizacaoGestor] =
+    useState<Equalizacao | null>(null);
 
   //Buscar dados do gestor
   useEffect(() => {
-    buscarDadosDashboardUser(1)
-      .then((dados) => {
-        console.log("Dados do gestor:", dados);
-        setGestor(dados);
-      })
-      .catch((erro) => {
-        console.error(erro);
-      });
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const userObj = JSON.parse(userStr);
+      const userId = userObj.id ?? null;
+      console.log("User object from localStorage:", userObj);
+      console.log("User id from localStorage:", userId);
+
+      setGestor(userObj);
+    } else {
+      console.warn("No user data found in localStorage");
+    }
   }, []);
 
   //Buscar ciclo atual
   useEffect(() => {
     buscarCicloAtual()
       .then((ciclo) => {
-        console.log("Ciclo atual:", ciclo);
         setStatus(ciclo.status);
       })
       .catch((erro) => {
@@ -71,6 +72,20 @@ const DashboardGestor = () => {
         console.error(erro);
       });
   }, []);
+
+  useEffect(() => {
+    if (cicloUltimo?.id && gestor?.id) {
+      buscaEqualizacao(cicloUltimo.id, gestor.id)
+        .then((equalizacao) => {
+          setEqualizacaoGestor(equalizacao);
+        })
+        .catch((erro) => {
+          console.error(erro);
+        });
+    }
+  }, [cicloUltimo, gestor]);
+
+  console.log("equalizacao", equalizacaoGestor?.notaFinal);
 
   //Buscar mentorados e suas avaliacoes
   useEffect(() => {
@@ -159,13 +174,17 @@ const DashboardGestor = () => {
 
   let bgColor, textColor, subtitle, title, iconLeft, subTextColor;
 
-  if (status === "aberto") {
+  if (
+    status === "aberto" ||
+    status === "revisao_gestor" ||
+    status === "revisao_comite"
+  ) {
     bgColor = "bg-[#08605F]";
     textColor = "text-white";
     subtitle = "15 dias restantes";
     title = "Ciclo de avaliação em andamento";
     iconLeft = <img src={Frame3} alt="Ícone" className="w-10 h-10" />;
-  } else if (status === "planejamento") {
+  } else if (status === "finalizado") {
     bgColor = "bg-white";
     textColor = "text-black";
     subTextColor = "text-black";
@@ -219,7 +238,10 @@ const DashboardGestor = () => {
         {/* Grid de 3 colunas para os cards */}
         <div className="flex flex-col gap-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            <CardNotaAtual cicloFinalizado={cicloUltimo} />
+            <CardNotaAtual
+              cicloFinalizado={cicloUltimo}
+              notaFinal={equalizacaoGestor?.notaFinal ?? 0}
+            />
             <CardPreenchimento porcentagemPreenchimento={porcentagem} />
 
             {/* aparece um ou outro dependendo do status */}

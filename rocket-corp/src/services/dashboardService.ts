@@ -84,3 +84,17 @@ export async function buscaLiderados(idGestor: number) {
   );
   return response.json();
 }
+
+export async function buscaEqualizacao(idCiclo: number, idAvaliado: number) {
+  const response = await fetch(
+    `http://localhost:3000/equalizacao/ciclo/${idCiclo}/avaliado/${idAvaliado}`
+  );
+  return response.json();
+}
+
+export async function buscaEqualizacoesAvaliado(idAvaliado: number) {
+  const response = await fetch(
+    `http://localhost:3000/equalizacao/avaliado/${idAvaliado}`
+  );
+  return response.json();
+}

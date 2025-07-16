@@ -6,9 +6,13 @@ interface CardNotaAtualProps {
     year?: number;
     period?: number;
   } | null;
+  notaFinal: number;
 }
 
-export const CardNotaAtual = ({ cicloFinalizado }: CardNotaAtualProps) => (
+export const CardNotaAtual = ({
+  cicloFinalizado,
+  notaFinal,
+}: CardNotaAtualProps) => (
   <DashboardInfoCard
     title="Nota atual"
     bgColor="bg-white"
@@ -36,13 +40,13 @@ export const CardNotaAtual = ({ cicloFinalizado }: CardNotaAtualProps) => (
         <FaStar className="text-[#219653] text-4xl" />
         <div className="flex flex-col items-start">
           <span className="text-4xl font-bold text-[#219653] leading-none">
-            {cicloFinalizado?.notaFinal ?? "--"}
+            {notaFinal ?? "--"}
           </span>
           <span className="text-base font-bold text-[#219653] leading-none">
-            {cicloFinalizado?.notaFinal
-              ? cicloFinalizado.notaFinal >= 4
+            {notaFinal
+              ? notaFinal >= 4
                 ? "Great"
-                : cicloFinalizado.notaFinal >= 3
+                : notaFinal >= 3
                 ? "Good"
                 : "Regular"
               : ""}

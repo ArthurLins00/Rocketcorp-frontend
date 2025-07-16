@@ -8,7 +8,6 @@ import {
   buscarAllMentores,
   buscarAutoavaliacoes,
   buscarCicloAtual,
-  buscarDadosDashboardUser,
 } from "../services/dashboardService";
 import { calcularAvalPendentesComite } from "../utils/porcentagensAvaliacoes";
 import type { User } from "../types/User";
@@ -25,13 +24,17 @@ const DashboardComite = () => {
   const [comite, setcomite] = useState<User | null>(null);
 
   useEffect(() => {
-    buscarDadosDashboardUser(5)
-      .then((dados) => {
-        setcomite(dados);
-      })
-      .catch((erro) => {
-        console.error(erro);
-      });
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const userObj = JSON.parse(userStr);
+      const userId = userObj.id ?? null;
+      console.log("User object from localStorage:", userObj);
+      console.log("User id from localStorage:", userId);
+
+      setcomite(userObj);
+    } else {
+      console.warn("No user data found in localStorage");
+    }
   }, []);
   // Buscar ciclo atual
   useEffect(() => {
