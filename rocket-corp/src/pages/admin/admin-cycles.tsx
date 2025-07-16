@@ -190,12 +190,59 @@ export default function AdminCycles() {
     });
   };
 
+  const getStatusByDate = (editData: EditData) => {
+    const today = new Date();
+    const parse = (d: string) => (d ? new Date(d) : null);
+
+    const dataAberturaAvaliacao = parse(editData.dataAberturaAvaliacao);
+    const dataFechamentoAvaliacao = parse(editData.dataFechamentoAvaliacao);
+    const dataAberturaRevisaoGestor = parse(editData.dataAberturaRevisaoGestor);
+    const dataFechamentoRevisaoGestor = parse(
+      editData.dataFechamentoRevisaoGestor
+    );
+    const dataAberturaRevisaoComite = parse(editData.dataAberturaRevisaoComite);
+    const dataFechamentoRevisaoComite = parse(
+      editData.dataFechamentoRevisaoComite
+    );
+    const dataFinalizacao = parse(editData.dataFinalizacao);
+
+    if (
+      dataAberturaAvaliacao &&
+      dataFechamentoAvaliacao &&
+      today >= dataAberturaAvaliacao &&
+      today <= dataFechamentoAvaliacao
+    ) {
+      return "aberto";
+    }
+    if (
+      dataAberturaRevisaoGestor &&
+      dataFechamentoRevisaoGestor &&
+      today >= dataAberturaRevisaoGestor &&
+      today <= dataFechamentoRevisaoGestor
+    ) {
+      return "revisao_gestor";
+    }
+    if (
+      dataAberturaRevisaoComite &&
+      dataFechamentoRevisaoComite &&
+      today >= dataAberturaRevisaoComite &&
+      today <= dataFechamentoRevisaoComite
+    ) {
+      return "revisao_comite";
+    }
+    if (dataFinalizacao && today >= dataFinalizacao) {
+      return "finalizado";
+    }
+    // Se não estiver em nenhum período, retorna o status anterior ou "aberto" como fallback
+    return "aberto";
+  };
+
   const saveChanges = async (cycleId: number) => {
     const original = cycles.find((c) => c.id === cycleId);
     if (!original) return;
 
     // Monta o payload só com os campos alterados
-    const payload: Partial<EditData> = {};
+    const payload: Partial<EditData & { status?: string }> = {};
     (
       [
         "dataAberturaAvaliacao",
@@ -215,6 +262,14 @@ export default function AdminCycles() {
         payload[field] = new Date(editedValue).toISOString();
       }
     });
+
+    // Atualiza o status conforme as datas
+    const novoStatus = getStatusByDate(editData);
+    editCycles(cycleId, { status: novoStatus });
+
+    if (novoStatus !== original.status) {
+      payload.status = novoStatus;
+    }
 
     if (Object.keys(payload).length === 0) {
       setEditingCycle(null);

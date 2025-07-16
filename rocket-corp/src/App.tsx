@@ -25,6 +25,8 @@ import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import { EvolutionPage } from "./pages/EvolutionPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
+import NotAuthorizedPage from "./pages/NotAuthorizedPage";
+import AdminCycles from "./pages/admin/admin-cycles";
 
 export default function App() {
   const location = useLocation();
@@ -64,12 +66,13 @@ export default function App() {
 
               <Route
                 path="/gestor/collaborators"
-                element={<CollaboratorsPage />}
+                element={<CollaboratorPage />}
               />
               <Route
                 path="/gestor/collaborator/:id"
                 element={<CollaboratorPage />}
               />
+              <Route path="/admin/cycles" element={<AdminCycles />} />
             </Routes>
           </main>
         </div>

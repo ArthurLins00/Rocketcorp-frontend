@@ -1,11 +1,12 @@
 type EditData = {
-  dataAberturaAvaliacao: string;
-  dataFechamentoAvaliacao: string;
-  dataAberturaRevisaoGestor: string;
-  dataFechamentoRevisaoGestor: string;
-  dataAberturaRevisaoComite: string;
-  dataFechamentoRevisaoComite: string;
-  dataFinalizacao: string;
+  dataAberturaAvaliacao?: string;
+  dataFechamentoAvaliacao?: string;
+  dataAberturaRevisaoGestor?: string;
+  dataFechamentoRevisaoGestor?: string;
+  dataAberturaRevisaoComite?: string;
+  dataFechamentoRevisaoComite?: string;
+  dataFinalizacao?: string;
+  status?: string;
 };
 
 export async function getAllCycles() {
