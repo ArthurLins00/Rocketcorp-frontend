@@ -1,5 +1,6 @@
 import { useSidebarController } from "../controllers/sidebarController";
 import { LogsPopup } from "./LogsPopup";
+import { useUserType } from "../contexts/UserTypeContext";
 
 export const Sidebar = () => {
 	const {
@@ -12,6 +13,13 @@ export const Sidebar = () => {
 		handleLogout,
 		sidebarItems,
 	} = useSidebarController();
+
+	const { user } = useUserType();
+
+	// Get user initials from name
+	const getUserInitials = (name: string) => {
+		return name.split(' ').map(n => n[0]).join('').toUpperCase();
+	};
 
 	return (
 		<aside className="w-[14.5rem] h-[64rem] bg-white border-r-2 border-[#CECDCD] flex flex-col justify-between py-8">
@@ -46,9 +54,9 @@ export const Sidebar = () => {
 			<div className="flex flex-col items-start pl-8">
 				<div className="flex items-center mb-4">
 					<span className="bg-[#CECDCD] text-[#1D1D1D] font-bold rounded-full w-8 h-8 flex items-center justify-center mr-2">
-						CN
+						{user ? getUserInitials(user.name) : "CN"}
 					</span>
-					<span className="text-base text-[#1D1D1D]">{localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!).name : "Colaborador 1"}</span>
+					<span className="text-base text-[#1D1D1D]">{user?.name || "Colaborador 1"}</span>
 				</div>
 				<a
 					href="#"

@@ -1,5 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useUserType } from "../contexts/UserTypeContext";
+import { clearAllUserData } from "../utils/auth";
 import Frame from "../assets/Frame.svg";
 import Frame1 from "../assets/Frame (1).svg";
 import Frame2 from "../assets/Frame (2).svg";
@@ -20,6 +22,7 @@ export function useSidebarController() {
     const location = useLocation();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [showLogsPopup, setShowLogsPopup] = useState(false);
+    const { user, userType } = useUserType();
 
     const handleLogout = async () => {
         // endpoint de logout
@@ -27,24 +30,12 @@ export function useSidebarController() {
         //     method: "POST",
         //     credentials: "include", // send cookies
         // });
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("user");
+        clearAllUserData();
         window.location.href = "/login";
     };
 
-    // Get user id from localStorage
-    let userId: string | null = null;
-    let userType: string[] = [];
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-        try {
-            const user = JSON.parse(userStr);
-            userId = user.id || null;
-            userType = user.role || [];
-        } catch {
-            userId = null;
-        }
-    }
+    // Get user id from context
+    const userId = user?.id?.toString() || null;
 
     // Check if user has permission to view logs
     const canViewLogs = userType.includes("rh") || userType.includes("committee") || userType.includes("admin");
@@ -90,7 +81,7 @@ export function useSidebarController() {
             label: "Avaliação de ciclo",
             path: "/avaliacao/autoavaliacao",
             icon: Frame1,
-            show: true,
+            show: userType.includes("manager"),
         },
         {
             label: "Evolução",

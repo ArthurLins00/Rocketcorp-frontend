@@ -1,11 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string[];
+  [key: string]: unknown;
+}
+
 type UserTypeContextType = {
   userType: string[];
   setUserType: (userType: string[]) => void;
-  user: any | null;
-  setUser: (user: any | null) => void;
+  user: User | null;
+  setUser: (user: User | null) => void;
+  refreshUserData: () => void;
 };
 
 const UserTypeContext = createContext<UserTypeContextType | undefined>(
@@ -28,24 +37,49 @@ export const UserTypeProvider: React.FC<UserTypeProviderProps> = ({
   children,
 }) => {
   const [userType, setUserType] = useState<string[]>(["COLABORADOR"]);
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    // Load user info and roles from localStorage if available
+  const loadUserFromStorage = () => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       try {
-        const userObj = JSON.parse(userStr);
+        const userObj = JSON.parse(userStr) as User;
         setUser(userObj);
         if (userObj && userObj.role) {
           setUserType(userObj.role);
         }
-      } catch {}
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+      }
+    } else {
+      setUser(null);
+      setUserType(["COLABORADOR"]);
     }
+  };
+
+  const refreshUserData = () => {
+    loadUserFromStorage();
+  };
+
+  // Load user info and roles from localStorage on mount
+  useEffect(() => {
+    loadUserFromStorage();
+  }, []);
+
+  // Listen for storage events (when localStorage changes in other tabs/windows)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "user") {
+        loadUserFromStorage();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   return (
-    <UserTypeContext.Provider value={{ userType, setUserType, user, setUser }}>
+    <UserTypeContext.Provider value={{ userType, setUserType, user, setUser, refreshUserData }}>
       {children}
     </UserTypeContext.Provider>
   );

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { FormData } from "../models/FormData";
-import { authenticatedFetch } from "../utils/auth";
+import { authenticatedFetch, clearUserEvaluationData } from "../utils/auth";
 import { apiFetch } from "../utils/api";
+import { useUserType } from "../contexts/UserTypeContext";
 
 export function useLoginController() {
     const [showPassword, setShowPassword] = useState(false);
@@ -11,6 +12,7 @@ export function useLoginController() {
         email: "",
         password: "",
     });
+    const { refreshUserData } = useUserType();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -102,12 +104,21 @@ export function useLoginController() {
             const userRes = await authenticatedFetch(`/users/${userId}`);
             if (userRes && userRes.ok) {
                 const userData = await userRes.json();
+                
+                // Limpar dados de avaliação anteriores para evitar conflitos
+                clearUserEvaluationData();
+                
                 localStorage.setItem("user", JSON.stringify(userData));
+                
+                // Refresh the user context to update the UI immediately
+                refreshUserData();
+                
                 window.location.href = "/dashboard";
             } else {
                 setError("Erro ao buscar informações do usuário.");
             }
         } catch (err) {
+            console.error("Login error:", err);
             setError("Ocorreu um erro ao tentar fazer login. Por favor, tente novamente.");
         } finally {
             setIsLoading(false);

@@ -540,10 +540,20 @@ export async function enviarTodasAvaliacoes() {
           console.log('🔍 Primeira referência:', referencias[0]);
 
           // ✅ Enviar para o endpoint bulk de referências
+          console.log('🔐 Verificando token de autenticação...');
+          const token = localStorage.getItem('token');
+          console.log('🔑 Token presente:', !!token);
+          
           const refResponse = await apiFetch('/referencia/bulk', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ referencias }),
+          });
+
+          console.log('📡 Resposta do servidor:', {
+            status: refResponse.status,
+            statusText: refResponse.statusText,
+            ok: refResponse.ok
           });
 
           if (!refResponse.ok) {
@@ -572,12 +582,17 @@ export async function enviarTodasAvaliacoes() {
     if (payload.autoavaliacoes) localStorage.removeItem("autoavaliacao");
     if (payload.avaliacoes360) localStorage.removeItem("avaliacao360");
     if (payload.mentoring) localStorage.removeItem("mentoring");
-    if (referenciasResult) localStorage.removeItem("referencias"); // ✅ Limpar referências se enviadas
+    
+    // ✅ Limpar referências se foram enviadas com sucesso
+    if (rawReferencias && Object.keys(rawReferencias).length > 0 && referenciasResult) {
+      console.log('🧹 Limpando localStorage das referências enviadas');
+      localStorage.removeItem("referencias");
+    }
 
     const totalItens = ((payload.autoavaliacoes as unknown[])?.length || 0) + 
                        ((payload.avaliacoes360 as unknown[])?.length || 0) + 
                        ((payload.mentoring as unknown[])?.length || 0) +
-                       (referenciasResult?.length || 0); // ✅ Incluir referências no total
+                       (referenciasResult?.count || 0); // ✅ Usar count em vez de length
 
     return {
       success: true,
@@ -614,4 +629,49 @@ function convertTrabalhariaToEnum(value: unknown): string {
   
   // Valor padrão
   return 'INDIFERENTE';
+}
+
+// ✅ Função para testar o endpoint de referências diretamente
+export async function testarReferencias() {
+  try {
+    console.log('🧪 Testando endpoint de referências...');
+    
+    const testData = {
+      referencias: [
+        {
+          idReferenciador: 6,
+          idReferenciado: 1,
+          idCiclo: 1,
+          justificativa: "Teste de referência via frontend"
+        }
+      ]
+    };
+    
+    console.log('📦 Dados de teste:', testData);
+    
+    const response = await apiFetch('/referencia/bulk', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(testData),
+    });
+    
+    console.log('📡 Resposta do teste:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      console.log('✅ Teste bem-sucedido:', result);
+      return result;
+    } else {
+      const errorText = await response.text();
+      console.error('❌ Erro no teste:', errorText);
+      throw new Error(`Erro no teste: ${response.status} - ${errorText}`);
+    }
+  } catch (error) {
+    console.error('❌ Erro no teste de referências:', error);
+    throw error;
+  }
 }

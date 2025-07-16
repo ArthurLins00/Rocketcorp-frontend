@@ -15,7 +15,8 @@ export async function refreshAccessToken() {
             localStorage.removeItem("user");
             window.location.href = "/login";
         }
-    } catch (err) {
+    } catch (error) {
+        console.error("Error refreshing token:", error);
         localStorage.removeItem("access_token");
         localStorage.removeItem("user");
         window.location.href = "/login";
@@ -23,11 +24,12 @@ export async function refreshAccessToken() {
     return null;
 }
 
-export async function authenticatedFetch(url: string, options: any = {}, setError?: (msg: string) => void) {
+export async function authenticatedFetch(url: string, options: RequestInit = {}, setError?: (msg: string) => void) {
     let response;
     try {
         response = await apiFetch(url, options);
-    } catch (err) {
+    } catch (error) {
+        console.error("Network error:", error);
         if (setError) setError("Erro de rede ou servidor. Tente novamente mais tarde.");
         return null;
     }
@@ -37,7 +39,8 @@ export async function authenticatedFetch(url: string, options: any = {}, setErro
             if (token) {
                 try {
                     response = await apiFetch(url, options);
-                } catch (err) {
+                } catch (error) {
+                    console.error("Error after token refresh:", error);
                     if (setError) setError("Erro de rede ou servidor após tentar renovar o acesso.");
                     return null;
                 }
@@ -59,7 +62,9 @@ export async function authenticatedFetch(url: string, options: any = {}, setErro
         try {
             const data = await response.json();
             if (data && data.message) errorMsg = data.message;
-        } catch { }
+        } catch (error) {
+            console.error("Error parsing error response:", error);
+        }
         if (setError) setError(errorMsg);
         return null;
     }
@@ -78,4 +83,34 @@ export function getUsuarioLogado() {
   } catch {
     return null;
   }
+}
+
+/**
+ * Limpa todos os dados de avaliação do localStorage para o usuário atual
+ */
+export function clearUserEvaluationData() {
+  const user = getUsuarioLogado();
+  if (!user) return;
+
+  // Limpar dados de avaliação específicos do usuário
+  localStorage.removeItem("autoavaliacao");
+  localStorage.removeItem("avaliacao360");
+  localStorage.removeItem("mentoring");
+  localStorage.removeItem("referencias");
+  
+  console.log("🧹 Dados de avaliação limpos para o usuário:", user.name);
+}
+
+/**
+ * Limpa todos os dados do usuário do localStorage
+ */
+export function clearAllUserData() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("autoavaliacao");
+  localStorage.removeItem("avaliacao360");
+  localStorage.removeItem("mentoring");
+  localStorage.removeItem("referencias");
+  
+  console.log("🧹 Todos os dados do usuário foram limpos");
 }

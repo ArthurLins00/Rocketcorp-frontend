@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
-import { enviarAvaliacao } from '../services/avaliacaoService';
 import { buscarUsuarios } from "../services/userService";
 
 export type AutoavaliacaoItem = {
@@ -83,10 +82,7 @@ async function buscarCriteriosDaTrilha(userId: string, cicloId: string): Promise
   }
 }
 
-const getInitialResponses = (
-  idAvaliador: string,
-  idCiclo: string
-): AutoavaliacaoState => {
+const getInitialResponses = (): AutoavaliacaoState => {
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
@@ -107,7 +103,7 @@ export default function AutoavaliacaoForm({
   idCiclo: string;
 }) {
   const [responses, setResponses] = useState<AutoavaliacaoState>(() =>
-    getInitialResponses(idAvaliador, idCiclo)
+    getInitialResponses()
   );
   const [criteriosAgrupados, setCriteriosAgrupados] = useState<CriteriosAgrupados>({
     comportamental: [],
@@ -323,51 +319,6 @@ export default function AutoavaliacaoForm({
     );
   };
 
-  // Função para enviar apenas autoavaliação
-  const handleTesteEnvio = async () => {
-    try {
-      console.log('🧪 TESTE: Iniciando envio da autoavaliação...');
-      console.log('🧪 TESTE: Estado atual responses:', responses);
-      
-      const autoavaliacaoData = getAutoavaliacoesFormatadas(responses);
-      console.log('🧪 TESTE: Dados formatados:', autoavaliacaoData);
-      
-      // Verificar se os criterioId estão corretos
-      autoavaliacaoData.forEach((item, index) => {
-        console.log(`🧪 Item ${index}:`, {
-          criterioId: item.criterioId,
-          tipo: typeof item.criterioId,
-          nota: item.nota,
-          justificativa: item.justificativa?.substring(0, 20) + '...'
-        });
-      });
-      
-      // Garantir que criterioId seja número
-      const dadosVerificados = autoavaliacaoData.map(item => ({
-        ...item,
-        criterioId: Number(item.criterioId)
-      }));
-      
-      // Criar objeto no mesmo formato que o Header espera
-      const dadosParaEnvio = {
-        autoavaliacao: dadosVerificados,
-        avaliacao360: {},
-        referencias: {},
-        mentoring: null
-      };
-      
-      console.log('🧪 TESTE: Enviando dados:', dadosParaEnvio);
-      
-      const response = await enviarAvaliacao(dadosParaEnvio);
-      console.log('🧪 TESTE: Sucesso!', response);
-      alert('✅ Autoavaliação enviada com sucesso!');
-      
-    } catch (error) {
-      console.error('🧪 TESTE: Erro no envio:', error);
-      alert(`❌ Erro ao enviar: ${error.message}`);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="p-6 space-y-12 bg-white border rounded-xl flex justify-center items-center min-h-[300px]">
@@ -411,24 +362,6 @@ export default function AutoavaliacaoForm({
 
   return (
     <div className="p-6 space-y-12 bg-white relative border rounded-xl">
-      {/* Botão de teste - remover após debug */}
-      <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-yellow-700 font-medium">🧪 Modo Teste</p>
-              <p className="text-yellow-600 text-sm">Botão temporário para testar envio da autoavaliação</p>
-            </div>
-            <button
-              onClick={handleTesteEnvio}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              Testar Envio Autoavaliação
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Renderizar cada seção de critérios */}
       {Object.entries(criteriosAgrupados).map(([tipo, criterios]) =>
         renderSection(tipo, criterios)
