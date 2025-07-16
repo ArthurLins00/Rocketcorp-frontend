@@ -25,18 +25,57 @@ interface UserEvaluationCyclesResponseDto {
   evaluationCycles: EvaluationCycle[];
 }
 
+interface UserHistoryResponseDto {
+  userId: number;
+  userName: string;
+  currentScore: number;
+  currentSemester: string;
+  lastScore: number;
+  lastSemester: string;
+  growth: number;
+  totalEvaluations: number;
+  performanceData: PerformanceDataDto[];
+  evaluationCycles: EvaluationCycle[];
+}
+
 export class HistoryService {
   static async getCollaboratorHistory(
     collaboratorId: string
   ): Promise<HistoryResponse> {
     try {
-      // TODO: subtituir pela requisição real quando integrar com o backend
+      const apiUrl = `http://localhost:3000/users/${collaboratorId}/history`;
+      const response = await fetch(apiUrl);
 
-      // MOCK
-      const { getCollaboratorHistoryMock } = await import(
-        "../mocks/historyMock.tsx"
-      );
-      return getCollaboratorHistoryMock(collaboratorId);
+      if (!response || !response.ok) {
+        throw new Error(`HTTP error! status: ${response?.status || "Unknown"}`);
+      }
+
+      const backendData: UserHistoryResponseDto = await response.json();
+
+      // Map backend response to frontend CollaboratorHistory format
+      const collaboratorHistory: CollaboratorHistory = {
+        id: backendData.userId.toString(),
+        collaboratorId: collaboratorId,
+        currentScore: backendData.currentScore,
+        currentSemester: backendData.currentSemester,
+        lastScore: backendData.lastScore,
+        lastSemester: backendData.lastSemester,
+        growth: backendData.growth,
+        totalEvaluations: backendData.totalEvaluations,
+        performanceData: backendData.performanceData.map(
+          (item: PerformanceDataDto) => ({
+            semester: item.semester,
+            score: item.score,
+          })
+        ),
+        evaluationCycles: backendData.evaluationCycles,
+      };
+
+      return {
+        success: true,
+        data: collaboratorHistory,
+        message: "Histórico do colaborador carregado com sucesso",
+      };
     } catch (error) {
       console.error("Error fetching collaborator history:", error);
       return {
