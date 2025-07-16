@@ -8,6 +8,7 @@ export interface User {
   enabled: boolean;
   trilhaId: number | null;
   idEquipe?: number | null;
+  gestorId?: number | null;
   createdAt: string;
   updatedAt: string;
   trilha?: {
@@ -128,6 +129,29 @@ export async function getMembrosAndGestorByEquipe(equipeId: number): Promise<Use
     return Array.isArray(users) ? users : [];
   } catch (error) {
     console.error('❌ Erro ao buscar membros e gestor da equipe:', error);
+    return [];
+  }
+}
+
+export async function buscarUsuariosPorGestor(gestorId: number): Promise<User[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/equipe/users-by-gestor/${gestorId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    const users = await response.json();
+    // Remover password se vier por engano
+    if (users.length > 0 && users[0].password) {
+      const usersWithoutPassword = users.map((user: User) => {
+        // @ts-expect-error
+        delete user.password;
+        return user;
+      });
+      return usersWithoutPassword;
+    }
+    return Array.isArray(users) ? users : [];
+  } catch (error) {
+    console.error('❌ Erro ao buscar usuários por gestor:', error);
     return [];
   }
 }
