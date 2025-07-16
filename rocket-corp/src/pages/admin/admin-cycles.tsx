@@ -18,6 +18,7 @@ import {
   getAllUsers,
   getUsersByCycle,
 } from "../../services/adminService";
+import { buscarAllMentores } from "../../services/dashboardService";
 
 // Definição do tipo dos ciclos
 interface Cycle {
@@ -92,9 +93,10 @@ export default function AdminCycles() {
       setLoading(true);
       setError(null);
       try {
-        const [data, users] = await Promise.all([
+        const [data, users, mentores] = await Promise.all([
           getAllCycles(),
           getAllUsers(),
+          buscarAllMentores(),
         ]);
         // Normaliza o status para usar underline
         const normalized = data.map((cycle: unknown) => {
@@ -108,7 +110,9 @@ export default function AdminCycles() {
           };
         });
         setCycles(normalized);
-        setTotalUsers(Array.isArray(users) ? users.length : 0);
+        setTotalUsers(
+          Array.isArray(users) ? users.length - mentores.length : 0
+        );
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -259,7 +263,10 @@ export default function AdminCycles() {
         : "";
       const editedValue = editData[field];
       if (editedValue && editedValue !== originalValue) {
-        payload[field] = new Date(editedValue).toISOString();
+        // Corrigir problema de fuso horário - criar data no fuso horário local
+        const [year, month, day] = editedValue.split("-").map(Number);
+        const localDate = new Date(year, month - 1, day); // month - 1 porque Date usa 0-11
+        payload[field] = localDate.toISOString();
       }
     });
 
@@ -312,8 +319,38 @@ export default function AdminCycles() {
       });
       alert("Data alterada com sucesso!");
     } catch (err) {
+      let errorMsg = "Erro ao salvar alterações!";
+      if (err instanceof Error && err.message) {
+        errorMsg = err.message;
+      } else if (err && typeof err === "object" && "message" in err) {
+        errorMsg = (err as { message?: string }).message || errorMsg;
+      }
+      // Tenta extrair mensagem do backend se for uma resposta HTTP
+      if (
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        (err as { response?: unknown }).response
+      ) {
+        const response = (err as { response?: Response }).response;
+        if (response && typeof (response as Response).json === "function") {
+          (response as Response)
+            .json()
+            .then((data: { message?: string }) => {
+              if (data && data.message) {
+                alert(data.message);
+              } else {
+                alert(errorMsg);
+              }
+            })
+            .catch(() => alert(errorMsg));
+        } else {
+          alert(errorMsg);
+        }
+      } else {
+        alert(errorMsg);
+      }
       console.error("Erro real ao salvar:", err);
-      alert("Erro ao salvar alterações!");
     }
   };
 

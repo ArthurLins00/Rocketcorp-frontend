@@ -1,7 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useUserType } from "../contexts/UserTypeContext";
 import { useState } from "react";
-import { apiFetch } from "../utils/api";
 import Frame from "../assets/Frame.svg";
 import Frame1 from "../assets/Frame (1).svg";
 import Frame2 from "../assets/Frame (2).svg";
@@ -127,6 +125,12 @@ export function useSidebarController() {
       label: "Brutal Facts",
       path: "/gestor/brutal-facts",
       icon: Frame6,
+      show: true,
+    },
+    {
+      label: "Administração de Ciclos",
+      path: "/admin/cycles",
+      icon: Frame3,
       show: true,
     },
   ];
