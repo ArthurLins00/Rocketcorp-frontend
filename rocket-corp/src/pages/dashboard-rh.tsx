@@ -15,6 +15,8 @@ import {
   calcularAvalPendentesComite,
   calcularNumAvalPendentesAvaliador,
 } from "../utils/porcentagensAvaliacoes";
+import { RhCollaboratorsListPage } from "./rh/RhListOfCollaborators";
+import { CollaboratorsListPage } from "./collaborator-list/CollaboratorsListPage";
 
 interface RH {
   id: number;
@@ -116,7 +118,7 @@ const DashboardRH = () => {
               dataFinalizacao={cicloAtual?.dataFinalizacao}
             />
           </div>
-          <div className="flex gap-x-6">
+          <div className="flex gap-x-6 ">
             <DashboardSmallerCollaboratorCard />
             <PreenchimentoChart />
           </div>

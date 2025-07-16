@@ -106,7 +106,7 @@ export function useLoginController() {
       if (userRes && userRes.ok) {
         const userData = await userRes.json();
         localStorage.setItem("user", JSON.stringify(userData));
-        window.location.href = "/dashboard";
+        window.location.href = "/employee-dashboard";
       } else {
         setError("Erro ao buscar informações do usuário.");
       }

@@ -25,6 +25,8 @@ import type { User } from "../types/User";
 import type { Ciclo } from "../types/Ciclo";
 import { CardRevisoesPendentes } from "../components/DashboardCards/CadRevisoesPendentes";
 import type { Equalizacao } from "../types/Equalizacao";
+import { CollaboratorsListPage } from "./collaborator-list/CollaboratorsListPage";
+import { useNavigate } from "react-router-dom";
 
 const DashboardGestor = () => {
   const [status, setStatus] = useState<string>("aberto");
@@ -35,6 +37,8 @@ const DashboardGestor = () => {
   const [cicloUltimo, setCicloUltimo] = useState<Ciclo | null>(null);
   const [equalizacaoGestor, setEqualizacaoGestor] =
     useState<Equalizacao | null>(null);
+
+  const navigate = useNavigate();
 
   //Buscar dados do gestor
   useEffect(() => {
@@ -72,7 +76,6 @@ const DashboardGestor = () => {
         console.error(erro);
       });
   }, []);
-
   useEffect(() => {
     if (cicloUltimo?.id && gestor?.id) {
       buscaEqualizacao(cicloUltimo.id, gestor.id)
@@ -200,6 +203,10 @@ const DashboardGestor = () => {
     iconLeft = <img src={Frame6} alt="Ícone" className="w-10 h-10" />;
   }
 
+  const handleVerMais = (idUser: number) => {
+    navigate(`/gestor/${idUser}/collaborators`);
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <main className="flex-row p-10">
@@ -254,28 +261,17 @@ const DashboardGestor = () => {
             <div className="bg-white rounded-xl p-4 shadow-sm w-full">
               <div className="flex justify-between items-center mb-4">
                 <span className="font-bold text-lg">Colaboradores</span>
-                <a
-                  href="#"
-                  className="text-[#219653] font-semibold text-sm hover:underline"
-                >
-                  Ver mais
-                </a>
+                {gestor && (
+                  <button
+                    onClick={() => handleVerMais(gestor.id)}
+                    className="text-[#219653] font-semibold text-sm hover:underline"
+                    disabled={!gestor}
+                  >
+                    Ver mais
+                  </button>
+                )}
               </div>
-              {/* <div className="max-h-80 overflow-y-auto pr-1 custom-scrollbar">
-                {avaliacoesComDados?.map((item: AvaliacaoCompleta) => (
-                  <CollaboratorCard
-                    key={item.id}
-                    name={item.avaliado?.name || "Carregando..."}
-                    role={item.unidade || "Carregando..."}
-                    initials="AC"
-                    status="EM ANDAMENTO"
-                    selfRating={4}
-                    managerRating={5}
-                    onlyManager
-                    id={""}
-                  />
-                ))}
-              </div> */}
+              <CollaboratorsListPage />
             </div>
           </div>
         </div>
