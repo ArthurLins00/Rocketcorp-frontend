@@ -31,10 +31,17 @@ export const CollaboratorPage: React.FC = () => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [collaboratorData, blocksData, cicloAberto] = await Promise.all([
+        // Get cicloAberto first
+        const cicloAberto = await buscarCicloAberto();
+        if (!cicloAberto || !cicloAberto.id) {
+          setError('Nenhum ciclo aberto encontrado.');
+          setLoading(false);
+          return;
+        }
+        // Then fetch collaborator and blocks using cicloAberto.id
+        const [collaboratorData, blocksData] = await Promise.all([
           fetchCollaborator(id),
-          fetchCriteriaBlocks(),
-          buscarCicloAberto()
+          fetchCriteriaBlocks(id, cicloAberto.id.toString()),
         ]);
         setCollaborator(collaboratorData);
         setBlocks(blocksData);
@@ -77,9 +84,15 @@ export const CollaboratorPage: React.FC = () => {
     b.criteria.every(c => (c.managerScore ?? 0) > 0)
   );
 
-  const handleSave = () => {
-    if (id) {
-      submitManagerEvaluations(id);
+  const handleSave = async () => {
+    if (id && ciclo) {
+      try {
+        await submitManagerEvaluations(id, ciclo.id.toString(), blocks);
+        // Optionally show success feedback here
+        alert('Avaliações do gestor salvas com sucesso!');
+      } catch (err: any) {
+        alert('Erro ao salvar avaliações do gestor: ' + (err?.message || err));
+      }
     }
   };
 
@@ -107,7 +120,7 @@ export const CollaboratorPage: React.FC = () => {
         actionDisabled={!isComplete}
         onAction={handleSave} 
         initials={collaborator?.name?.split(' ').map(n => n[0]).join('') ?? 'LC'} 
-        role={'Product Designer'}      
+        role={collaborator?.cargo ?? 'Product Designer'}      
       />
 
       <SegmentedControl options={tabs} selectedIndex={activeTab} onChange={setActiveTab} />

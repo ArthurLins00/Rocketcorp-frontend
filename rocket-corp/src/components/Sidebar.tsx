@@ -1,5 +1,7 @@
 import { useSidebarController } from "../controllers/sidebarController";
 import AvatarInicial from "./AvatarInicial";
+import path from "path";
+import { icons } from "lucide-react";
 
 export const Sidebar = () => {
 	const {

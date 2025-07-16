@@ -11,9 +11,10 @@ import {
 type Props = {
   equalizacao: Equalizacao;
   onUpdate: (atualizada: Equalizacao) => void;
+  readOnly?: boolean;
 };
 
-export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
+export default function EqualizacaoCard({ equalizacao, onUpdate, readOnly = false }: Props) {
   const [expandido, setExpandido] = useState(false);
   const [notaFinal, setNotaFinal] = useState<number | null>(
     equalizacao.notaFinal ?? null
@@ -333,7 +334,16 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
               Nota Final (Comitê):
             </span>
             {editando ? (
-              <div>
+              readOnly ? (
+                <p className={`text-lg font-bold ${
+                  statusLocal === "Finalizado" ? "text-[#08605F]" : "text-gray-400"
+                }`}>
+                  {statusLocal === "Finalizado" 
+                    ? (notaFinal ?? calcularMedia([notaAutoavaliacao, notaGestor, notaAvaliacao360])).toFixed(1)
+                    : "-"}
+                </p>
+              ) : (
+                <div>
                 <input
                   type="number"
                   min={0}
@@ -356,6 +366,7 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
                   </p>
                 )}
               </div>
+              )
             ) : (
               <p
                 className={`text-lg font-bold ${
@@ -381,7 +392,7 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
           {/* Justificativa */}
           <div className="space-y-1">
             <span className="font-semibold text-sm">Justificativa:</span>
-            {editando ? (
+            {editando && !readOnly ? (
               <textarea
                 value={justificativa}
                 onChange={(e) => setJustificativa(e.target.value)}

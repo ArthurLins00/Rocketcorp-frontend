@@ -20,7 +20,7 @@ export const CollaboratorCard: React.FC<
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/gestor/collaborator/${id}`);
+    navigate(`/gestor/colaborador/${id}`);
   };
 
   return (

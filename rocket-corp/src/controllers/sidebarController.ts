@@ -8,6 +8,7 @@ import Frame2 from "../assets/Frame (2).svg";
 import Frame3 from "../assets/Frame (7).svg";
 import Frame4 from "../assets/Frame (8).svg";
 import Frame5 from "../assets/Frame (9).svg";
+import Frame6 from "../assets/Frame (10).svg";
 
 export type SidebarItem = {
     label: string;
@@ -120,6 +121,12 @@ export function useSidebarController() {
             icon: Frame5,
             show: true,
         },
+        {
+            label: "Brutal Facts",
+            path: "/gestor/brutal-facts",
+            icon: Frame6,
+            show: true,
+        }
     ];
 
     return {
