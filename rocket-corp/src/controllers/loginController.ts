@@ -103,7 +103,15 @@ export function useLoginController() {
             if (userRes && userRes.ok) {
                 const userData = await userRes.json();
                 localStorage.setItem("user", JSON.stringify(userData));
-                window.location.href = "/dashboard";
+                // Get first role for dashboard route
+                const role = Array.isArray(userData.role) && userData.role.length > 0 ? userData.role[0] : "user";
+                let dashboardRoute = "/dashboard";
+                if (role === "manager") dashboardRoute = "/gestor-dashboard";
+                else if (role === "committee") dashboardRoute = "/comite-dashboard";
+                else if (role === "rh") dashboardRoute = "/rh-dashboard";
+                else if (role === "admin") dashboardRoute = "/admin-dashboard";
+                else dashboardRoute = "/employee-dashboard";
+                window.location.href = dashboardRoute;
             } else {
                 setError("Erro ao buscar informações do usuário.");
             }

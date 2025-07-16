@@ -1,6 +1,14 @@
 import { useSidebarController } from "../controllers/sidebarController";
-import path from "path";
-import { icons } from "lucide-react";
+import { useState } from "react";
+import { FaChevronUp, FaChevronDown } from "react-icons/fa";
+
+const roleLabels: Record<string, string> = {
+	admin: "Admin",
+	manager: "Gestor",
+	user: "Colaborador",
+	committee: "Comitê",
+	rh: "RH",
+};
 
 export const Sidebar = () => {
 	const {
@@ -9,9 +17,27 @@ export const Sidebar = () => {
 		showLogoutConfirm,
 		setShowLogoutConfirm,
 		handleLogout,
-		userId,
 		sidebarItems,
+		userType,
 	} = useSidebarController();
+
+	// Group items by role using the explicit role property
+	const groupedItems: Record<string, typeof sidebarItems> = {};
+	sidebarItems.forEach(item => {
+		const key = item.role || "other";
+		if (!groupedItems[key]) groupedItems[key] = [];
+		groupedItems[key].push(item);
+	});
+
+	const [openFolders, setOpenFolders] = useState<string[]>(Object.keys(groupedItems)); // Start expanded
+
+	const handleToggleFolder = (role: string) => {
+		setOpenFolders(prev =>
+			prev.includes(role)
+				? prev.filter(r => r !== role)
+				: [...prev, role]
+		);
+	};
 
 	return (
 		<aside className="w-[14.5rem] h-[64rem] bg-white border-r-2 border-[#CECDCD] flex flex-col justify-between py-8">
@@ -21,25 +47,36 @@ export const Sidebar = () => {
 				</div>
 				<nav>
 					<ul className="flex flex-col gap-2 pl-5">
-						{sidebarItems.map(item => (
-							<li key={item.path}>
-								<span
-									className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left ${
-										location.pathname === item.path
-											? "bg-[#08605F1F] font-bold"
-											: "hover:bg-[#08605F1F]"
-									}`}
-									onClick={() => navigate(item.path)}
-								>
-									<img
-										src={item.icon}
-										alt={item.label}
-										className="mr-2 w-5 h-5"
-									/>
-									{item.label}
-								</span>
-							</li>
-						))}
+						{Object.entries(groupedItems).map(([role, items]) =>
+							userType.includes(role) ? (
+								<li key={role}>
+									<div
+										className="flex items-center cursor-pointer py-2 px-2 font-semibold text-[#1D1D1D] uppercase tracking-wide text-xs bg-transparent"
+										onClick={() => handleToggleFolder(role)}
+									>
+										<span>{roleLabels[role] || role}</span>
+										<span className="ml-auto text-xs text-[#08605F]">
+											{openFolders.includes(role) ? <FaChevronUp /> : <FaChevronDown />}
+										</span>
+									</div>
+									{openFolders.includes(role) && (
+										<ul className="pl-2">
+											{items.map(item => (
+												<li key={item.path}>
+													<span
+														className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left ${location.pathname === item.path ? "bg-[#08605F1F] font-bold" : "hover:bg-[#08605F1F]"}`}
+														onClick={() => navigate(item.path)}
+													>
+														<img src={item.icon} alt={item.label} className="mr-2 w-5 h-5" />
+														{item.label}
+													</span>
+												</li>
+											))}
+										</ul>
+									)}
+								</li>
+							) : null
+						)}
 					</ul>
 				</nav>
 			</div>

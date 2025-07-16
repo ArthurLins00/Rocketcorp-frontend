@@ -124,26 +124,52 @@ export default function App() {
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/not-authorized" element={<NotAuthorizedPage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+
+              {/* colaborador */}
               <Route path="/employee-dashboard" element={<DashboardColaborador />} />
-              <Route path="/comite-dashboard" element={<DashboardComite />} />
-              <Route path="/rh-dashboard" element={<DashboardRH />} />
-              <Route path="/gestor-dashboard" element={<DashboardGestor />} />
               <Route path="/avaliacao/autoavaliacao" element={<AutoAvaliacao />} />
               <Route path="/avaliacao/avaliacao360" element={<Avaliacao360 />} />
               <Route path="/avaliacao/mentoring" element={<Mentoring />} />
               <Route path="/avaliacao/referencias" element={<Referencias />} />
               <Route path="/evolution-page" element={<EvolutionPage />} />
-              <Route path="/rh/criterios" element={<CriteriaManagementPage />} />
-              <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
-              {/* <Route path="/rh/collaborators" element={<CollaboratorsListPage />} /> */}
-              <Route path="/rh/collaborators" element={<RequireAuth requiredRole="rh" ><RhCollaboratorsListPage /></RequireAuth>} />
+
+              {/* <Route path="/colaborador/dashboard" element={<RequireAuth requiredRole="colaborador" ><DashboardColaborador /></RequireAuth>} />
+              <Route path="/colaborador/avaliacao/autoavaliacao" element={<RequireAuth requiredRole="colaborador" ><AutoAvaliacao /></RequireAuth>} />
+              <Route path="/colaborador/avaliacao/avaliacao360" element={<RequireAuth requiredRole="colaborador" ><Avaliacao360 /></RequireAuth>} />
+              <Route path="/colaborador/avaliacao/mentoring" element={<RequireAuth requiredRole="colaborador" ><Mentoring /></RequireAuth>} />
+              <Route path="/colaborador/avaliacao/referencias" element={<RequireAuth requiredRole="colaborador" ><Referencias /></RequireAuth>} />
+              <Route path="/colaborador/evolution" element={<RequireAuth requiredRole="colaborador" ><EvolutionPage /></RequireAuth>} /> */}
+
+              {/* gestor */}
+              <Route path="/gestor-dashboard" element={<DashboardGestor />} />
               <Route path="/gestor/:gestorId/collaborators" element={<RequireAuth requiredRole="manager" ><GestorCollaboratorsListPage /></RequireAuth>} />
               <Route path="/gestor/colaborador/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
-              {/* <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} /> */}
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/rh/ImportHistoryPage" element={<ImportHistoryPage />} />
               <Route path="/gestor/brutal-facts" element={<BrutalFactsPage />} />
+
+              {/* <Route path="/gestor/dashboard" element={<RequireAuth requiredRole="gestor" ><DashboardGestor /></RequireAuth>} />
+              <Route path="/gestor/:gestorId/colaboradores" element={<RequireAuth requiredRole="gestor" ><GestorCollaboratorsListPage /></RequireAuth>} />
+              <Route path="/gestor/colaborador/:id" element={<RequireAuth requiredRole="gestor" ><CollaboratorPage /></RequireAuth>} />
+              <Route path="/gestor/brutal-facts" element={<RequireAuth requiredRole="gestor" ><BrutalFactsPage /></RequireAuth>} /> */}
+
+              {/* comite */}
+              <Route path="/comite-dashboard" element={<DashboardComite />} />
+              <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
+
+              {/* <Route path="/comite/dashboard" element={<RequireAuth requiredRole="comite" ><DashboardComite /></RequireAuth>} />
+              <Route path="/comite/equalizacoes" element={<RequireAuth requiredRole="comite" ><EqualizacoesPage /></RequireAuth>} /> */}
+
+              {/* rh */}
+              <Route path="/rh-dashboard" element={<DashboardRH />} />
+              <Route path="/rh/criterios" element={<CriteriaManagementPage />} />
+              <Route path="/rh/ImportHistoryPage" element={<ImportHistoryPage />} />
+              <Route path="/rh/collaborators" element={<RequireAuth requiredRole="rh" ><RhCollaboratorsListPage /></RequireAuth>} />
+              
+              {/* <Route path="/rh/dashboard" element={<RequireAuth requiredRole="rh" ><DashboardRH /></RequireAuth>} />
+              <Route path="/rh/criterios" element={<RequireAuth requiredRole="rh" ><CriteriaManagementPage /></RequireAuth>} />
+              <Route path="/rh/import-history" element={<RequireAuth requiredRole="rh" ><ImportHistoryPage /></RequireAuth>} />
+              <Route path="/rh/colaboradores" element={<RequireAuth requiredRole="rh" ><RhCollaboratorsListPage /></RequireAuth>} /> */}
+
             </Routes>
           </main>
         </div>

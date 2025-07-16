@@ -15,6 +15,7 @@ export type SidebarItem = {
     path: string;
     icon: string;
     show: boolean;
+    role?: string; // Add role property
 };
 
 export function useSidebarController() {
@@ -54,78 +55,91 @@ export function useSidebarController() {
             path: "/employee-dashboard",
             icon: Frame,
             show: true,
+            role: "user",
         },
         {
             label: "Dashboard do gestor",
             path: "/gestor-dashboard",
             icon: Frame,
             show: userType.includes("manager"),
+            role: "manager",
         },
         {
             label: "Dashboard do comitê",
             path: "/comite-dashboard",
             icon: Frame,
             show: userType.includes("committee"),
+            role: "committee",
         },
         {
             label: "Dashboard do RH",
             path: "/rh-dashboard",
             icon: Frame,
             show: userType.includes("rh"),
+            role: "rh",
         },
         {
             label: "Avaliação de ciclo",
             path: "/avaliacao/autoavaliacao",
             icon: Frame1,
             show: true,
+            role: "user",
         },
         {
             label: "Evolução",
             path: "/evolution",
             icon: Frame2,
             show: true,
+            role: "user",
         },
         {
             label: "Colaboradores - Gestor",
             path: userId ? `/gestor/${userId}/collaborators` : "/gestor/collaborators",
             icon: Frame2,
             show: userType.includes("manager"),
+            role: "manager",
         },
         {
             label: "Colaboradores - RH",
             path: "/rh/collaborators",
             icon: Frame2,
             show: userType.includes("rh"),
+            role: "rh",
         },
         {
             label: "Critérios de Avaliação",
             path: "/rh/criterios",
             icon: Frame3,
             show: true,
+            role: "rh",
         },
         {
             label: "Equalizações",
             path: "/comite/equalizacoes",
             icon: Frame4,
             show: true,
+            role: "committee",
         },
         {
             label: "Colaborador - Evolução",
             path: "/evolution-page",
             icon: Frame2,
             show: true,
+            role: "user",
         },
         {
             label: "Importar Histórico",
             path: "/rh/ImportHistoryPage",
             icon: Frame5,
             show: true,
+            role: "rh",
         },
         {
             label: "Brutal Facts",
             path: "/gestor/brutal-facts",
             icon: Frame6,
             show: true,
+            role: "manager",
         }
     ];
 
