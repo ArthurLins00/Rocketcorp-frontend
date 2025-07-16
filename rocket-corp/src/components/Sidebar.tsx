@@ -1,4 +1,5 @@
 import { useSidebarController } from "../controllers/sidebarController";
+import AvatarInicial from "./AvatarInicial";
 import { useState } from "react";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 
@@ -82,9 +83,7 @@ export const Sidebar = () => {
 			</div>
 			<div className="flex flex-col items-start pl-8">
 				<div className="flex items-center mb-4">
-					<span className="bg-[#CECDCD] text-[#1D1D1D] font-bold rounded-full w-8 h-8 flex items-center justify-center mr-2">
-						CN
-					</span>
+					<AvatarInicial nome={localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!).name : "Colaborador 1"} tamanho={32} />
 					<span className="text-base text-[#1D1D1D]">{localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!).name : "Colaborador 1"}</span>
 				</div>
 				<a

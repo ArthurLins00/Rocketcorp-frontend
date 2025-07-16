@@ -1,4 +1,4 @@
-import type { Equalizacao } from "../../types/Equalizacao";
+import type { Equalizacao } from "../types/Equalizacao";
 
 // const STORAGE_KEY = "equalizacoes";
 

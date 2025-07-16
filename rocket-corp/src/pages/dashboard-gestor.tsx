@@ -48,7 +48,7 @@ const DashboardGestor = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <main className="flex-row p-10">
+      <main className="flex-row p-6">
         <div className="mb-6">
           <span className="text-lg ml-2">
             <strong>Olá</strong>, Gestor!

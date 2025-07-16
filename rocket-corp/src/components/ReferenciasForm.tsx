@@ -284,7 +284,7 @@ export default function ReferenciasForm({ idAvaliador, idCiclo }: ReferenciasFor
             </div>
 
             <div>
-              <label className="block text-sm font-small mb-1 text-gray-500">
+              <label className="block text-sm font-medium mb-1 text-gray-600">
                 Justifique sua escolha
               </label>
               <textarea
