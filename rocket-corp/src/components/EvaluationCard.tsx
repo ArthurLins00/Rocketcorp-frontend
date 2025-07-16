@@ -20,7 +20,7 @@ export const EvaluationCard = ({ equalizacoes }: EvaluationCardProps) => (
             ? "bg-[#219653]/20 text-[#219653]"
             : "bg-[#F2C94C]/20 text-[#F2C94C]"
         }
-        summary={"Raylandson teve uma performance excelente e alta media final"}
+        summary={"Descricao da performance do usuario"}
         score={eq.notaFinal?.toFixed(1)}
         scoreLabel={
           eq.notaFinal
