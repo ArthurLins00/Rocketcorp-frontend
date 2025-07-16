@@ -1,11 +1,17 @@
-export type Cycle = {
+import type { Autoavaliacao } from "./Autoavaliacao";
+import type { Avaliacao360 } from "./Avaliacao360";
+import type { Criterio } from "./Criterio";
+import type { Referencia } from "./Referencia";
+import type { ResumoIA } from "./ResumoIA";
+
+export type Ciclo = {
   id: number;
   name: string;
   year: number;
   period: number;
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   dataAberturaAvaliacao?: Date | null;
   dataFechamentoAvaliacao?: Date | null;
   dataAberturaRevisaoGestor?: Date | null;
@@ -13,10 +19,9 @@ export type Cycle = {
   dataAberturaRevisaoComite?: Date | null;
   dataFechamentoRevisaoComite?: Date | null;
   dataFinalizacao?: Date | null;
-  //corrigir esses tipos quando integrar
-  avaliacoes?: unknown[]; // Avaliacao[]
-  avaliacoes360?: unknown[]; // Avaliacao360[]
-  criterios?: unknown[]; // Criterio[]
-  referencias?: unknown[]; // referencia[]
-  ResumoIA?: unknown[]; // ResumoIA[]
+  referencias?: Referencia[];
+  avaliacoes?: Autoavaliacao[];
+  avaliacoes360?: Avaliacao360[];
+  criterios?: Criterio[];
+  ResumoIA?: ResumoIA[];
 };

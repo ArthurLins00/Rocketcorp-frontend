@@ -1,12 +1,17 @@
 import React from 'react';
 import { IoIosDocument } from 'react-icons/io';
+import { IoMdPeople } from 'react-icons/io';
 
 interface CollaboratorTotalEvaluationsProps {
   totalEvaluations: number;
+  title?: string;
+  usePeopleIcon?: boolean;
 }
 
 export const CollaboratorTotalEvaluations: React.FC<CollaboratorTotalEvaluationsProps> = ({ 
-  totalEvaluations 
+  totalEvaluations,
+  title,
+  usePeopleIcon = false
 }) => {
   const cardColor = '#08605F';
 
@@ -14,7 +19,7 @@ export const CollaboratorTotalEvaluations: React.FC<CollaboratorTotalEvaluations
     <div className="bg-white rounded-lg pt-4 pb-6 pl-6 h-full flex">
       {/* First Column */}
       <div className="flex-1 flex flex-col justify-between">
-        <h3 className="text-sm font-semibold text-gray-800 mb-3">Avaliações realizadas</h3>
+        <h3 className="text-sm font-semibold text-gray-800 mb-3">{title || 'Avaliações realizadas'}</h3>
         
         <div className="flex items-start gap-3 flex-1">
           {/* Vertical line with fixed color */}
@@ -34,11 +39,18 @@ export const CollaboratorTotalEvaluations: React.FC<CollaboratorTotalEvaluations
 
       {/* Second Column */}
       <div className="flex items-center justify-center px-4 gap-2">
-        {/* Document icon */}
-        <IoIosDocument 
-          className="text-4xl"
-          style={{ color: cardColor }}
-        />
+        {/* Icon - Document or People based on prop */}
+        {usePeopleIcon ? (
+          <IoMdPeople 
+            className="text-4xl"
+            style={{ color: cardColor }}
+          />
+        ) : (
+          <IoIosDocument 
+            className="text-4xl"
+            style={{ color: cardColor }}
+          />
+        )}
         
         <div className="flex flex-col items-center">
           {/* Total evaluations */}

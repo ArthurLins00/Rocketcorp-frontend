@@ -45,7 +45,15 @@ export async function getUsersByCycle(cycleId: number) {
 export async function getAllUsers() {
   const response = await fetch(`http://localhost:3000/users`);
   if (!response.ok) {
-    throw new Error("Erro ao buscar ciclos");
+    throw new Error("Erro ao buscar usuários");
+  }
+  return response.json();
+}
+
+export async function getCycle(idCycle: number) {
+  const response = await fetch(`http://localhost:3000/cicle/${idCycle}`);
+  if (!response.ok) {
+    throw new Error("Erro ao buscar ciclo");
   }
   return response.json();
 }

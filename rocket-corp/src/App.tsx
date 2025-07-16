@@ -1,7 +1,7 @@
 import "./App.css";
 import { Dashboard } from "./pages/dashboard";
 import { Evolution } from "./pages/evolution";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Navigate, Routes, Route, useLocation } from "react-router-dom";
 import { Sidebar } from "./components/Sidebar";
 import Header from "./components/Header";
 import Topbar from "./components/Topbar";
@@ -17,14 +17,14 @@ import DashboardComite from "./pages/dashboard-comite";
 import DashboardRH from "./pages/dashboard-rh";
 import DashboardGestor from "./pages/dashboard-gestor";
 
-import { CollaboratorsPage } from "./pages/gestor/CollaboratorsListPage";
+import { RhCollaboratorsListPage } from "./pages/rh/RhListOfCollaborators";
+import { GestorCollaboratorsListPage } from "./pages/gestor/GestorListOfCollaborators";
 
 import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
 import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import { EvolutionPage } from "./pages/EvolutionPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
-import AdminCycles from "./pages/admin/admin-cycles";
 
 export default function App() {
   const location = useLocation();
@@ -37,25 +37,14 @@ export default function App() {
     <UserTypeProvider>
       <div className="flex min-h-screen bg-[#F1F1F1] text-gray-800">
         <Sidebar />
-
         <div className="flex flex-col flex-1">
           {!isCollaboratorDetailRoute && <Header />}
           {isAvaliacaoRoute && <Topbar />}
-
           <main className="flex-1">
             <Routes>
-              <Route
-                path="/avaliacao/autoavaliacao"
-                element={<AutoAvaliacao />}
-              />
-              <Route
-                path="/avaliacao/avaliacao360"
-                element={<Avaliacao360 />}
-              />
-              <Route path="/avaliacao/mentoring" element={<Mentoring />} />
-              <Route path="/avaliacao/referencias" element={<Referencias />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/not-authorized" element={<NotAuthorizedPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/evolution-page" element={<EvolutionPage />} />
               <Route
                 path="/employee-dashboard"
                 element={<DashboardColaborador />}
@@ -81,7 +70,6 @@ export default function App() {
                 path="/gestor/collaborator/:id"
                 element={<CollaboratorPage />}
               />
-              <Route path="/admin-cycles" element={<AdminCycles />} />
             </Routes>
           </main>
         </div>

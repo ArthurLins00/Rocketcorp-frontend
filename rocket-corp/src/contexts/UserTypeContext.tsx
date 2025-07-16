@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 type UserTypeContextType = {
   userType: string[];
   setUserType: (userType: string[]) => void;
+  user: any | null;
+  setUser: (user: any | null) => void;
 };
 
 const UserTypeContext = createContext<UserTypeContextType | undefined>(
@@ -26,16 +28,24 @@ export const UserTypeProvider: React.FC<UserTypeProviderProps> = ({
   children,
 }) => {
   const [userType, setUserType] = useState<string[]>(["COLABORADOR"]);
+  const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
-    // Simular carregamento do tipo de usuário
-    setTimeout(() => {
-      setUserType(["GESTOR", "RH", "COMITE"]);
-    }, 500);
+    // Load user info and roles from localStorage if available
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const userObj = JSON.parse(userStr);
+        setUser(userObj);
+        if (userObj && userObj.role) {
+          setUserType(userObj.role);
+        }
+      } catch {}
+    }
   }, []);
 
   return (
-    <UserTypeContext.Provider value={{ userType, setUserType }}>
+    <UserTypeContext.Provider value={{ userType, setUserType, user, setUser }}>
       {children}
     </UserTypeContext.Provider>
   );
