@@ -3,42 +3,138 @@ import { CollaboratorScore } from '../../components/history/CollaboratorScore';
 import { CollaboratorGrowth } from "../../components/history/CollaboratorGrowth"
 import { CollaboratorPerformanceChart } from '../../components/history/CollaboratorPerformanceChart';
 import { CollaboratorTotalEvaluations } from '../../components/history/CollaboratorTotalEvaluations';
-import { getCollaboratorHistoryMock } from '../../mocks/historyMock';
 import EqualizacaoCard from '../../components/equalizacao/EqualizacaoCard';
-import { mockEqualizacoes } from '../../mocks/mockEqualizacoes';
 import GenAIComponent from '../../components/GenAIComponent';
+import { getUsuarioLogado } from '../../utils/auth';
+import { buscarUsuariosPorGestor, type User } from '../../services/userService';
+import { authenticatedFetch } from '../../utils/auth';
+import { getEqualizacoes } from '../utils/equalizacaoService';
+import type { Equalizacao } from '../../types/Equalizacao';
+import type { PerformanceData } from '../../models/history';
+import { getUsersStatisticsByCiclo } from '../../services/statisticsService';
+
+interface Ciclo {
+  id: number;
+  name: string;
+  year: number;
+  period: number;
+  status: string; // Added status to the interface
+}
+
+interface UserStatistics {
+  user: { id: number; name: string; email: string };
+  autoavaliacaoAverage: number | null;
+  avaliacaoGestorAvg: number | null;
+  avaliacao360Avg: number | null;
+}
+
+interface BrutalFactsHistory {
+  currentScore: number;
+  currentSemester: string;
+  lastScore: number;
+  lastSemester: string;
+  totalEvaluations: number;
+  performanceData: PerformanceData[];
+}
 
 export default function BrutalFactsPage() {
-  // Estado para os dados do colaborador
-  const [history, setHistory] = useState<any | null>(null);
-  // Estado para loading (opcional)
   const [loading, setLoading] = useState(true);
-  // Estado para filtro de equalizações
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredEqualizacoes, setFilteredEqualizacoes] = useState(mockEqualizacoes.filter(eq => eq.status === 'Finalizado'));
+  const [lideradosComEqualizacao, setLideradosComEqualizacao] = useState<{ liderado: User; equalizacao: Equalizacao | null }[]>([]);
+  const [history, setHistory] = useState<BrutalFactsHistory | null>(null);
 
   useEffect(() => {
-    // Simula busca dos dados do colaborador (mock)
     async function fetchData() {
       setLoading(true);
-      const response = await getCollaboratorHistoryMock('collab-123');
-      setHistory(response.data);
-      setLoading(false);
+      try {
+        // 1. Usuário logado
+        const usuario = getUsuarioLogado() as User | null;
+        if (!usuario) {
+          setLoading(false);
+          return;
+        }
+        const gestorId = usuario.id;
+        // 2. Buscar todos usuários sob o gestor logado
+        const liderados = await buscarUsuariosPorGestor(gestorId);
+        // 3. Buscar ciclos (pegar 4 mais recentes, apenas status válidos)
+        const ciclosRes = await authenticatedFetch('/cicle');
+        let ciclos: Ciclo[] = ciclosRes ? await ciclosRes.json() : [];
+        // Filtrar apenas ciclos com status permitido
+        const statusPermitidos = ['aberto', 'revisaoGestor', 'revisaoComite', 'finalizado'];
+        ciclos = Array.isArray(ciclos) ? ciclos.filter(c => statusPermitidos.includes(c.status)) : [];
+        const ciclosOrdenados = ciclos.sort((a, b) => {
+          if (a.year !== b.year) return b.year - a.year;
+          return b.period - a.period;
+        });
+        const ciclosParaGrafico = ciclosOrdenados.slice(0, 4).reverse();
+        // 4. Buscar estatísticas dos liderados por ciclo
+        const performanceData: PerformanceData[] = [];
+        let currentScore = 0;
+        let lastScore = 0;
+        let currentSemester = '';
+        let lastSemester = '';
+        let totalEvaluations = 0;
+        for (let i = 0; i < ciclosParaGrafico.length; i++) {
+          const ciclo = ciclosParaGrafico[i];
+          let stats: UserStatistics[] = [];
+          try {
+            stats = await getUsersStatisticsByCiclo(ciclo.id);
+          } catch {
+            stats = [];
+          }
+          const statsLiderados = stats.filter((s) => liderados.some(l => l.id === s.user.id));
+          const notas = statsLiderados.map((s) => s.autoavaliacaoAverage ?? s.avaliacaoGestorAvg ?? s.avaliacao360Avg).filter((n): n is number => n != null);
+          const media = notas.length > 0 ? notas.reduce((a, b) => a + b, 0) / notas.length : 0;
+          performanceData.push({ semester: ciclo.name, score: media });
+          if (i === ciclosParaGrafico.length - 1) {
+            currentScore = media;
+            currentSemester = ciclo.name;
+            totalEvaluations = statsLiderados.length;
+          }
+          if (i === ciclosParaGrafico.length - 2) {
+            lastScore = media;
+            lastSemester = ciclo.name;
+          }
+        }
+        // 5. Buscar equalizações do ciclo atual
+        let equalizacoes: Equalizacao[] = [];
+        if (ciclosOrdenados.length > 0) {
+          const eqs: Equalizacao[] = await getEqualizacoes();
+          equalizacoes = eqs.filter((eq: Equalizacao) => liderados.some(l => l.id.toString() === eq.idAvaliado));
+        }
+        // Novo: montar array de liderados com ou sem equalizacao
+        const lideradosComEq = liderados.map(liderado => {
+          const eq = equalizacoes.find(eq => eq.idAvaliado === liderado.id.toString()) || null;
+          return { liderado, equalizacao: eq };
+        });
+        setLideradosComEqualizacao(lideradosComEq);
+        setHistory({
+          currentScore,
+          currentSemester,
+          lastScore,
+          lastSemester,
+          totalEvaluations,
+          performanceData
+        });
+      } catch {
+        setHistory(null);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchData();
   }, []);
 
-  // Filtra equalizações baseado no termo de busca
-  useEffect(() => {
-    const filtered = mockEqualizacoes.filter(eq => 
-      eq.status === 'Finalizado' && 
-      eq.nomeAvaliado.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredEqualizacoes(filtered);
-  }, [searchTerm]);
+  // Filtro de busca para equalizações (agora sobre nome do liderado)
+  const lideradosFiltrados = lideradosComEqualizacao.filter(({ liderado }) =>
+    liderado.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  if (loading || !history) {
+  if (loading) {
     return <div>Carregando...</div>;
+  }
+  if (!history) {
+    return <div>Erro ao carregar dados. Tente novamente mais tarde.</div>;
   }
 
   return (
@@ -110,18 +206,24 @@ export default function BrutalFactsPage() {
           </div>
         </div>
         <div className="space-y-4">
-          {filteredEqualizacoes.length === 0 ? (
+          {lideradosFiltrados.length === 0 ? (
             <div className="text-gray-500">
-              {searchTerm ? `Nenhuma equalização encontrada para "${searchTerm}".` : "Nenhuma equalização finalizada encontrada."}
+              {searchTerm ? `Nenhum colaborador encontrado para "${searchTerm}".` : "Nenhum colaborador sob sua gestão encontrado."}
             </div>
           ) : (
-            filteredEqualizacoes.map(eq => (
-              <EqualizacaoCard 
-                key={eq.idEqualizacao} 
-                equalizacao={eq} 
-                onUpdate={() => {}} // Não faz nada, só visual
-                readOnly={true}
-              />
+            lideradosFiltrados.map(({ liderado, equalizacao }) => (
+              equalizacao ? (
+                <EqualizacaoCard
+                  key={liderado.id}
+                  equalizacao={equalizacao}
+                  onUpdate={() => {}}
+                  readOnly={true}
+                />
+              ) : (
+                <div key={liderado.id} className="border rounded p-4 bg-gray-50 text-gray-500">
+                  {liderado.name} ainda não possui equalização neste ciclo.
+                </div>
+              )
             ))
           )}
         </div>
