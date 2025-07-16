@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+import { apiFetch } from '../utils/api';
 
 // Mapeamento de motivação para enum
 const MOTIVACAO_MAP: { [key: number]: string } = {
@@ -53,7 +53,7 @@ export async function enviarAvaliacao360(avaliacao360Data: Record<string, unknow
     
     console.log('📤 Enviando payload Avaliação 360:', payload);
     
-    const response = await fetch(`${API_BASE_URL}/avaliacao/360`, {
+    const response = await apiFetch('/avaliacao/360', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -113,7 +113,7 @@ export async function enviarAvaliacao(dados: Record<string, unknown>) {
       console.log('Payload para /avaliacao/bulk:', JSON.stringify(bulkPayload, null, 2));
       
       promises.push(
-        fetch(`${API_BASE_URL}/avaliacao/bulk`, {
+        apiFetch('/avaliacao/bulk', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(bulkPayload), // Enviar com a estrutura correta
@@ -147,7 +147,7 @@ export async function enviarAvaliacao(dados: Record<string, unknown>) {
       };
       
       promises.push(
-        fetch(`${API_BASE_URL}/avaliacao/bulk`, {
+        apiFetch('/avaliacao/bulk', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(bulkPayload), // Enviar com a estrutura correta
@@ -172,7 +172,7 @@ export async function enviarAvaliacao(dados: Record<string, unknown>) {
 
       // ✅ Enviar para o endpoint de referências
       promises.push(
-        fetch(`${API_BASE_URL}/referencia/bulk`, {
+        apiFetch('/referencia/bulk', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(referencias), // Referências mantém formato array
@@ -233,7 +233,7 @@ export async function enviarReferencias(referenciasData: Record<string, unknown>
     console.log('Enviando referências em lote...');
 
     // ✅ Enviar para o endpoint bulk de referências
-    const response = await fetch(`${API_BASE_URL}/referencia/bulk`, {
+    const response = await apiFetch('/referencia/bulk', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(referencias), // Enviar array de referências
@@ -293,7 +293,7 @@ export async function enviarMentoring(mentoringData: Record<string, unknown>) {
     console.log('Payload para /avaliacao/bulk:', JSON.stringify(bulkPayload, null, 2));
 
     // Enviar para o endpoint bulk
-    const response = await fetch(`${API_BASE_URL}/avaliacao/bulk`, {
+    const response = await apiFetch('/avaliacao/bulk', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(bulkPayload), // Enviar com a estrutura correta
@@ -486,7 +486,7 @@ export async function enviarTodasAvaliacoes() {
     console.log('📦 Payload final:', JSON.stringify(payload, null, 2));
 
     // 🚀 Enviar avaliações para o backend
-    const response = await fetch(`${API_BASE_URL}/avaliacao/bulk`, {
+    const response = await apiFetch('/avaliacao/bulk', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -540,7 +540,7 @@ export async function enviarTodasAvaliacoes() {
           console.log('🔍 Primeira referência:', referencias[0]);
 
           // ✅ Enviar para o endpoint bulk de referências
-          const refResponse = await fetch(`${API_BASE_URL}/referencia/bulk`, {
+          const refResponse = await apiFetch('/referencia/bulk', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ referencias }),

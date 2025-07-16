@@ -1,15 +1,16 @@
 import type { Equalizacao } from "../../types/Equalizacao";
+import { apiFetch } from "../../utils/api";
 
 // const STORAGE_KEY = "equalizacoes";
 
 // TODO: Move to .env or config
-const API_URL = "http://localhost:3000/equalizacao/current-cycle";
-const API_URL_CREATE = "http://localhost:3000/equalizacao";
+// const API_URL = "http://localhost:3000/equalizacao/current-cycle";
+// const API_URL_CREATE = "http://localhost:3000/equalizacao";
 
 export async function getEqualizacoes(): Promise<Equalizacao[]> {
   try {
     // console.log("[DEBUG] Fetching equalizacoes from:", API_URL);
-    const response = await fetch(API_URL);
+    const response = await apiFetch("/equalizacao/current-cycle");
     // console.log("[DEBUG] Response status:", response.status);
     if (!response.ok) {
       const errorBody = await response.text();
@@ -51,9 +52,9 @@ export async function salvarEqualizacaoAtualizada(
 
     console.log("Sending UpdateEqualizacaoDto:", updateDto);
     console.log("JSON body:", JSON.stringify(updateDto));
-    console.log("Request URL:", API_URL_CREATE);
+    console.log("Request URL:", "/equalizacao");
 
-    const response = await fetch(API_URL_CREATE, {
+    const response = await apiFetch("/equalizacao", {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -121,7 +122,7 @@ export async function enviarEqualizacaoParaBackend(equalizacao: Equalizacao) {
     // console.log(JSON.stringify(createDto, null, 2));
     // console.log("=== END POSTMAN JSON ===");
 
-    const response = await fetch(API_URL_CREATE, {
+    const response = await apiFetch("/equalizacao", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
