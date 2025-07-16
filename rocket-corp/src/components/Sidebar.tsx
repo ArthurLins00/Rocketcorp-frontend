@@ -1,6 +1,5 @@
 import { useSidebarController } from "../controllers/sidebarController";
-import path from "path";
-import { icons } from "lucide-react";
+import { LogsPopup } from "./LogsPopup";
 
 export const Sidebar = () => {
 	const {
@@ -8,8 +7,9 @@ export const Sidebar = () => {
 		location,
 		showLogoutConfirm,
 		setShowLogoutConfirm,
+		showLogsPopup,
+		setShowLogsPopup,
 		handleLogout,
-		userId,
 		sidebarItems,
 	} = useSidebarController();
 
@@ -83,6 +83,10 @@ export const Sidebar = () => {
 						</div>
 					</div>
 				)}
+				<LogsPopup 
+					isVisible={showLogsPopup} 
+					onClose={() => setShowLogsPopup(false)} 
+				/>
 			</div>
 		</aside>
 	);

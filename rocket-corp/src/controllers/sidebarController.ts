@@ -1,7 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useUserType } from "../contexts/UserTypeContext";
-import { useState } from "react";
-import { apiFetch } from "../utils/api";
+import { useState, useEffect } from "react";
 import Frame from "../assets/Frame.svg";
 import Frame1 from "../assets/Frame (1).svg";
 import Frame2 from "../assets/Frame (2).svg";
@@ -21,6 +19,7 @@ export function useSidebarController() {
     const navigate = useNavigate();
     const location = useLocation();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [showLogsPopup, setShowLogsPopup] = useState(false);
 
     const handleLogout = async () => {
         // endpoint de logout
@@ -46,6 +45,20 @@ export function useSidebarController() {
             userId = null;
         }
     }
+
+    // Check if user has permission to view logs
+    const canViewLogs = userType.includes("rh") || userType.includes("committee") || userType.includes("admin");
+
+    // Auto-show logs popup for users with permission
+    useEffect(() => {
+        if (canViewLogs) {
+            // Show popup after 2 seconds of page load
+            const timer = setTimeout(() => {
+                setShowLogsPopup(true);
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [canViewLogs]);
 
     // Sidebar items logic here
     const sidebarItems: SidebarItem[] = [
@@ -135,8 +148,11 @@ export function useSidebarController() {
         userType,
         showLogoutConfirm,
         setShowLogoutConfirm,
+        showLogsPopup,
+        setShowLogsPopup,
         handleLogout,
         userId,
+        canViewLogs,
         sidebarItems: sidebarItems.filter(item => item.show),
     };
 }
