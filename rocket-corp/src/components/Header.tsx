@@ -8,6 +8,7 @@ import { getUsuarioLogado } from '../utils/auth';
 import { useCriteriaSave } from "../pages/rh/CriteriaManagementPage";
 
 export default function Header() {
+  const idCiclo = "2025.2"; 
   const location = useLocation();
   const navigate = useNavigate();
   const { onSave } = useCriteriaSave ? useCriteriaSave() : { onSave: undefined };
@@ -82,9 +83,6 @@ export default function Header() {
   return (
     <header className="bg-white border-b px-6 py-4 shadow-sm">
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-gray-800">
-          {getPageTitle(location.pathname)}
-        </h1>
         <p className="text-gray-800 font-bold">
           {isCollaboratorsListPage
             ? "Colaboradores"

@@ -146,7 +146,7 @@ export default function App() {
               {/* <Route path="/rh/collaborators" element={<CollaboratorsListPage />} /> */}
               <Route path="/rh/collaborators" element={<RequireAuth requiredRole="rh" ><RhCollaboratorsListPage /></RequireAuth>} />
               <Route path="/gestor/:gestorId/collaborators" element={<RequireAuth requiredRole="manager" ><GestorCollaboratorsListPage /></RequireAuth>} />
-              <Route path="/gestor/collaborator/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
+              <Route path="/gestor/colaborador/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
               <Route path="/rh/ImportHistoryPage" element={<ImportHistoryPage />} />
               <Route path="/gestor/brutal-facts" element={<BrutalFactsPage />} />
