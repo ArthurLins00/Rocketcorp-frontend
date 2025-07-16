@@ -5,6 +5,7 @@ interface CollaboratorGrowthProps {
   currentScore: number;
   lastScore: number;
   lastCycle: string;
+  title?: string;
 }
 
 const getGrowthColor = (growth: number) => {
@@ -25,7 +26,8 @@ const getGrowthDescription = (growth: number) => {
 export const CollaboratorGrowth: React.FC<CollaboratorGrowthProps> = ({ 
   currentScore, 
   lastScore, 
-  lastCycle 
+  lastCycle,
+  title
 }) => {
   const growth = currentScore - lastScore;
   const growthColor = getGrowthColor(growth);
@@ -37,7 +39,7 @@ export const CollaboratorGrowth: React.FC<CollaboratorGrowthProps> = ({
     <div className="bg-white rounded-lg pt-4 pb-6 pl-6 h-full flex">
       {/* First Column */}
       <div className="flex-1 flex flex-col justify-between">
-        <h3 className="text-sm font-semibold text-gray-800 mb-3">Crescimento</h3>
+        <h3 className="text-sm font-semibold text-gray-800 mb-3">{title || 'Crescimento'}</h3>
         
         <div className="flex items-start gap-3 flex-1">
           {/* Vertical line with growth color */}

@@ -7,7 +7,6 @@ import { enviarTodasAvaliacoes } from "../services/avaliacaoService";
 import { getUsuarioLogado } from '../utils/auth';
 
 export default function Header() {
-  const idCiclo = "2025.2"; // mockado
   const location = useLocation();
   const navigate = useNavigate();
   const isAvaliacaoPage = location.pathname.startsWith("/avaliacao");
@@ -29,6 +28,8 @@ export default function Header() {
     if (pathname === "/comite/equalizacoes") return "Equalizações";
     if (pathname === "/gestor/collaborators") return "Colaboradores";
     if (pathname.startsWith("/gestor/collaborator/")) return "Detalhes do Colaborador";
+    if (pathname === "/rh/ImportHistoryPage") return "Importar Histórico";
+    if (pathname === "/gestor/brutal-facts") return "Brutal Facts";
     return "Página Principal";
   };
 
@@ -74,6 +75,11 @@ export default function Header() {
         <h1 className="text-xl font-semibold text-gray-800">
           {getPageTitle(location.pathname)}
         </h1>
+        <p className="text-gray-800 font-bold">
+          {location.pathname.startsWith("/gestor") || location.pathname === "/gestor" || location.pathname === "/rh/ImportHistoryPage"
+            /*? getPageTitle(location.pathname) 
+            : `Ciclo ${idCiclo}`*/}
+        </p>
         {isAvaliacaoPage && (
           <>
             <button

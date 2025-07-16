@@ -48,20 +48,17 @@ export function useLoginController() {
       return;
     }
     try {
-      const response = await apiFetch(
-        import.meta.env.VITE_API_URL + "/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
-          credentials: "include",
-        }
-      );
+      const response = await apiFetch("/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+        credentials: "include",
+      });
       if (!response) return;
       const data = await response.json();
       if (!response.ok) {
@@ -96,7 +93,6 @@ export function useLoginController() {
         return;
       }
       localStorage.setItem("access_token", data.access_token);
-      console.log("Local storage", localStorage);
 
       const [, payloadBase64] = data.access_token.split(".");
       const payload = JSON.parse(atob(payloadBase64));
@@ -106,9 +102,7 @@ export function useLoginController() {
         setIsLoading(false);
         return;
       }
-      const userRes = await authenticatedFetch(
-        `${import.meta.env.VITE_API_URL}/users/${userId}`
-      );
+      const userRes = await authenticatedFetch(`/users/${userId}`);
       if (userRes && userRes.ok) {
         const userData = await userRes.json();
         localStorage.setItem("user", JSON.stringify(userData));

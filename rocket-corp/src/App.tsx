@@ -17,13 +17,16 @@ import DashboardComite from "./pages/dashboard-comite";
 import DashboardRH from "./pages/dashboard-rh";
 import DashboardGestor from "./pages/dashboard-gestor";
 
-import { CollaboratorsPage } from "./pages/gestor/CollaboratorsListPage";
+import { RhCollaboratorsListPage } from "./pages/rh/RhListOfCollaborators";
+import { GestorCollaboratorsListPage } from "./pages/gestor/GestorListOfCollaborators";
 
 import CriteriaManagementPage from "./pages/rh/CriteriaManagementPage";
 import { CollaboratorPage } from "./pages/gestor/CollaboratorPage";
 import { EvolutionPage } from "./pages/EvolutionPage";
 import LoginPage from "./pages/login";
 import EqualizacoesPage from "./pages/comite/EqualizacoesPage";
+import ImportHistoryPage from "./pages/rh/ImportHistoryPage";
+import BrutalFactsPage from "./pages/gestor/BrutalFactsPage";
 import React, { useEffect, useState } from "react";
 import NotAuthorizedPage from "./pages/NotAuthorizedPage";
 import { authenticatedFetch } from "./utils/auth";
@@ -36,7 +39,7 @@ function RequireAuth({ children, requiredRole }: { children: React.ReactElement,
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await authenticatedFetch(import.meta.env.VITE_API_URL + "/auth/me");
+        const res = await authenticatedFetch("/auth/me");
         if (res && res.ok) {
           const data = await res.json();
           if (data.message && data.message.toLowerCase().includes("user details retrieved successfully")) {
@@ -133,10 +136,14 @@ export default function App() {
               <Route path="/evolution-page" element={<EvolutionPage />} />
               <Route path="/rh/criterios" element={<CriteriaManagementPage />} />
               <Route path="/comite/equalizacoes" element={<EqualizacoesPage />} />
-              <Route path="/gestor/collaborators" element={<CollaboratorsPage />} />
-              <Route path="/gestor/collaborator/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
+              {/* <Route path="/rh/collaborators" element={<CollaboratorsListPage />} /> */}
+              <Route path="/rh/collaborators" element={<RequireAuth requiredRole="rh" ><RhCollaboratorsListPage /></RequireAuth>} />
+              <Route path="/gestor/:gestorId/collaborators" element={<RequireAuth requiredRole="manager" ><GestorCollaboratorsListPage /></RequireAuth>} />
+              <Route path="/gestor/colaborador/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
               {/* <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} /> */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/rh/ImportHistoryPage" element={<ImportHistoryPage />} />
+              <Route path="/gestor/brutal-facts" element={<BrutalFactsPage />} />
             </Routes>
           </main>
         </div>

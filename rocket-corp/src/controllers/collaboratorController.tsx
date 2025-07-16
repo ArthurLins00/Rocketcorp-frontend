@@ -1,16 +1,45 @@
 import type { Collaborator } from '../models/collaborator';
-import { mockCollaborator } from '../mocks/collaborator';
+import { authenticatedFetch } from '../utils/auth';
 
 export const fetchCollaborator = async (id: string): Promise<Collaborator> => {
-  // TODO: trocar pelo seu endpoint real de API
-  // Example: const response = await fetch(`/api/collaborators/${id}`);
-  // return await response.json();
-  console.log('Fetching collaborator with ID:', id);
-  return new Promise(resolve => setTimeout(() => resolve(mockCollaborator), 300));
+  const response = await authenticatedFetch(`/users/${id}`);
+  if (!response) throw new Error('Erro ao buscar colaborador');
+  const user = await response.json();
+  return {
+    id: user.id,
+    name: user.name,
+    cargo: user.cargo,
+    // ...add other fields as needed
+  };
 };
 
-export const submitManagerEvaluations = async (collaboratorId: string): Promise<void> => {
-  // TODO: trocar pelo endpoint real de envio
-  console.log('Enviar avaliações do gestor para colaborador:', collaboratorId);
-  return new Promise(resolve => setTimeout(resolve, 300));
+export const submitManagerEvaluations = async (
+  collaboratorId: string,
+  cicloId: string,
+  blocks: import('../models/criterions').CriterionBlock[]
+): Promise<void> => {
+  // Prepare updates array for backend
+  const updates = blocks.flatMap(block =>
+    block.criteria.map(criterion => ({
+      avaliacaoId: Number(criterion.id),
+      notaGestor: criterion.managerScore ?? 0,
+      justificativaGestor: criterion.managerJustification ?? ''
+    }))
+  );
+  const response = await authenticatedFetch(
+    `/avaliacao/gestor/bulk`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        colaboradorId: Number(collaboratorId),
+        cicloId: Number(cicloId),
+        updates
+      })
+    }
+  );
+  if (!response || !response.ok) {
+    const error = response ? await response.text() : 'Sem resposta do servidor';
+    throw new Error('Erro ao enviar avaliações do gestor: ' + error);
+  }
 };
