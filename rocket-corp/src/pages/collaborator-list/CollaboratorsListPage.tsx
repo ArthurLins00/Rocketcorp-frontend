@@ -33,7 +33,7 @@ export const CollaboratorsListPage = () => {
                 <CollaboratorsListSearchbar onSearch={handleSearch} />
             </div>
             {loading ? (
-                <p className="px-5 py-4">Carregando...</p>
+                <p className="px-6 py-4">Carregando...</p>
             ) : (
                 <div className="grid gap-4 mt-4 px-5 overflow-y-auto" style={{ maxHeight: '70vh' }}>
                     {cards.map(c => (
