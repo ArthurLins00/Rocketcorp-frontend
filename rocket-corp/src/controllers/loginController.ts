@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { FormData } from "../models/FormData";
 import { authenticatedFetch } from "../utils/auth";
 import { apiFetch } from "../utils/api";
@@ -11,6 +12,7 @@ export function useLoginController() {
         email: "",
         password: "",
     });
+    const navigate = useNavigate();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -102,16 +104,20 @@ export function useLoginController() {
             const userRes = await authenticatedFetch(`/users/${userId}`);
             if (userRes && userRes.ok) {
                 const userData = await userRes.json();
-                localStorage.setItem("user", JSON.stringify(userData));
-                // Get first role for dashboard route
                 const role = Array.isArray(userData.role) && userData.role.length > 0 ? userData.role[0] : "user";
-                let dashboardRoute = "/dashboard";
+                if ('password' in userData) {
+                    delete userData.password;
+                }
+                localStorage.setItem("user", JSON.stringify(userData));
+
+                let dashboardRoute = "/login";
                 if (role === "manager") dashboardRoute = "/gestor-dashboard";
                 else if (role === "committee") dashboardRoute = "/comite-dashboard";
                 else if (role === "rh") dashboardRoute = "/rh-dashboard";
                 else if (role === "admin") dashboardRoute = "/admin-dashboard";
                 else dashboardRoute = "/employee-dashboard";
-                window.location.href = dashboardRoute;
+                navigate(dashboardRoute);
+
             } else {
                 setError("Erro ao buscar informações do usuário.");
             }
@@ -130,5 +136,6 @@ export function useLoginController() {
         handleInputChange,
         handleSubmit,
         setShowPassword,
+        navigate,
     };
 }

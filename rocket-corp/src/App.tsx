@@ -125,6 +125,7 @@ export default function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/not-authorized" element={<NotAuthorizedPage />} />
               <Route path="*" element={<Navigate to="/login" replace />} />
+              <Route path="/" element={<Navigate to="/login" replace />} />
 
               {/* colaborador */}
               <Route path="/employee-dashboard" element={<DashboardColaborador />} />
