@@ -99,6 +99,13 @@ export default function App() {
   const isAvaliacaoRoute = location.pathname.startsWith("/avaliacao");
   const isCollaboratorDetailRoute = location.pathname.startsWith("/gestor/collaborator/");
   const isLoginPage = location.pathname === "/login";
+  const isDashboardRoute = [
+    "/dashboard",
+    "/employee-dashboard",
+    "/comite-dashboard",
+    "/rh-dashboard",
+    "/gestor-dashboard"
+  ].includes(location.pathname);
 
   if (isLoginPage) {
     return (
@@ -118,7 +125,7 @@ export default function App() {
       <div className="flex min-h-screen bg-[#F1F1F1] text-gray-800">
         <Sidebar />
         <div className="flex flex-col flex-1">
-          {!isCollaboratorDetailRoute && <Header />}
+          {!isCollaboratorDetailRoute && !isDashboardRoute && <Header />}
           {isAvaliacaoRoute && <Topbar />}
           <main className="flex-1">
             <Routes>
@@ -140,7 +147,6 @@ export default function App() {
               <Route path="/rh/collaborators" element={<RequireAuth requiredRole="rh" ><RhCollaboratorsListPage /></RequireAuth>} />
               <Route path="/gestor/:gestorId/collaborators" element={<RequireAuth requiredRole="manager" ><GestorCollaboratorsListPage /></RequireAuth>} />
               <Route path="/gestor/colaborador/:id" element={<RequireAuth requiredRole="manager" ><CollaboratorPage /></RequireAuth>} />
-              {/* <Route path="/gestor/collaborator/:id" element={<CollaboratorPage />} /> */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
               <Route path="/rh/ImportHistoryPage" element={<ImportHistoryPage />} />
               <Route path="/gestor/brutal-facts" element={<BrutalFactsPage />} />
