@@ -4,6 +4,7 @@ import { IoIosStar } from 'react-icons/io';
 interface CollaboratorScoreProps {
   score: number;
   semester: string;
+  title?: string;
 }
 
 const getScoreColor = (score: number) => {
@@ -20,14 +21,14 @@ const getScoreDescription = (score: number) => {
   return 'Precisa melhorar';
 };
 
-export const CollaboratorScore: React.FC<CollaboratorScoreProps> = ({ score, semester }) => {
+export const CollaboratorScore: React.FC<CollaboratorScoreProps> = ({ score, semester, title }) => {
   const scoreColor = getScoreColor(score);
   const scoreDescription = getScoreDescription(score);
 
   return (
     <div className="bg-white rounded-lg pt-4 pb-6 pl-6 h-full flex">
       <div className="flex-1 flex flex-col justify-between">
-        <h3 className="text-sm font-semibold text-gray-800 mb-3">Nota atual</h3>
+        <h3 className="text-sm font-semibold text-gray-800 mb-3">{title || 'Nota atual'}</h3>
         
         <div className="flex items-start gap-3 flex-1">
           {/* Vertical line with score color */}

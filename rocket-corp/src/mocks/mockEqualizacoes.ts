@@ -38,9 +38,9 @@ export const mockEqualizacoes: Equalizacao[] = [
     notaAutoavaliacao: 4.5,
     notaGestor: 4.6,
     notaAvaliacao360: 4.7,
-    notaFinal: null,
+    notaFinal: 4.6,
     justificativa: "",
     resumoIA: "Larissa liderou iniciativas complexas com alinhamento estratégico e foco em resultado.",
-    status: "Pendente",
+    status: "Finalizado",
   },
 ];

@@ -1,4 +1,6 @@
 import { useSidebarController } from "../controllers/sidebarController";
+import path from "path";
+import { icons } from "lucide-react";
 
 export const Sidebar = () => {
 	const {
