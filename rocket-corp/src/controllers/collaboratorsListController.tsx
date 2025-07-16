@@ -27,7 +27,7 @@ export async function getAllCards(isRhView: boolean): Promise<CollaboratorCardPr
 
   if (isRhView) {
     return data.map((item: any) => ({
-      id: item.idEqualizacao,
+      id: item.idAvaliado, // changed from idEqualizacao to idAvaliado (user id)
       name: item.nomeAvaliado,
       cargo: item.cargoAvaliado,
       initials: item.nomeAvaliado ? item.nomeAvaliado.split(' ').map((n: string) => n[0]).join('').toUpperCase() : '',
@@ -39,7 +39,7 @@ export async function getAllCards(isRhView: boolean): Promise<CollaboratorCardPr
     }));
   } else {
     return data.map((item: any) => ({
-      id: item.id,
+      id: item.id, // use item.id, which is the user id from backend
       name: item.name,
       cargo: item.cargo,
       initials: item.name ? item.name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : '',

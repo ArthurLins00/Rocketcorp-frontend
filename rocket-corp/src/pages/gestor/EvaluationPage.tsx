@@ -19,14 +19,18 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({ blocks, onScoreC
     return (
         <>
         <div className="bg-white rounded-xl px-7">
-
-            {blocks.map(block => (
-            <EvaluationBlock
-                key={block.id}
-                block={block}
-                onScoreChange={onScoreChange}
-                onJustificationChange={onJustificationChange}
-            />
+            {blocks.map((block, idx) => (
+              <>
+                <EvaluationBlock
+                  key={block.id}
+                  block={block}
+                  onScoreChange={onScoreChange}
+                  onJustificationChange={onJustificationChange}
+                />
+                {idx < blocks.length - 1 && (
+                  <hr className=" border-t border-gray-200" />
+                )}
+              </>
             ))}
         </div>
       </>
