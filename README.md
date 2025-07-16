@@ -61,7 +61,7 @@ VITE_API_URL="http://localhost:3000"
 ### 4. Inicie a aplicação
 
 ```bash
-pnpm dev
+pnpm run dev
 ```
 
 A aplicação estará disponível em [http://localhost:5173](http://localhost:5173) (ou outra porta indicada pelo Vite).
