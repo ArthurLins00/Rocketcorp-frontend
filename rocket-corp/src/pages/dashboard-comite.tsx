@@ -11,6 +11,7 @@ import {
 } from "../services/dashboardService";
 import { calcularAvalPendentesComite } from "../utils/porcentagensAvaliacoes";
 import type { User } from "../types/User";
+import { CollaboratorsListPage } from "./collaborator-list/CollaboratorsListPage";
 
 interface Ciclo {
   id: number;
@@ -99,7 +100,8 @@ const DashboardComite = () => {
             />
           </div>
           <div>
-            <DashboardCollaboratorCard />
+            {/* <DashboardCollaboratorCard /> */}
+            <CollaboratorsListPage />
           </div>
         </div>
       </main>

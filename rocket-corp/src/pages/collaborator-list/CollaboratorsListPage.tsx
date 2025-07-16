@@ -12,7 +12,8 @@ export const CollaboratorsListPage = () => {
   const [cards, setCards] = useState<CollaboratorCardProps[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const isRhView = location.pathname.includes("rh");
+  const isRhView =
+    location.pathname.includes("rh") || location.pathname.includes("comite");
 
   useEffect(() => {
     getAllCards(isRhView).then((data) => {
