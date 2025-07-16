@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import TrilhaFilterBar from "../../components/rh/TrilhaFilterBar";
 import TrilhaSection from "../../components/rh/TrilhaSection";
 import ErrorModal from "../../components/ErrorModal";
@@ -12,6 +12,12 @@ import {
 import ConfirmModal from "../../components/ConfirmModal";
 import SuccessModal from "../../components/SuccessModal";
 import type { Trilha, Criterio } from "../../mocks/trilhasMock";
+import { useLocation } from "react-router-dom";
+
+// Contexto para comunicação Header <-> Página
+import { createContext, useContext } from "react";
+export const CriteriaSaveContext = createContext<{ onSave?: () => void }>({});
+export const useCriteriaSave = () => useContext(CriteriaSaveContext);
 
 const LOCAL_STORAGE_KEY = "rocketCorp.trilhas";
 
@@ -24,6 +30,7 @@ export default function CriteriaManagementPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const location = useLocation();
   function transformBackendDataToTrilha(backendTrilhas: Trilha[]): Trilha[] {
     console.log("Raw backend data:", backendTrilhas); // Debug log
 
@@ -143,9 +150,9 @@ export default function CriteriaManagementPage() {
     }, 100);
   };
 
-  const handleSaveClick = () => {
+  const handleSaveClick = useCallback(() => {
     setShowConfirmModal(true);
-  };
+  }, []);
 
   // Novo: consolidar dados locais antes de salvar, marcando isModified quando necessário
   const getTrilhasWithLocalEdits = () => {
@@ -290,23 +297,8 @@ export default function CriteriaManagementPage() {
   };
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-[#08605F]">
-          Critérios de Avaliação
-        </h1>
-        <button
-          onClick={handleSaveClick}
-          disabled={isSaving}
-          className={`text-white font-medium py-2 px-4 rounded ${
-            isSaving
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-[#08605F] hover:bg-[#054845]"
-          }`}
-        >
-          {isSaving ? "Salvando..." : "Salvar alterações"}
-        </button>
-      </div>
+    <CriteriaSaveContext.Provider value={{ onSave: handleSaveClick }}>
+      <div className="p-6 space-y-6">
 
       <TrilhaFilterBar
         trilhas={trilhas.map(({ id, name }) => ({ id, nome: name }))}
@@ -356,6 +348,7 @@ export default function CriteriaManagementPage() {
         title="Sucesso"
         description="As alterações foram salvas com sucesso."
       />
-    </div>
+      </div>
+    </CriteriaSaveContext.Provider>
   );
 }

@@ -6,7 +6,7 @@ import AvatarInicial from "../AvatarInicial";
 import {
   salvarEqualizacaoAtualizada,
   enviarEqualizacaoParaBackend,
-} from "../../pages/utils/equalizacaoService";
+} from "../../utils/equalizacaoService";
 
 type Props = {
   equalizacao: Equalizacao;
@@ -25,6 +25,7 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
   const [statusLocal, setStatusLocal] = useState(equalizacao.status);
   // Track the current ID, updating it when we get a real ID from backend
   const [currentId, setCurrentId] = useState(equalizacao.idEqualizacao);
+  const [loading, setLoading] = useState(false);
 
   const {
     nomeAvaliado,
@@ -109,9 +110,9 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
     }
 
     return (
-      <div className="w-full bg-gray-200 h-3 rounded-md">
+      <div className="w-full bg-gray-200 h-4 rounded-md">
         <div
-          className={`h-3 ${cor.barra} rounded-md`}
+          className={`h-4 ${cor.barra} rounded-md`}
           style={{ width: largura }}
         />
       </div>
@@ -119,6 +120,7 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
   };
 
   const handleSalvar = async () => {
+    setLoading(true);
     const notaFinalizada =
       notaFinal ??
       calcularMedia([notaAutoavaliacao, notaGestor, notaAvaliacao360]);
@@ -159,13 +161,16 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
       onUpdate(atualizada);
       setEditando(false);
       setStatusLocal("Finalizado");
+      setLoading(false);
     } catch (error) {
       console.error("Erro ao salvar equalização:", error);
       // Handle error (maybe show a toast or error message)
+      setLoading(false);
     }
   };
 
   const handleEditar = async () => {
+    setLoading(true);
     // Check if we have a valid numeric ID (not temporary like temp_7_1)
     const hasValidId =
       currentId &&
@@ -207,9 +212,11 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
       setEditando(true);
       setStatusLocal("Pendente");
       onUpdate(atualizada);
+      setLoading(false);
     } catch (error) {
       console.error("Erro ao editar equalização:", error);
       // Handle error (maybe show a toast or error message)
+      setLoading(false);
     }
   };
 
@@ -241,32 +248,33 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
 
         {/* Notas */}
         <div className="flex flex-wrap gap-2 text-sm">
-          <span>
-            Autoavaliação{" "}
-            <span className="bg-gray-200 px-2 py-1 rounded font-bold">
-              {notaAutoavaliacao?.toFixed(1) ?? "N/A"}
+          <span style={{ minWidth: 70, display: 'inline-block', textAlign: 'center' }}>
+            Autoavaliação {" "}
+            <span className="bg-gray-200 px-2 py-1 rounded font-bold" style={{ minWidth: 40, display: 'inline-block', textAlign: 'center' }}>
+              {notaAutoavaliacao?.toFixed(1) ?? "-"}
             </span>
           </span>
-          <span>
-            Avaliação 360{" "}
-            <span className="bg-gray-200 px-2 py-1 rounded font-bold">
-              {notaAvaliacao360?.toFixed(1) ?? "N/A"}
+          <span style={{ minWidth: 70, display: 'inline-block', textAlign: 'center' }}>
+            Avaliação 360 {" "}
+            <span className="bg-gray-200 px-2 py-1 rounded font-bold" style={{ minWidth: 40, display: 'inline-block', textAlign: 'center' }}>
+              {notaAvaliacao360?.toFixed(1) ?? "-"}
             </span>
           </span>
-          <span>
-            Nota gestor{" "}
-            <span className="bg-gray-200 px-2 py-1 rounded font-bold">
-              {notaGestor?.toFixed(1) ?? "N/A"}
+          <span style={{ minWidth: 70, display: 'inline-block', textAlign: 'center' }}>
+            Nota gestor {" "}
+            <span className="bg-gray-200 px-2 py-1 rounded font-bold" style={{ minWidth: 40, display: 'inline-block', textAlign: 'center' }}>
+              {notaGestor?.toFixed(1) ?? "-"}
             </span>
           </span>
-          <span>
-            Nota final{" "}
+          <span style={{ minWidth: 70, display: 'inline-block', textAlign: 'center' }}>
+            Nota final {" "}
             <span
               className={`px-2 py-1 rounded font-bold ${
                 statusLocal === "Finalizado"
                   ? "bg-[#08605F] text-white"
                   : "bg-gray-200"
               }`}
+              style={{ minWidth: 40, display: 'inline-block', textAlign: 'center' }}
             >
               {statusLocal === "Finalizado"
                 ? (
@@ -288,7 +296,7 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
       {expandido && (
         <div className="mt-6 space-y-4">
           {/* Gráficos de barra */}
-          <div className="flex justify-between gap-4">
+          <div className="flex justify-between gap-10">
             {[
               { nome: "Autoavaliação", nota: notaAutoavaliacao, index: 0 },
               { nome: "Nota gestor", nota: notaGestor, index: 1 },
@@ -390,10 +398,16 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
 
           {/* Botões */}
           <div className="flex justify-end gap-2 pt-2">
-            {editando ? (
+            {loading ? (
+              <button className="flex items-center gap-1 px-4 py-2 bg-gray-300 text-gray-600 rounded-md font-medium" disabled>
+                <span className="animate-spin mr-2 border-2 border-t-2 border-gray-600 rounded-full w-4 h-4 inline-block align-middle"></span>
+                Carregando...
+              </button>
+            ) : editando ? (
               <button
                 onClick={handleSalvar}
                 className="flex items-center gap-1 px-4 py-2 bg-[#08605F] text-white rounded-md font-medium"
+                disabled={loading}
               >
                 <Save size={16} /> Concluir
               </button>
@@ -405,6 +419,7 @@ export default function EqualizacaoCard({ equalizacao, onUpdate }: Props) {
                 <button
                   onClick={handleEditar}
                   className="flex items-center gap-1 px-4 py-2 border border-[#08605F] text-[#08605F] rounded-md font-medium"
+                  disabled={loading}
                 >
                   <Pencil size={16} /> Editar resultado
                 </button>

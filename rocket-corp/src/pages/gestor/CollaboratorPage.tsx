@@ -114,7 +114,7 @@ export const CollaboratorPage: React.FC = () => {
 
       <div className="">
         {activeTab === 0 && (
-          <div className="px-8 py-7">
+          <div className="px-6 py-6">
             <EvaluationPage
               blocks={blocks}
               onScoreChange={handleScoreChange}

@@ -5,11 +5,21 @@ import ErrorModal from "./ErrorModal";
 import SuccessModal from "./SuccessModal";
 import { enviarTodasAvaliacoes } from "../services/avaliacaoService";
 import { getUsuarioLogado } from '../utils/auth';
+import { useCriteriaSave } from "../pages/rh/CriteriaManagementPage";
 
 export default function Header() {
   const idCiclo = "2025.2"; // mockado
   const location = useLocation();
   const navigate = useNavigate();
+  const { onSave } = useCriteriaSave ? useCriteriaSave() : { onSave: undefined };
+  const isCriteriaPage = location.pathname === "/rh/criterios";
+  const isCollaboratorsListPage =
+    location.pathname === "/rh/collaborators" ||
+    location.pathname === "/gestor/collaborators" ||
+    /\/gestor\/[^/]+\/collaborators/.test(location.pathname) ||
+    location.pathname === "/collaborator-list" ||
+    location.pathname.includes("/collaborator-list");
+  const [isSaving, setIsSaving] = useState(false);
   const isAvaliacaoPage = location.pathname.startsWith("/avaliacao");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -75,10 +85,31 @@ export default function Header() {
     <header className="bg-white border-b px-6 py-4 shadow-sm">
       <div className="flex justify-between items-center">
         <p className="text-gray-800 font-bold">
-          {location.pathname.startsWith("/gestor") || location.pathname === "/gestor" || location.pathname === "/rh/ImportHistoryPage"
-            ? getPageTitle(location.pathname) 
+          {isCollaboratorsListPage
+            ? "Colaboradores"
+            : isCriteriaPage
+            ? "Critérios de Avaliação"
+            : location.pathname.startsWith("/gestor") || location.pathname === "/gestor" || location.pathname === "/rh/ImportHistoryPage" || location.pathname === "/evolution-page" || location.pathname === "/comite/equalizacoes"
+            ? getPageTitle(location.pathname)
             : `Ciclo ${idCiclo}`}
         </p>
+        {isCriteriaPage && (
+          <button
+            onClick={() => {
+              setIsSaving(true);
+              onSave && onSave();
+              setTimeout(() => setIsSaving(false), 2000); // Simula loading, ajuste conforme integração
+            }}
+            disabled={isSaving}
+            className={`px-4 py-2 rounded transition ${
+              isSaving
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-[#08605F] text-white hover:bg-[#054845]'
+            }`}
+          >
+            {isSaving ? 'Salvando...' : 'Salvar alterações'}
+          </button>
+        )}
         {isAvaliacaoPage && (
           <>
             <button
