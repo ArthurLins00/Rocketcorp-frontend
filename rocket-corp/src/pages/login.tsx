@@ -1,7 +1,8 @@
-"use client";
+"use client"
 
-import { LoginForm } from "../components/LoginForm";
-import { useLoginController } from "../controllers/loginController";
+import { LoginForm } from "../components/LoginForm"
+import { useLoginController } from "../controllers/loginController"
+import { FaUser, FaLock } from "react-icons/fa";
 
 export default function LoginPage() {
   const controller = useLoginController();
@@ -12,12 +13,7 @@ export default function LoginPage() {
         {/* Logo/Header */}
         <div className="text-center mb-6">
           <div className="mx-auto h-16 w-16 bg-[#08605F] rounded-full flex items-center justify-center mb-4 shadow-lg">
-            <svg
-              className="h-8 w-8 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -26,12 +22,8 @@ export default function LoginPage() {
               />
             </svg>
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-            Bem-vindo de volta!
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Entre com seu e-mail institucional
-          </p>
+          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Bem-vindo de volta!</h2>
+          <p className="mt-2 text-sm text-gray-600">Entre com seu e-mail institucional</p>
         </div>
         {/* Form */}
         <LoginForm {...controller} />

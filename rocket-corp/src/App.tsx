@@ -2,7 +2,6 @@ import "./App.css";
 import { Dashboard } from "./pages/dashboard";
 import { Evolution } from "./pages/evolution";
 import { Navigate, Routes, Route, useLocation } from "react-router-dom";
-import AdminCycles from "./pages/admin/admin-cycles";
 import { Sidebar } from "./components/Sidebar";
 import Header from "./components/Header";
 import Topbar from "./components/Topbar";
@@ -151,7 +150,6 @@ export default function App() {
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
               <Route path="/rh/ImportHistoryPage" element={<ImportHistoryPage />} />
               <Route path="/gestor/brutal-facts" element={<BrutalFactsPage />} />
-              <Route path="/admin/cycles" element={<AdminCycles />} />
             </Routes>
           </main>
         </div>

@@ -7,70 +7,21 @@ import Ellipse11 from "../assets/Ellipse 11.svg";
 import Frame3 from "../assets/Frame (3).svg";
 import Frame1 from "../assets/Frame (1).svg";
 import Frame6 from "../assets/Frame (6).svg";
-import {
-  buscaEqualizacoesAvaliado,
-  buscarCicloAtual,
-} from "../services/dashboardService";
-import type { Equalizacao } from "../types/Equalizacao";
-import type { User } from "../types/User";
 
 const DashboardColaborador = () => {
-  const [status, setStatus] = useState<string>();
-  const [colaborador, setColaborador] = useState<User>();
-  const [equalizacoesColaborador, setEqualizacoesColaborador] = useState<
-    Equalizacao[] | null
-  >(null);
-
+  type CycleStatus =
+    | "EM ANDAMENTO"
+    | "AGUARDANDO RESULTADO"
+    | "RESULTADOS DISPONIVEIS";
+  const [status, setStatus] = useState<CycleStatus>("RESULTADOS DISPONIVEIS");
   useEffect(() => {
-    buscarCicloAtual()
-      .then((ciclo) => {
-        setStatus(ciclo.status);
-      })
-      .catch((erro) => {
-        console.error(erro);
-      });
+    setTimeout(() => {
+      setStatus("RESULTADOS DISPONIVEIS");
+    }, 500);
   }, []);
-
-  useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      const userObj = JSON.parse(userStr);
-      const userId = userObj.id ?? null;
-      console.log("User object from localStorage:", userObj);
-      console.log("User id from localStorage:", userId);
-
-      setColaborador(userObj);
-    } else {
-      console.warn("No user data found in localStorage");
-    }
-  }, []);
-
-  //retorna um array de todas as equalizacoes daquele colaborador
-
-  useEffect(() => {
-    if (!colaborador?.id) return;
-    buscaEqualizacoesAvaliado(colaborador.id)
-      .then((equalizacoes) => {
-        console.log(
-          "RETORNO DA API:",
-          equalizacoes,
-          Array.isArray(equalizacoes),
-          equalizacoes.length
-        );
-        setEqualizacoesColaborador(equalizacoes);
-      })
-      .catch(console.error);
-  }, [colaborador]);
-
-  console.log(equalizacoesColaborador);
-
   let bgColor, textColor, subtitle, title, iconLeft, subTextColor;
 
-  if (
-    status === "aberto" ||
-    status === "revisao_gestor" ||
-    status === "revisao_comite"
-  ) {
+  if (status === "EM ANDAMENTO") {
     bgColor = "bg-[#08605F]";
     textColor = "text-white";
     subtitle = "15 dias restantes";
@@ -97,8 +48,7 @@ const DashboardColaborador = () => {
       <main className="flex-row p-6">
         <div className="mb-6">
           <span className="text-lg ml-2">
-            <strong>Olá</strong>,{" "}
-            {colaborador ? colaborador.name : "carregando..."}!
+            <strong>Olá</strong>, Colaborador!
           </span>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:auto-rows-min">
@@ -129,10 +79,10 @@ const DashboardColaborador = () => {
           </div>
           {/* Cards lado a lado, sempre com a mesma altura */}
           <div className="flex flex-col h-full">
-            <EvaluationCard equalizacoes={equalizacoesColaborador ?? []} />
+            <EvaluationCard />
           </div>
           <div className="flex flex-col h-full">
-            <PerformanceChart equalizacoes={equalizacoesColaborador ?? []} />
+            <PerformanceChart />
           </div>
         </div>
       </main>
