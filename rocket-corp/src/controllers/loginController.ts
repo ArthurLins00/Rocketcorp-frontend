@@ -111,11 +111,11 @@ export function useLoginController() {
                 localStorage.setItem("user", JSON.stringify(userData));
 
                 let dashboardRoute = "/login";
-                if (role === "manager") dashboardRoute = "/gestor-dashboard";
-                else if (role === "committee") dashboardRoute = "/comite-dashboard";
-                else if (role === "rh") dashboardRoute = "/rh-dashboard";
-                else if (role === "admin") dashboardRoute = "/admin-dashboard";
-                else dashboardRoute = "/employee-dashboard";
+                if (role === "gestor") dashboardRoute = "/gestor/dashboard";
+                else if (role === "comite") dashboardRoute = "/comite/dashboard";
+                else if (role === "rh") dashboardRoute = "/rh/dashboard";
+                else if (role === "colaborador") dashboardRoute = "/colaborador/dashboard";
+                else dashboardRoute = "/login";
                 navigate(dashboardRoute);
 
             } else {

@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Header } from '../../components/collaborators/CollaboratorHeader';
 import { SegmentedControl } from '../../components/collaborators/CollaboratorSegmentedControl';
-import Avaliacao360Page from './Evaluation360Page';
-import { HistoricoPage } from './HistoryPage';
+import { Evaluation360Page } from './360page';
 import type { CriterionBlock } from '../../models/criterions';
 import type { Collaborator } from '../../models/collaborator';
 import { fetchCriteriaBlocks } from '../../controllers/criteriaControllers';
 import { fetchCollaborator, submitManagerEvaluations } from '../../controllers/collaboratorController';
 import { EvaluationPage } from './EvaluationPage';
 import { buscarCicloAberto } from '../../services/cicleService';
+import { HistoricoPage as HistoryPage } from './HistoryPage';
 
 const tabs = ['Avaliação', 'Avaliação 360', 'Histórico'];
 export const CollaboratorPage: React.FC = () => {
@@ -138,9 +138,11 @@ export const CollaboratorPage: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 1 && <Avaliacao360Page ciclo={ciclo} collaborator={collaborator} />}
+        {activeTab === 1 && collaborator?.id && <Evaluation360Page collaboratorId={collaborator.id} />}
 
-        {activeTab === 2 && <HistoricoPage collaboratorId={collaborator?.id} ciclo={ciclo} />}
+        {activeTab === 2 && (
+          <HistoryPage collaboratorId={collaborator?.id} ciclo={ciclo} />
+        )}
       </div>
     </div>
   );

@@ -4,11 +4,11 @@ import { useState } from "react";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 
 const roleLabels: Record<string, string> = {
-	admin: "Admin",
-	manager: "Gestor",
-	user: "Colaborador",
-	committee: "Comitê",
-	rh: "RH",
+	admin: "admin",
+	gestor: "gestor",
+	colaborador: "colaborador",
+	comite: "comite",
+	rh: "rh",
 };
 
 export const Sidebar = () => {
