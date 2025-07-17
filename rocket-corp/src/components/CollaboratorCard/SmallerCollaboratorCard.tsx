@@ -1,4 +1,5 @@
 import type { CollaboratorCardProps } from "../../models/CollaboratorCardProps";
+import AvatarInicial from "../AvatarInicial";
 
 export const SmallerCollaboratorCard: React.FC<CollaboratorCardProps> = ({
   id, // TODO: Use id for navigation when making component clickable
@@ -12,9 +13,7 @@ export const SmallerCollaboratorCard: React.FC<CollaboratorCardProps> = ({
       <header className="flex h-11 items-center gap-6 w-full">
         <div className="flex items-center gap-4 w-full">
           <div className="flex-1 flex items-center gap-4">
-            <div className="w-10 h-10 bg-slate-200 rounded-full flex-shrink-0 flex items-center justify-center">
-              <span className="text-slate-900 font-bold">{initials}</span>
-            </div>
+            <AvatarInicial nome={name} tamanho={40} />
             <div className="flex flex-col gap-0.5 min-w-0">
               <h3 className="font-bold text-sm truncate">{name}</h3>
               <p className="font-normal text-xs text-[#1c1c1cbf] truncate">

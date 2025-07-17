@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import frame from "../../assets/RightChevron.svg";
 import type { CollaboratorCardProps } from "../../models/CollaboratorCardProps";
+import AvatarInicial from "../AvatarInicial";
 
 export const CollaboratorCard: React.FC<
   CollaboratorCardProps & { isRhView?: boolean }
@@ -31,9 +32,7 @@ export const CollaboratorCard: React.FC<
     >
       <header className="flex h-11 items-center gap-6 w-full">
         <div className="flex items-center gap-4 min-w-0">
-          <div className="w-10 h-10 bg-slate-200 rounded-full flex-shrink-0 flex items-center justify-center">
-            <span className="text-slate-900 font-bold">{initials}</span>
-          </div>
+          <AvatarInicial nome={name} tamanho={40} />
           <div className="flex flex-col gap-0.5 min-w-0">
             <h3 className="font-bold text-sm truncate">{name}</h3>
             <p className="font-normal text-xs text-[#1c1c1cbf] truncate">
