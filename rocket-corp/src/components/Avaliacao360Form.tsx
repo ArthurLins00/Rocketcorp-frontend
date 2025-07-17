@@ -290,7 +290,7 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
                     <p className="text-xs text-green-500 font-medium">Membro da equipe</p>
                   )}
                   {/* ✅ Indicador de gestor */}
-                  {equipeAutomatica.find(m => m.id === colaborador.id && m.role?.includes('manager')) && (
+                  {equipeAutomatica.find(m => m.id === colaborador.id && m.role?.includes('gestor')) && (
                     <p className="text-xs text-blue-500 font-medium">Gestor</p>
                   )}
                 </div>

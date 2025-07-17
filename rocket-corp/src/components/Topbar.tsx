@@ -11,7 +11,7 @@ export default function Topbar() {
       : "text-gray-600 hover:text-green-700";
 
   // Check if user is a manager
-  const isManager = userType.some(role => role.toLowerCase() === "manager");
+  const isManager = userType.some(role => role.toLowerCase() === "gestor");
 
   return (
     <nav className="flex space-x-6 border-b border-gray-200 mb-1 px-6 pt-4 bg-white">

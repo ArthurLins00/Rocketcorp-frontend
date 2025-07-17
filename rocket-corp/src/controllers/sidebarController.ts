@@ -38,7 +38,7 @@ export function useSidebarController() {
     const userId = user?.id?.toString() || null;
 
     // Check if user has permission to view logs
-    const canViewLogs = userType.includes("rh") || userType.includes("committee") || userType.includes("admin");
+    const canViewLogs = userType.includes("rh") || userType.includes("comite") || userType.includes("admin");
 
     // Auto-show logs popup for users with permission
     useEffect(() => {
@@ -63,13 +63,13 @@ export function useSidebarController() {
             label: "Dashboard do gestor",
             path: "/gestor-dashboard",
             icon: Frame,
-            show: userType.includes("manager"),
+            show: userType.includes("gestor"),
         },
         {
             label: "Dashboard do comitê",
             path: "/comite-dashboard",
             icon: Frame,
-            show: userType.includes("committee"),
+            show: userType.includes("comite"),
         },
         {
             label: "Dashboard do RH",
@@ -81,11 +81,11 @@ export function useSidebarController() {
             label: "Avaliação de ciclo",
             path: "/avaliacao/autoavaliacao",
             icon: Frame1,
-            show: userType.includes("manager"),
+            show: true,
         },
         {
             label: "Evolução",
-            path: "/evolution",
+            path: "/evolution-page",
             icon: Frame2,
             show: true,
         },
@@ -93,7 +93,7 @@ export function useSidebarController() {
             label: "Colaboradores - Gestor",
             path: userId ? `/gestor/${userId}/collaborators` : "/gestor/collaborators",
             icon: Frame2,
-            show: userType.includes("manager"),
+            show: userType.includes("gestor"),
         },
         {
             label: "Colaboradores - RH",
@@ -105,31 +105,25 @@ export function useSidebarController() {
             label: "Critérios de Avaliação",
             path: "/rh/criterios",
             icon: Frame3,
-            show: true,
+            show: userType.includes("rh"),
         },
         {
             label: "Equalizações",
             path: "/comite/equalizacoes",
             icon: Frame4,
-            show: true,
-        },
-        {
-            label: "Colaborador - Evolução",
-            path: "/evolution-page",
-            icon: Frame2,
-            show: true,
+            show: userType.includes("comite"),
         },
         {
             label: "Importar Histórico",
             path: "/rh/ImportHistoryPage",
             icon: Frame5,
-            show: true,
+            show: userType.includes("rh"),
         },
         {
             label: "Brutal Facts",
             path: "/gestor/brutal-facts",
             icon: Frame6,
-            show: true,
+            show: userType.includes("gestor"),
         }
     ];
 
