@@ -6,6 +6,7 @@ import type {
   PerformanceData,
   EvaluationCycle,
 } from "../models/history";
+import { authenticatedFetch } from "../utils/auth";
 
 // Backend response interfaces
 interface PerformanceDataDto {
@@ -43,8 +44,8 @@ export class HistoryService {
     collaboratorId: string
   ): Promise<HistoryResponse> {
     try {
-      const apiUrl = `http://localhost:3000/users/${collaboratorId}/history`;
-      const response = await fetch(apiUrl);
+      const apiUrl = `/users/${collaboratorId}/history`;
+      const response = await authenticatedFetch(apiUrl);
 
       if (!response || !response.ok) {
         throw new Error(`HTTP error! status: ${response?.status || "Unknown"}`);
@@ -90,8 +91,8 @@ export class HistoryService {
     collaboratorId: string
   ): Promise<PerformanceResponse> {
     try {
-      const apiUrl = `http://localhost:3000/users/${collaboratorId}/performance`;
-      const response = await fetch(apiUrl);
+      const apiUrl = `/users/${collaboratorId}/performance`;
+      const response = await authenticatedFetch(apiUrl);
 
       if (!response || !response.ok) {
         throw new Error(`HTTP error! status: ${response?.status || "Unknown"}`);
@@ -125,8 +126,8 @@ export class HistoryService {
     collaboratorId: string
   ): Promise<CyclesResponse> {
     try {
-      const apiUrl = `http://localhost:3000/users/${collaboratorId}/evaluation-cycles`;
-      const response = await fetch(apiUrl);
+      const apiUrl = `/users/${collaboratorId}/evaluation-cycles`;
+      const response = await authenticatedFetch(apiUrl);
 
       if (!response || !response.ok) {
         throw new Error(`HTTP error! status: ${response?.status || "Unknown"}`);

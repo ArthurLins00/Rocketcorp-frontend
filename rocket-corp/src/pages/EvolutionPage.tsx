@@ -2,10 +2,17 @@ import React from 'react';
 import { HistoricoPage } from './gestor/HistoryPage';
 
 export const EvolutionPage: React.FC = () => {
- 
-  // TODO: integrar com o backend para obter o ID do colaborador atual
-  const currentUserId = '1';
-  
+  let currentUserId = '';
+  try {
+    const user = localStorage.getItem('user');
+    if (user) {
+      const userObj = JSON.parse(user);
+      currentUserId = userObj.id || userObj.userId || '';
+    }
+  } catch (e) {
+    currentUserId = '';
+  }
+
   return (
     <HistoricoPage collaboratorId={currentUserId} />
   );
