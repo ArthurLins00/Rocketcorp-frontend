@@ -16,6 +16,7 @@ Nosso time é formado pelos seguintes integrantes:
 ## 📖 Resumo do Projeto
 
 Este projeto consiste em um frontend moderno desenvolvido com React, utilizando TypeScript para maior robustez, Vite para build e desenvolvimento rápido, Tailwind CSS para estilização e pnpm como gerenciador de pacotes. O frontend consome a API do backend Rocket Corp, oferecendo uma interface intuitiva e responsiva para os usuários.
+Você pode visualizar o nosso repositório do backend em: https://github.com/MF853/Rocketcorp-BackEnd
 
 ## 🛠️ Tecnologias
 
