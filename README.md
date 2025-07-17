@@ -39,7 +39,7 @@ Certifique-se de ter instalado em sua máquina:
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/Raylandson/Rocketcorp-frontend.git
+git clone https://github.com/ArthurLins00/Rocketcorp-frontend.git
 cd Rocketcorp-frontend/rocket-corp
 ```
 
