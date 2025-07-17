@@ -1,34 +1,31 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import {
-  getAllCards,
-  searchCards,
-} from "../../controllers/collaboratorsListController";
+import { getAllCards, searchCards } from '../../controllers/collaboratorsListController';
 import { CollaboratorsListSearchbar } from "../../components/collaborators/CollaboratorsListSearchbar";
-import { CollaboratorCard } from "../../components/collaborators/CollaboratorCard";
+import { CollaboratorCard } from '../../components/collaborators/CollaboratorCard';
 import type { CollaboratorCardProps } from "../../models/CollaboratorCardProps";
 
 export const CollaboratorsListPage = () => {
-  const [cards, setCards] = useState<CollaboratorCardProps[]>([]);
-  const [loading, setLoading] = useState(true);
-  const location = useLocation();
-  const isRhView =
-    location.pathname.includes("rh") || location.pathname.includes("comite");
+    const [cards, setCards] = useState<CollaboratorCardProps[]>([]);
+    const [loading, setLoading] = useState(true);
+    const location = useLocation();
+    const isRhView = location.pathname.includes("/rh/");
 
-  useEffect(() => {
-    getAllCards(isRhView).then((data) => {
-      setCards(data);
-      setLoading(false);
-    });
-  }, [isRhView]);
+    useEffect(() => {
+        getAllCards(isRhView).then(data => {
+            setCards(data);
+            setLoading(false);
+        });
+    }, [isRhView]);
 
-  const handleSearch = (q: string) => {
-    setLoading(true);
-    searchCards(q, isRhView).then((data) => {
-      setCards(data);
-      setLoading(false);
-    });
-  };
+    const handleSearch = (q: string) => {
+        setLoading(true);
+        searchCards(q, isRhView).then(data => {
+            setCards(data);
+            setLoading(false);
+        });
+    };
+    
 
     return (
         <div className="flex flex-col">
