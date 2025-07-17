@@ -1,16 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ConfirmModal from "./ConfirmModal";
 import ErrorModal from "./ErrorModal";
 import SuccessModal from "./SuccessModal";
 import { enviarTodasAvaliacoes } from "../services/avaliacaoService";
-import { getUsuarioLogado } from '../utils/auth';
+import { getUsuarioLogado, authenticatedFetch } from '../utils/auth';
 import { useCriteriaSave } from "../pages/rh/CriteriaManagementPage";
 
 export default function Header() {
-  const idCiclo = "2025.2"; 
+  const [cicleName, setCicleName] = useState<string>("");
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    async function fetchCicleName() {
+      const response = await authenticatedFetch("/cicle/current");
+      if (response && response.ok) {
+        const data = await response.json();
+        setCicleName(data.name || "");
+      }
+    }
+    fetchCicleName();
+  }, []);
   const { onSave } = useCriteriaSave ? useCriteriaSave() : { onSave: undefined };
   const isCriteriaPage = location.pathname === "/rh/criterios";
   const isCollaboratorsListPage =
@@ -90,7 +101,7 @@ export default function Header() {
             ? "Critérios de Avaliação"
             : location.pathname.startsWith("/gestor") || location.pathname === "/gestor" || location.pathname === "/rh/ImportHistoryPage" || location.pathname === "/evolution-page" || location.pathname === "/comite/equalizacoes"
             ? getPageTitle(location.pathname)
-            : `Ciclo ${idCiclo}`}
+            : `Ciclo ${cicleName || "..."}`}
         </p>
         {isCriteriaPage && (
           <button
