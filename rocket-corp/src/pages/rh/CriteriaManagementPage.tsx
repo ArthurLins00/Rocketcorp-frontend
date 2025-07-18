@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import TrilhaFilterBar from "../../components/rh/TrilhaFilterBar";
 import TrilhaSection from "../../components/rh/TrilhaSection";
 import ErrorModal from "../../components/ErrorModal";
@@ -12,12 +12,7 @@ import {
 import ConfirmModal from "../../components/ConfirmModal";
 import SuccessModal from "../../components/SuccessModal";
 import type { Trilha, Criterio } from "../../mocks/trilhasMock";
-import { useLocation } from "react-router-dom";
-
-// Contexto para comunicação Header <-> Página
-import { createContext, useContext } from "react";
-export const CriteriaSaveContext = createContext<{ onSave?: () => void }>({});
-export const useCriteriaSave = () => useContext(CriteriaSaveContext);
+import { useCriteriaSave } from "../../contexts/CriteriaSaveContext";
 
 const LOCAL_STORAGE_KEY = "rocketCorp.trilhas";
 
@@ -27,10 +22,12 @@ export default function CriteriaManagementPage() {
   const trilhaRefs = useRef<{ [key: number]: any }>({});
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const location = useLocation();
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Use the global context to register the save function
+  const { registerSaveFunction, unregisterSaveFunction } = useCriteriaSave();
   function transformBackendDataToTrilha(backendTrilhas: Trilha[]): Trilha[] {
     console.log("Raw backend data:", backendTrilhas); // Debug log
 
@@ -79,12 +76,11 @@ export default function CriteriaManagementPage() {
           ...trilha,
           criteriosGrouped: {
             ...trilha.criteriosGrouped,
-            [groupName]: trilha.criteriosGrouped[groupName]
-              .map((criterion) =>
-                criterion.id === updatedCriterion.id
-                  ? { ...updatedCriterion, isModified: true } // Mark as modified
-                  : criterion
-              )
+            [groupName]: trilha.criteriosGrouped[groupName].map((criterion) =>
+              criterion.id === updatedCriterion.id
+                ? { ...updatedCriterion, isModified: true } // Mark as modified
+                : criterion
+            ),
           },
         };
       })
@@ -150,9 +146,176 @@ export default function CriteriaManagementPage() {
     }, 100);
   };
 
-  const handleSaveClick = useCallback(() => {
-    setShowConfirmModal(true);
-  }, []);
+  // Register the save function in the global context when component mounts
+  useEffect(() => {
+    console.log(
+      "🔧 [CriteriaManagementPage] Registering save function in global context"
+    );
+
+    // Define handleSaveClick inside useEffect to avoid dependency issues
+    const localHandleSaveClick = async () => {
+      console.log(
+        "🔘 [CriteriaManagementPage] handleSaveClick called via context"
+      );
+      console.log("🚀 [CriteriaManagementPage] Starting save process...");
+
+      // Consolidate local edits - defined inside useEffect to avoid dependencies
+      const consolidateTrilhas = () => {
+        return trilhas.map((trilha) => {
+          const trilhaRef = trilhaRefs.current[trilha.id];
+          if (trilhaRef && trilhaRef.getAllLocalCriteria) {
+            const localGroups = trilhaRef.getAllLocalCriteria();
+            // Marcar isModified se houver diferença
+            const criteriosGroupedMarcados: { [key: string]: Criterio[] } = {};
+            Object.entries(localGroups).forEach(
+              ([groupName, localCriterios]) => {
+                criteriosGroupedMarcados[groupName] = (
+                  localCriterios as Criterio[]
+                ).map((localCriterio: Criterio) => {
+                  // Procurar o critério original global
+                  const original = trilha.criteriosGrouped[groupName]?.find(
+                    (c) => c.id === localCriterio.id
+                  );
+                  if (!original) return localCriterio; // Novo critério
+                  // Verificar se houve alteração
+                  const alterado =
+                    localCriterio.name !== original.name ||
+                    localCriterio.peso !== original.peso ||
+                    localCriterio.description !== original.description ||
+                    localCriterio.enabled !== original.enabled;
+                  if (alterado) {
+                    return { ...localCriterio, isModified: true };
+                  }
+                  return { ...localCriterio, isModified: original.isModified };
+                });
+              }
+            );
+            return {
+              ...trilha,
+              criteriosGrouped: criteriosGroupedMarcados,
+            };
+          }
+          return trilha;
+        });
+      };
+
+      // Consolidar edições locais em uma variável temporária
+      const trilhasConsolidadas = consolidateTrilhas();
+
+      // Verificação: campos obrigatórios (nome e descrição)
+      const hasEmptyFields = trilhasConsolidadas.some((trilha) =>
+        Object.values(trilha.criteriosGrouped).some((criterios) =>
+          (criterios as Criterio[]).some(
+            (c: Criterio) => !c.name.trim() || !c.description.trim()
+          )
+        )
+      );
+
+      if (hasEmptyFields) {
+        console.warn(
+          "⚠️ [CriteriaManagementPage] Empty fields validation failed"
+        );
+        setErrorMessage(
+          "Todos os critérios devem ter Nome e Descrição preenchidos."
+        );
+        setShowErrorModal(true);
+        return;
+      }
+
+      // Validação dos pesos
+      const isValid = trilhasConsolidadas.every((trilha) => {
+        for (const groupName in trilha.criteriosGrouped) {
+          if (
+            Object.prototype.hasOwnProperty.call(
+              trilha.criteriosGrouped,
+              groupName
+            )
+          ) {
+            const groupCriteria = trilha.criteriosGrouped[
+              groupName
+            ] as Criterio[];
+            const total = groupCriteria
+              .filter((c: Criterio) => c.enabled)
+              .reduce(
+                (sum: number, c: Criterio) =>
+                  sum + parseFloat(String(c.peso || "0")),
+                0
+              );
+            if (total !== 100) return false;
+          }
+        }
+        return true;
+      });
+
+      if (!isValid) {
+        console.warn("⚠️ [CriteriaManagementPage] Weight validation failed");
+        setErrorMessage(
+          "Todos os grupos devem ter exatamente 100% de peso nos critérios habilitados."
+        );
+        setShowErrorModal(true);
+        return;
+      }
+
+      console.log(
+        "✅ [CriteriaManagementPage] All validations passed, proceeding with save..."
+      );
+      setIsSaving(true);
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY,
+        JSON.stringify(trilhasConsolidadas)
+      );
+
+      try {
+        // Agrupa todos os critérios para envio
+        const allCriterios: Criterio[] = [];
+        trilhasConsolidadas.forEach((trilha) => {
+          Object.values(trilha.criteriosGrouped).forEach((criterios) => {
+            allCriterios.push(...(criterios as Criterio[]));
+          });
+        });
+
+        console.log(
+          "📤 [CriteriaManagementPage] Sending criteria to backend..."
+        );
+
+        // Primeiro envia os novos critérios (bulk)
+        await salvarCriteriosBulk(trilhasConsolidadas);
+        console.log("✅ [CriteriaManagementPage] Bulk save completed");
+
+        // Depois envia os existentes atualizados
+        await enviarCriterios(allCriterios);
+        console.log(
+          "✅ [CriteriaManagementPage] Individual criteria update completed"
+        );
+
+        setShowSuccessModal(true);
+        setTrilhas(trilhasConsolidadas); // Atualiza o estado global só depois do sucesso
+        console.log(
+          "🎉 [CriteriaManagementPage] Save process completed successfully!"
+        );
+      } catch (error) {
+        console.error("❌ [CriteriaManagementPage] Save failed:", error);
+        const msg =
+          error instanceof Error
+            ? error.message
+            : "Erro ao enviar dados para o backend.";
+        setErrorMessage(msg);
+        setShowErrorModal(true);
+      }
+
+      setIsSaving(false);
+    };
+
+    registerSaveFunction(localHandleSaveClick);
+
+    // Cleanup: unregister when component unmounts
+    return () => {
+      console.log(
+        "🧹 [CriteriaManagementPage] Unregistering save function from global context"
+      );
+      unregisterSaveFunction();
+    };
+  }, [trilhas, registerSaveFunction, unregisterSaveFunction]);
 
   // Novo: consolidar dados locais antes de salvar, marcando isModified quando necessário
   const getTrilhasWithLocalEdits = () => {
@@ -163,9 +326,13 @@ export default function CriteriaManagementPage() {
         // Marcar isModified se houver diferença
         const criteriosGroupedMarcados: { [key: string]: Criterio[] } = {};
         Object.entries(localGroups).forEach(([groupName, localCriterios]) => {
-          criteriosGroupedMarcados[groupName] = (localCriterios as Criterio[]).map((localCriterio: Criterio) => {
+          criteriosGroupedMarcados[groupName] = (
+            localCriterios as Criterio[]
+          ).map((localCriterio: Criterio) => {
             // Procurar o critério original global
-            const original = trilha.criteriosGrouped[groupName]?.find((c) => c.id === localCriterio.id);
+            const original = trilha.criteriosGrouped[groupName]?.find(
+              (c) => c.id === localCriterio.id
+            );
             if (!original) return localCriterio; // Novo critério
             // Verificar se houve alteração
             const alterado =
@@ -197,12 +364,16 @@ export default function CriteriaManagementPage() {
     // Verificação: campos obrigatórios (nome e descrição)
     const hasEmptyFields = trilhasConsolidadas.some((trilha) =>
       Object.values(trilha.criteriosGrouped).some((criterios) =>
-        (criterios as Criterio[]).some((c: Criterio) => !c.name.trim() || !c.description.trim())
+        (criterios as Criterio[]).some(
+          (c: Criterio) => !c.name.trim() || !c.description.trim()
+        )
       )
     );
 
     if (hasEmptyFields) {
-      setErrorMessage("Todos os critérios devem ter Nome e Descrição preenchidos.");
+      setErrorMessage(
+        "Todos os critérios devem ter Nome e Descrição preenchidos."
+      );
       setShowErrorModal(true);
       return;
     }
@@ -210,11 +381,22 @@ export default function CriteriaManagementPage() {
     // Validação dos pesos
     const isValid = trilhasConsolidadas.every((trilha) => {
       for (const groupName in trilha.criteriosGrouped) {
-        if (Object.prototype.hasOwnProperty.call(trilha.criteriosGrouped, groupName)) {
-          const groupCriteria = trilha.criteriosGrouped[groupName] as Criterio[];
+        if (
+          Object.prototype.hasOwnProperty.call(
+            trilha.criteriosGrouped,
+            groupName
+          )
+        ) {
+          const groupCriteria = trilha.criteriosGrouped[
+            groupName
+          ] as Criterio[];
           const total = groupCriteria
             .filter((c: Criterio) => c.enabled)
-            .reduce((sum: number, c: Criterio) => sum + parseFloat(String(c.peso || "0")), 0);
+            .reduce(
+              (sum: number, c: Criterio) =>
+                sum + parseFloat(String(c.peso || "0")),
+              0
+            );
           if (total !== 100) return false;
         }
       }
@@ -230,7 +412,10 @@ export default function CriteriaManagementPage() {
     }
 
     setIsSaving(true);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(trilhasConsolidadas));
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      JSON.stringify(trilhasConsolidadas)
+    );
 
     try {
       // Agrupa todos os critérios para envio
@@ -265,14 +450,14 @@ export default function CriteriaManagementPage() {
     trilhaId: number,
     groupName: string,
     criterionId: string | number,
-    idCiclo: number | string  
+    idCiclo: number | string
   ) => {
     // Se for critério já salvo no backend, remover no backend primeiro
-    if (typeof criterionId === 'number') {
+    if (typeof criterionId === "number") {
       try {
         await removerCriterio(criterionId);
       } catch (error) {
-        setErrorMessage('Erro ao remover critério no backend.');
+        setErrorMessage("Erro ao remover critério no backend.");
         setShowErrorModal(true);
         return;
       }
@@ -297,9 +482,7 @@ export default function CriteriaManagementPage() {
   };
 
   return (
-    <CriteriaSaveContext.Provider value={{ onSave: handleSaveClick }}>
-      <div className="p-6 space-y-6">
-
+    <div className="p-6 space-y-6">
       <TrilhaFilterBar
         trilhas={trilhas.map(({ id, name }) => ({ id, nome: name }))}
         onSelectTrilha={handleSelectTrilha}
@@ -348,7 +531,6 @@ export default function CriteriaManagementPage() {
         title="Sucesso"
         description="As alterações foram salvas com sucesso."
       />
-      </div>
-    </CriteriaSaveContext.Provider>
+    </div>
   );
 }

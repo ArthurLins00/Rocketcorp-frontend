@@ -5,6 +5,7 @@ import type {
   CriterioUpdateRequest,
   CriterioBulkRequest,
 } from "../mocks/trilhasMock";
+import { apiFetch } from "../utils/api";
 
 //colocar um .env
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -13,19 +14,31 @@ const API_URL_GET_TRILHAS = `${API_BASE_URL}/trilha/with-criterios-grouped`;
 const API_URL_CRITERIO_BULK = `${API_BASE_URL}/criterio/bulk`;
 
 export async function buscarTrilhasDoBackend(): Promise<Trilha[]> {
-  const response = await fetch(API_URL_GET_TRILHAS);
+  console.log("🔍 [trilhaService] Fetching trilhas from:", API_URL_GET_TRILHAS);
+
+  const response = await apiFetch("/trilha/with-criterios-grouped");
 
   if (!response.ok) {
     const errorBody = await response.text();
-    console.error(`Failed to fetch trilhas: ${response.status} - ${errorBody}`);
+    console.error(
+      `❌ [trilhaService] Failed to fetch trilhas: ${response.status} - ${errorBody}`
+    );
     throw new Error(
       `Falha ao buscar trilhas do backend. Status: ${response.status}`
     );
   }
-  return await response.json();
+
+  const data = await response.json();
+  console.log("✅ [trilhaService] Successfully fetched trilhas:", data);
+  return data;
 }
 
 export async function enviarCriterios(criterios: Criterio[]): Promise<void> {
+  console.log(
+    "📤 [trilhaService] enviarCriterios called with criterios:",
+    criterios
+  );
+
   // Filter only criterios that have been modified or need to be updated
   const criteriosToUpdate = criterios.filter(
     (criterio) =>
@@ -33,8 +46,13 @@ export async function enviarCriterios(criterios: Criterio[]): Promise<void> {
       typeof criterio.id === "number" && criterio.isModified
   );
 
+  console.log(
+    "🔧 [trilhaService] Filtered criterios to update:",
+    criteriosToUpdate
+  );
+
   if (criteriosToUpdate.length === 0) {
-    console.log("No criterios to update");
+    console.log("⚠️ [trilhaService] No criterios to update");
     return;
   }
 
@@ -70,23 +88,35 @@ export async function enviarCriterios(criterios: Criterio[]): Promise<void> {
     }),
   };
 
-  console.log("Sending criterios update:", updateRequest);
+  console.log(
+    "📋 [trilhaService] Final DTO being sent to backend:",
+    JSON.stringify(updateRequest, null, 2)
+  );
+  console.log(
+    "🌐 [trilhaService] Making PATCH request to:",
+    API_URL_CRITERIO_BULK
+  );
 
-  const response = await fetch(API_URL_CRITERIO_BULK, {
+  const response = await apiFetch("/criterio/bulk", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(updateRequest),
   });
 
+  console.log("📡 [trilhaService] Response status:", response.status);
+  console.log("📡 [trilhaService] Response ok:", response.ok);
+
   if (!response.ok) {
     const errorBody = await response.text();
     console.error(
-      `Failed to update criterios: ${response.status} - ${errorBody}`
+      `❌ [trilhaService] Failed to update criterios: ${response.status} - ${errorBody}`
     );
     throw new Error(
       `Falha ao atualizar critérios no backend. Status: ${response.status}`
     );
   }
+
+  console.log("✅ [trilhaService] Successfully updated criterios");
 }
 
 function isNewCriterio(criterio: Criterio): boolean {
@@ -116,9 +146,17 @@ export async function criarCriteriosBulk(
   trilhaId: number,
   idCiclo: number
 ): Promise<Criterio[]> {
+  console.log("🆕 [trilhaService] criarCriteriosBulk called with:", {
+    criterios,
+    trilhaId,
+    idCiclo,
+  });
+
   const newCriterios = criterios.filter(isNewCriterio);
+  console.log("🔍 [trilhaService] Filtered new criterios:", newCriterios);
 
   if (newCriterios.length === 0) {
+    console.log("⚠️ [trilhaService] No new criterios to create");
     return [];
   }
 
@@ -136,31 +174,59 @@ export async function criarCriteriosBulk(
     ),
   };
 
-  const response = await fetch(API_URL_CRITERIO_BULK, {
+  console.log(
+    "📋 [trilhaService] CREATE DTO being sent to backend:",
+    JSON.stringify(createRequest, null, 2)
+  );
+  console.log(
+    "🌐 [trilhaService] Making POST request to:",
+    API_URL_CRITERIO_BULK
+  );
+
+  const response = await apiFetch("/criterio/bulk", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(createRequest),
   });
 
+  console.log("📡 [trilhaService] CREATE Response status:", response.status);
+  console.log("📡 [trilhaService] CREATE Response ok:", response.ok);
+
   if (!response.ok) {
     const errorBody = await response.text();
     console.error(
-      `Failed to create criterios: ${response.status} - ${errorBody}`
+      `❌ [trilhaService] Failed to create criterios: ${response.status} - ${errorBody}`
     );
     throw new Error(`Falha ao criar critérios. Status: ${response.status}`);
   }
 
-  return await response.json();
+  const responseData = await response.json();
+  console.log(
+    "✅ [trilhaService] Successfully created criterios:",
+    responseData
+  );
+  return responseData;
 }
 
 export async function atualizarCriteriosBulk(
   criterios: Criterio[]
 ): Promise<Criterio[]> {
+  console.log(
+    "🔄 [trilhaService] atualizarCriteriosBulk called with criterios:",
+    criterios
+  );
+
   const modifiedCriterios = criterios.filter(
     (criterio) => !isNewCriterio(criterio) && isModifiedCriterio(criterio)
   );
 
+  console.log(
+    "🔍 [trilhaService] Filtered modified criterios:",
+    modifiedCriterios
+  );
+
   if (modifiedCriterios.length === 0) {
+    console.log("⚠️ [trilhaService] No modified criterios to update");
     return [];
   }
 
@@ -180,31 +246,67 @@ export async function atualizarCriteriosBulk(
     }),
   };
 
-  const response = await fetch(API_URL_CRITERIO_BULK, {
+  console.log(
+    "📋 [trilhaService] UPDATE DTO being sent to backend:",
+    JSON.stringify(updateRequest, null, 2)
+  );
+  console.log(
+    "🌐 [trilhaService] Making PATCH request to:",
+    API_URL_CRITERIO_BULK
+  );
+
+  const response = await apiFetch("/criterio/bulk", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(updateRequest),
   });
 
+  console.log("📡 [trilhaService] UPDATE Response status:", response.status);
+  console.log("📡 [trilhaService] UPDATE Response ok:", response.ok);
+
   if (!response.ok) {
     const errorBody = await response.text();
     console.error(
-      `Failed to update criterios: ${response.status} - ${errorBody}`
+      `❌ [trilhaService] Failed to update criterios: ${response.status} - ${errorBody}`
     );
     throw new Error(`Falha ao atualizar critérios. Status: ${response.status}`);
   }
 
-  return await response.json();
+  const responseData = await response.json();
+  console.log(
+    "✅ [trilhaService] Successfully updated criterios:",
+    responseData
+  );
+  return responseData;
 }
 
 export async function salvarCriteriosBulk(trilhas: Trilha[]): Promise<void> {
+  console.log(
+    "💾 [trilhaService] salvarCriteriosBulk called with trilhas:",
+    trilhas
+  );
+
   try {
     const allOperations: Promise<Criterio[]>[] = [];
 
     for (const trilha of trilhas) {
-      const idCiclo = getIdCicloFromTrilha(trilha);
+      console.log(
+        `🔍 [trilhaService] Processing trilha: ${trilha.id} - ${trilha.name}`
+      );
 
-      for (const criterios of Object.values(trilha.criteriosGrouped)) {
+      const idCiclo = getIdCicloFromTrilha(trilha);
+      console.log(
+        `🔄 [trilhaService] Using idCiclo: ${idCiclo} for trilha ${trilha.id}`
+      );
+
+      for (const [tipoKey, criterios] of Object.entries(
+        trilha.criteriosGrouped
+      )) {
+        console.log(
+          `📋 [trilhaService] Processing criterios for tipo '${tipoKey}':`,
+          criterios
+        );
+
         const createPromise = criarCriteriosBulk(criterios, trilha.id, idCiclo);
         allOperations.push(createPromise);
 
@@ -213,21 +315,37 @@ export async function salvarCriteriosBulk(trilhas: Trilha[]): Promise<void> {
       }
     }
 
+    console.log(
+      `⏳ [trilhaService] Executing ${allOperations.length} operations in parallel...`
+    );
     await Promise.all(allOperations);
 
-    console.log("All criterios saved successfully");
+    console.log("✅ [trilhaService] All criterios saved successfully");
   } catch (error) {
-    console.error("Error saving criterios:", error);
+    console.error("❌ [trilhaService] Error saving criterios:", error);
     throw error;
   }
 }
 
 export async function removerCriterio(criterioId: number) {
-  const response = await fetch(`${API_BASE_URL}/criterio/${criterioId}`, {
+  const deleteUrl = `/criterio/${criterioId}`;
+  console.log("🗑️ [trilhaService] Removing criterio with ID:", criterioId);
+  console.log("🌐 [trilhaService] Making DELETE request to:", deleteUrl);
+
+  const response = await apiFetch(deleteUrl, {
     method: "DELETE",
   });
+
+  console.log("📡 [trilhaService] DELETE Response status:", response.status);
+  console.log("📡 [trilhaService] DELETE Response ok:", response.ok);
+
   if (!response.ok) {
     const errorBody = await response.text();
+    console.error(
+      `❌ [trilhaService] Failed to delete criterio: ${response.status} - ${errorBody}`
+    );
     throw new Error(`Erro ao remover critério: ${errorBody}`);
   }
+
+  console.log("✅ [trilhaService] Successfully deleted criterio:", criterioId);
 }
