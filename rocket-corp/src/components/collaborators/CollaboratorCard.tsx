@@ -24,9 +24,9 @@ export const CollaboratorCard: React.FC<
   };
 
   return (
-    <div 
+    <div
       className={`flex flex-col items-start gap-4 p-4 bg-white rounded-xl${
-        !isRhView ? ' cursor-pointer hover:shadow-md transition-shadow' : ''
+        !isRhView ? " cursor-pointer hover:shadow-md transition-shadow" : ""
       }`}
       {...(!isRhView ? { onClick: handleCardClick } : {})}
     >

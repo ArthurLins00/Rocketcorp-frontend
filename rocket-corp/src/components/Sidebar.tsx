@@ -46,7 +46,7 @@ export const Sidebar = () => {
 	};
 
 	return (
-		<aside className="w-[14.5rem] h-[64rem] bg-white border-r-2 border-[#CECDCD] flex flex-col justify-between py-8">
+		<aside className="w-[14.5rem] min-h-screen bg-white border-r-2 border-[#CECDCD] flex flex-col justify-between py-8">
 			<div>
 				<div className="flex items-center justify-center h-16 mb-8">
 					<span className="text-2xl font-bold text-[#08605F]">RPE</span>
@@ -73,7 +73,12 @@ export const Sidebar = () => {
 														className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left ${location.pathname === item.path ? "bg-[#08605F1F] font-bold" : "hover:bg-[#08605F1F]"}`}
 														onClick={() => navigate(item.path)}
 													>
-														<img src={item.icon} alt={item.label} className="mr-2 w-5 h-5" />
+													<img
+														src={item.icon}
+														alt={item.label}
+														className="mr-2 w-5 h-5"
+														style={{ color: '#08605F', filter: 'none' }}
+													/>
 														{item.label}
 													</span>
 												</li>
@@ -86,10 +91,23 @@ export const Sidebar = () => {
 					</ul>
 				</nav>
 			</div>
-			<div className="flex flex-col items-start pl-8">
-				<div className="flex items-center mb-4">
+			<div className="flex flex-col items-start pl-8 pt-3">
+				<div className="flex items-center mb-4 space-x-2">
 					<AvatarInicial nome={localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!).name : "Colaborador 1"} tamanho={32} />
-					<span className="text-base text-[#1D1D1D]">{localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!).name : "Colaborador 1"}</span>
+					<span
+						className="text-base text-[#1D1D1D] max-w-[8rem] break-words whitespace-normal overflow-hidden text-ellipsis"
+						style={{
+							display: '-webkit-box',
+							WebkitBoxOrient: 'vertical',
+							WebkitLineClamp: 2,
+							overflow: 'hidden',
+							textOverflow: 'ellipsis',
+							wordBreak: 'break-word',
+						}}
+						title={localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!).name : "Colaborador 1"}
+					>
+						{localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!).name : "Colaborador 1"}
+					</span>
 				</div>
 				<a
 					href="#"

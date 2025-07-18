@@ -1,7 +1,18 @@
 import { FaStar } from "react-icons/fa";
 import { DashboardInfoCard } from "./DashboardInfoCards";
 
-export const CardNotaAtual = () => (
+interface CardNotaAtualProps {
+  cicloFinalizado?: {
+    year?: number;
+    period?: number;
+  } | null;
+  notaFinal: number;
+}
+
+export const CardNotaAtual = ({
+  cicloFinalizado,
+  notaFinal,
+}: CardNotaAtualProps) => (
   <DashboardInfoCard
     title="Nota atual"
     bgColor="bg-white"
@@ -14,7 +25,14 @@ export const CardNotaAtual = () => (
         <span className="text-sm text-[#4F4F4F] leading-tight">
           Nota final do ciclo realizado
           <br />
-          em <span className="font-bold text-black">2024.2</span>
+          em{" "}
+          <span className="font-bold text-black">
+            {cicloFinalizado
+              ? `${cicloFinalizado.year ?? "--"}.${
+                  cicloFinalizado.period ?? "--"
+                }`
+              : "--.--"}
+          </span>
         </span>
       </div>
       {/* Ícone e nota */}
@@ -22,10 +40,16 @@ export const CardNotaAtual = () => (
         <FaStar className="text-[#219653] text-4xl" />
         <div className="flex flex-col items-start">
           <span className="text-4xl font-bold text-[#219653] leading-none">
-            4.5
+            {notaFinal ?? "--"}
           </span>
           <span className="text-base font-bold text-[#219653] leading-none">
-            Great
+            {notaFinal
+              ? notaFinal >= 4
+                ? "Great"
+                : notaFinal >= 3
+                ? "Good"
+                : "Regular"
+              : ""}
           </span>
         </div>
       </div>

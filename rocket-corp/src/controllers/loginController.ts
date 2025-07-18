@@ -65,7 +65,6 @@ export function useLoginController() {
             if (!response) return;
             const data = await response.json();
             if (!response.ok) {
-
                 if (
                     data.message === "Invalid credentials" ||
                     data.message === "Login ou senha incorretos"
@@ -82,12 +81,16 @@ export function useLoginController() {
                 ) {
                     setError("Por favor, preencha o campo de e-mail");
                 } else if (
-                    data.message?.toLowerCase().includes("password should not be empty") ||
+                    data.message
+                        ?.toLowerCase()
+                        .includes("password should not be empty") ||
                     data.message?.toLowerCase().includes("password is required")
                 ) {
                     setError("Por favor, preencha o campo de senha");
                 } else {
-                    setError("Ocorreu um erro ao tentar fazer login. Por favor, tente novamente.");
+                    setError(
+                        "Ocorreu um erro ao tentar fazer login. Por favor, tente novamente."
+                    );
                 }
                 setIsLoading(false);
                 return;
@@ -116,7 +119,7 @@ export function useLoginController() {
                 else if (roles.includes("comite")) dashboardRoute = "/comite/dashboard";
                 else if (roles.includes("rh")) dashboardRoute = "/rh/dashboard";
                 else if (roles.includes("colaborador")) dashboardRoute = "/colaborador/dashboard";
-                else if (roles.includes("admin")) dashboardRoute = "/admin/dashboard";
+                else if (roles.includes("admin")) dashboardRoute = "/admin/cycles";
                 else dashboardRoute = "/login";
                 navigate(dashboardRoute);
                 window.location.reload();

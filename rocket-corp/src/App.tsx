@@ -29,6 +29,7 @@ import ImportHistoryPage from "./pages/rh/ImportHistoryPage";
 import BrutalFactsPage from "./pages/gestor/BrutalFactsPage";
 import React, { useEffect, useState } from "react";
 import NotAuthorizedPage from "./pages/NotAuthorizedPage";
+import AdminCycles from "./pages/admin/admin-cycles";
 import { authenticatedFetch } from "./utils/auth";
 
 function RequireAuth({ children, requiredRole }: { children: React.ReactElement, requiredRole?: string }) {
@@ -176,7 +177,8 @@ export default function App() {
               <Route path="/rh/criterios" element={<RequireAuth requiredRole="rh" ><CriteriaManagementPage /></RequireAuth>} />
               <Route path="/rh/import-history" element={<RequireAuth requiredRole="rh" ><ImportHistoryPage /></RequireAuth>} />
               <Route path="/rh/colaboradores" element={<RequireAuth requiredRole="rh" ><RhCollaboratorsListPage /></RequireAuth>} />
-
+              
+              <Route path="/admin/cycles" element={<AdminCycles />} />
             </Routes>
           </main>
         </div>

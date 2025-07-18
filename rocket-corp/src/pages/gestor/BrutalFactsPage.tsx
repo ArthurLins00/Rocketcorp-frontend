@@ -166,10 +166,10 @@ export default function BrutalFactsPage() {
       </div>
 
       {/* Resumo IA entre cards e gráfico */}
-      <GenAIComponent
+      {/* <GenAIComponent
         titulo="Resumo IA do gestor"
         descricao="Este é um resumo gerado por IA sobre o desempenho geral dos liderados deste gestor."
-      />
+      /> */}
 
       {/* Segunda linha - Gráfico de desempenho */}
       <div className="mb-5">
@@ -181,10 +181,10 @@ export default function BrutalFactsPage() {
       </div>
 
       {/* Resumo IA entre gráfico e equalizações */}
-      <GenAIComponent
+      {/* <GenAIComponent
         titulo="Resumo IA do desempenho"
         descricao="Análise automatizada do desempenho dos liderados ao longo dos ciclos."
-      />
+      /> */}
 
       {/* Equalizações finalizadas */}
       <div className="mt-8 bg-white rounded-lg p-4">
