@@ -15,18 +15,18 @@ export default function Topbar() {
 
   return (
     <nav className="flex space-x-6 border-b border-gray-200 mb-1 px-6 pt-4 bg-white">
-      <Link to="/avaliacao/autoavaliacao" className={`pb-2 ${isActive("/avaliacao/autoavaliacao")}`}>
+      <Link to="/colaborador/avaliacao/autoavaliacao" className={`pb-2 ${isActive("/avaliacao/autoavaliacao")}`}>
         Autoavaliação
       </Link>
       {!isManager && (
-        <Link to="/avaliacao/avaliacao360" className={`pb-2 ${isActive("/avaliacao/avaliacao360")}`}>
+        <Link to="/colaborador/avaliacao/avaliacao360" className={`pb-2 ${isActive("/colaborador/avaliacao/avaliacao360")}`}>
           Avaliação 360°
         </Link>
       )}
-      <Link to="/avaliacao/mentoring" className={`pb-2 ${isActive("/avaliacao/mentoring")}`}>
+      <Link to="/colaborador/avaliacao/mentoring" className={`pb-2 ${isActive("/colaborador/avaliacao/mentoring")}`}>
         Mentoring
       </Link>
-      <Link to="/avaliacao/referencias" className={`pb-2 ${isActive("/avaliacao/referencias")}`}>
+      <Link to="/colaborador/avaliacao/referencias" className={`pb-2 ${isActive("/colaborador/avaliacao/referencias")}`}>
         Referências
       </Link>
     </nav>

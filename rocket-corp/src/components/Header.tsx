@@ -25,13 +25,13 @@ export default function Header() {
   const { onSave } = useCriteriaSave ? useCriteriaSave() : { onSave: undefined };
   const isCriteriaPage = location.pathname === "/rh/criterios";
   const isCollaboratorsListPage =
-    location.pathname === "/rh/collaborators" ||
-    location.pathname === "/gestor/collaborators" ||
+    location.pathname === "/rh/colaboradores" ||
+    location.pathname === "/gestor/colaboradores" ||
     /\/gestor\/[^/]+\/collaborators/.test(location.pathname) ||
     location.pathname === "/collaborator-list" ||
-    location.pathname.includes("/collaborator-list");
+    location.pathname.includes("/colaboradores");
   const [isSaving, setIsSaving] = useState(false);
-  const isAvaliacaoPage = location.pathname.startsWith("/avaliacao");
+  const isAvaliacaoPage = location.pathname.startsWith("/colaborador/avaliacao");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -39,18 +39,16 @@ export default function Header() {
   const [isLoading, setIsLoading] = useState(false);
 
   const getPageTitle = (pathname: string) => {
-    if (pathname.startsWith("/avaliacao")) return "Avaliação de Desempenho";
-    if (pathname === "/dashboard") return "Dashboard";
-    if (pathname === "/employee-dashboard") return "Dashboard do Funcionário";
-    if (pathname === "/comite-dashboard") return "Dashboard do Comitê";
-    if (pathname === "/rh-dashboard") return "Dashboard do RH";
-    if (pathname === "/gestor-dashboard") return "Dashboard do Gestor";
-    if (pathname === "/cycle-evaluation") return "Avaliação de Ciclo";
-    if (pathname.startsWith("/evolution")) return "Evolução";
+    if (pathname.startsWith("/colaborador/avaliacao")) return "Avaliação de Desempenho";
+    if (pathname === "/colaborador/dashboard") return "Dashboard do Funcionário";
+    if (pathname === "/comite/dashboard") return "Dashboard do Comitê";
+    if (pathname === "/rh/dashboard") return "Dashboard do RH";
+    if (pathname === "/gestor/dashboard") return "Dashboard do Gestor";
+    if (pathname === "/colaborador/evolution") return "Evolução";
     if (pathname === "/comite/equalizacoes") return "Equalizações";
-    if (pathname === "/gestor/collaborators") return "Colaboradores";
-    if (pathname.startsWith("/gestor/collaborator/")) return "Detalhes do Colaborador";
-    if (pathname === "/rh/ImportHistoryPage") return "Importar Histórico";
+    if (pathname.includes("/gestor") && pathname.includes("/colaboradores")) return "Colaboradores";
+    if (pathname.startsWith("/gestor/colaborador/")) return "Detalhes do Colaborador";
+    if (pathname === "/rh/import-history") return "Importar Histórico";
     if (pathname === "/gestor/brutal-facts") return "Brutal Facts";
     return "Página Principal";
   };
@@ -81,13 +79,13 @@ export default function Header() {
   // Função para redirecionar para o dashboard correto
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
-    const usuario = getUsuarioLogado();
-    const role = usuario?.role;
+    const usuario = getUsuarioLogado(); // This gets the user object from localStorage
+    const roles = Array.isArray(usuario?.role) ? usuario.role : [usuario?.role].filter(Boolean);
     let dashboardPath = "/dashboard";
-    if (role === "colaborador") dashboardPath = "/employee-dashboard";
-    else if (role === "gestor") dashboardPath = "/gestor-dashboard";
-    else if (role === "comite") dashboardPath = "/comite-dashboard";
-    else if (role === "rh") dashboardPath = "/rh-dashboard";
+    if (roles.includes("colaborador")) dashboardPath = "/colaborador/dashboard";
+    else if (roles.includes("gestor")) dashboardPath = "/gestor/dashboard";
+    else if (roles.includes("comite")) dashboardPath = "/comite/dashboard";
+    else if (roles.includes("rh")) dashboardPath = "/rh/dashboard";
     navigate(dashboardPath);
   };
 
@@ -99,7 +97,7 @@ export default function Header() {
             ? "Colaboradores"
             : isCriteriaPage
             ? "Critérios de Avaliação"
-            : location.pathname.startsWith("/gestor") || location.pathname === "/gestor" || location.pathname === "/rh/ImportHistoryPage" || location.pathname === "/evolution-page" || location.pathname === "/comite/equalizacoes"
+            : location.pathname.startsWith("/gestor") || location.pathname === "/gestor" || location.pathname === "/rh/import-history" || location.pathname === "/colaborador/evolution" || location.pathname === "/comite/equalizacoes"
             ? getPageTitle(location.pathname)
             : `Ciclo ${cicleName || "..."}`}
         </p>

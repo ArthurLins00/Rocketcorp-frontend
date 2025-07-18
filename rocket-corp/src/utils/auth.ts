@@ -9,6 +9,7 @@ export async function refreshAccessToken() {
         if (response && response.ok) {
             const data = await response.json();
             localStorage.setItem("access_token", data.access_token);
+            console.log("Access token refreshed successfully:", data.access_token);
             return data.access_token;
         } else if (response && response.status === 401) {
             localStorage.removeItem("access_token");
@@ -75,42 +76,41 @@ export async function authenticatedFetch(url: string, options: RequestInit = {},
  * Retorna o usuário logado do localStorage já parseado, ou null se não houver.
  */
 export function getUsuarioLogado() {
-  if (typeof window === 'undefined') return null;
-  const user = localStorage.getItem('user');
-  if (!user) return null;
-  try {
-    return JSON.parse(user);
-  } catch {
-    return null;
-  }
+    if (typeof window === 'undefined') return null;
+    const user = localStorage.getItem('user');
+    if (!user) return null;
+    try {
+        return JSON.parse(user);
+    } catch {
+        return null;
+    }
 }
 
 /**
  * Limpa todos os dados de avaliação do localStorage para o usuário atual
  */
 export function clearUserEvaluationData() {
-  const user = getUsuarioLogado();
-  if (!user) return;
+    const user = getUsuarioLogado();
+    if (!user) return;
 
-  // Limpar dados de avaliação específicos do usuário
-  localStorage.removeItem("autoavaliacao");
-  localStorage.removeItem("avaliacao360");
-  localStorage.removeItem("mentoring");
-  localStorage.removeItem("referencias");
-  
-  console.log("🧹 Dados de avaliação limpos para o usuário:", user.name);
+    // Limpar dados de avaliação específicos do usuário
+    localStorage.removeItem("autoavaliacao");
+    localStorage.removeItem("avaliacao360");
+    localStorage.removeItem("mentoring");
+    localStorage.removeItem("referencias");
+
+    console.log("🧹 Dados de avaliação limpos para o usuário:", user.name);
 }
 
 /**
  * Limpa todos os dados do usuário do localStorage
  */
 export function clearAllUserData() {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("user");
-  localStorage.removeItem("autoavaliacao");
-  localStorage.removeItem("avaliacao360");
-  localStorage.removeItem("mentoring");
-  localStorage.removeItem("referencias");
-  
-  console.log("🧹 Todos os dados do usuário foram limpos");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("autoavaliacao");
+    localStorage.removeItem("avaliacao360");
+    localStorage.removeItem("mentoring");
+    localStorage.removeItem("referencias");
+    console.log("🧹 Todos os dados do usuário foram limpos");
 }

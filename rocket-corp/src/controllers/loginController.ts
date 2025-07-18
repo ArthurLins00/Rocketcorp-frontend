@@ -105,19 +105,21 @@ export function useLoginController() {
             const userRes = await authenticatedFetch(`/users/${userId}`);
             if (userRes && userRes.ok) {
                 const userData = await userRes.json();
-                const role = Array.isArray(userData.role) && userData.role.length > 0 ? userData.role[0] : "user";
+                const roles = Array.isArray(userData.role) ? userData.role : [userData.role ?? "user"];
                 if ('password' in userData) {
                     delete userData.password;
                 }
                 localStorage.setItem("user", JSON.stringify(userData));
 
                 let dashboardRoute = "/login";
-                if (role === "gestor") dashboardRoute = "/gestor/dashboard";
-                else if (role === "comite") dashboardRoute = "/comite/dashboard";
-                else if (role === "rh") dashboardRoute = "/rh/dashboard";
-                else if (role === "colaborador") dashboardRoute = "/colaborador/dashboard";
+                if (roles.includes("gestor")) dashboardRoute = "/gestor/dashboard";
+                else if (roles.includes("comite")) dashboardRoute = "/comite/dashboard";
+                else if (roles.includes("rh")) dashboardRoute = "/rh/dashboard";
+                else if (roles.includes("colaborador")) dashboardRoute = "/colaborador/dashboard";
+                else if (roles.includes("admin")) dashboardRoute = "/admin/dashboard";
                 else dashboardRoute = "/login";
                 navigate(dashboardRoute);
+                window.location.reload();
 
             } else {
                 setError("Erro ao buscar informações do usuário.");

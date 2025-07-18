@@ -25,6 +25,22 @@ export function useSidebarController() {
     const [showLogsPopup, setShowLogsPopup] = useState(false);
     const { user, userType } = useUserType();
 
+    // Get user roles directly from localStorage
+    let userRole: string[] = [];
+    const userRaw = localStorage.getItem("user");
+    if (userRaw) {
+        try {
+            const userObj = JSON.parse(userRaw);
+            if (Array.isArray(userObj.role)) {
+                userRole = userObj.role;
+            } else if (typeof userObj.role === "string") {
+                userRole = [userObj.role];
+            }
+        } catch (e) {
+            userRole = [];
+        }
+    }
+
     const handleLogout = async () => {
         // endpoint de logout
         // await apiFetch(import.meta.env.VITE_API_URL + "/auth/logout", {
@@ -83,29 +99,8 @@ export function useSidebarController() {
             role: "rh",
         },
         {
-            label: "Autoavaliação",
+            label: "Avaliação de ciclo",
             path: "/colaborador/avaliacao/autoavaliacao",
-            icon: Frame1,
-            show: userType.includes("colaborador"),
-            role: "colaborador",
-        },
-        {
-            label: "Avaliação 360",
-            path: "/colaborador/avaliacao/avaliacao360",
-            icon: Frame1,
-            show: userType.includes("colaborador"),
-            role: "colaborador",
-        },
-        {
-            label: "Mentoring",
-            path: "/colaborador/avaliacao/mentoring",
-            icon: Frame1,
-            show: userType.includes("colaborador"),
-            role: "colaborador",
-        },
-        {
-            label: "Referências",
-            path: "/colaborador/avaliacao/referencias",
             icon: Frame1,
             show: userType.includes("colaborador"),
             role: "colaborador",
@@ -165,6 +160,7 @@ export function useSidebarController() {
         navigate,
         location,
         userType,
+        userRole,
         showLogoutConfirm,
         setShowLogoutConfirm,
         showLogsPopup,

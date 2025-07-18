@@ -96,15 +96,14 @@ function RequireAuth({ children, requiredRole }: { children: React.ReactElement,
 
 export default function App() {
   const location = useLocation();
-  const isAvaliacaoRoute = location.pathname.startsWith("/avaliacao");
-  const isCollaboratorDetailRoute = location.pathname.startsWith("/gestor/collaborator/");
+  const isAvaliacaoRoute = location.pathname.startsWith("/colaborador/avaliacao");
+  const isCollaboratorDetailRoute = location.pathname.startsWith("/gestor/colaborador/");
   const isLoginPage = location.pathname === "/login";
   const isDashboardRoute = [
-    "/dashboard",
-    "/employee-dashboard",
-    "/comite-dashboard",
-    "/rh-dashboard",
-    "/gestor-dashboard"
+    "/colaborador/dashboard",
+    "/comite/dashboard",
+    "/rh/dashboard",
+    "/gestor/dashboard"
   ].includes(location.pathname);
 
   if (isLoginPage) {

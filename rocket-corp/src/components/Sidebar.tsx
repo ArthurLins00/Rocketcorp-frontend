@@ -24,6 +24,7 @@ export const Sidebar = () => {
 		handleLogout,
 		sidebarItems,
 		userType,
+		userRole,
 	} = useSidebarController();
 
 	// Group items by role using the explicit role property
@@ -52,8 +53,8 @@ export const Sidebar = () => {
 				</div>
 				<nav>
 					<ul className="flex flex-col gap-2 pl-5">
-						{Object.entries(groupedItems).map(([role, items]) =>
-							userType.includes(role) ? (
+			{Object.entries(groupedItems).map(([role, items]) =>
+				userRole.includes(role) ? (
 								<li key={role}>
 									<div
 										className="flex items-center cursor-pointer py-2 px-2 font-semibold text-[#1D1D1D] uppercase tracking-wide text-xs bg-transparent"
