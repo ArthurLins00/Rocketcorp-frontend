@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Star } from "lucide-react";
 import { buscarUsuarios } from "../services/userService";
+import StarRating from "./collaborators/StarRating";
 
 export type AutoavaliacaoItem = {
   idAvaliador: string;
@@ -288,22 +288,19 @@ export default function AutoavaliacaoForm({
                   {nota.toFixed(1)}
                 </span>
               </div>
-              <label className="block font-small mb-1 text-sm text-gray-500">
+              <label className="block text-sm font-medium mb-1 text-gray-600">
                 Dê uma avaliação de 1 a 5 com base no critério
               </label>
-              <div className="flex gap-5">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    size={20}
-                    fill={star <= nota ? "#facc15" : "none"}
-                    stroke="#facc15"
-                    className="cursor-pointer"
-                    onClick={() => updateField(criterioId, "nota", star)}
-                  />
-                ))}
-              </div>
-
+              <StarRating
+                value={nota}
+                readOnly={false}
+                onChange={(val) => updateField(criterioId, "nota", val)}
+                color="#08605F"
+                size={32}
+              />
+              <label className="block text-sm font-medium mb-1 text-gray-600">
+                Justifique sua nota
+              </label>
               <textarea
                 className="w-full p-2 border rounded-lg resize-none"
                 placeholder="Justifique sua nota"
@@ -318,6 +315,8 @@ export default function AutoavaliacaoForm({
       </div>
     );
   };
+
+  // Função para enviar apenas autoavaliação
 
   if (isLoading) {
     return (

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { Star, Trash } from "lucide-react";
+import { Trash, Send } from "lucide-react";
 import AvatarInicial from "./AvatarInicial";
 import { buscarUsuarios, getMembrosAndGestorByEquipe } from "../services/userService";
 import type { User } from "../services/userService";
+import { enviarAvaliacao360 } from "../services/avaliacaoService"; // ✅ Import da nova função
+import StarRating from "./collaborators/StarRating";
 
 type AvaliacaoColaborador = {
   idAvaliador: string;
@@ -301,26 +303,21 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
             </div>
 
             <div>
-              <label className="block text-sm font-small mb-1 text-gray-500">
+              <label className="block text-sm font-medium mb-1 text-gray-600">
                 Dê uma avaliação de 1 a 5 ao colaborador
               </label>
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    size={20}
-                    fill={star <= dados.nota ? "#facc15" : "none"}
-                    stroke="#facc15"
-                    className="cursor-pointer"
-                    onClick={() => handleChange(id, "nota", star)}
-                  />
-                ))}
-              </div>
+              <StarRating
+                value={dados.nota}
+                readOnly={false}
+                onChange={(val) => handleChange(id, "nota", val)}
+                color="#08605F"
+                size={32}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-small text-gray-500">Pontos fortes</label>
+                <label className="text-sm font-medium text-gray-600">Pontos fortes</label>
                 <textarea
                   className="w-full p-2 border rounded resize-none"
                   placeholder="Destaque os pontos positivos do colaborador"
@@ -329,7 +326,7 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
                 />
               </div>
               <div>
-                <label className="text-sm font-small text-gray-500">Pontos de melhoria</label>
+                <label className="text-sm font-medium text-gray-600">Pontos de melhoria</label>
                 <textarea
                   className="w-full p-2 border rounded resize-none"
                   placeholder="Destaque os pontos onde o colaborador pode melhorar"
@@ -341,7 +338,7 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
 
             <div className="grid grid-cols-3 gap-4 items-end">
               <div className="col-span-2">
-                <label className="text-sm font-small text-gray-500">Nome do Projeto</label>
+                <label className="text-sm font-medium text-gray-600">Nome do Projeto</label>
                 <input
                   className="w-full border p-2 rounded"
                   placeholder="Projeto trabalhado juntos"
@@ -350,7 +347,7 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
                 />
               </div>
               <div>
-                <label className="text-sm font-small text-gray-500">Período</label>
+                <label className="text-sm font-medium text-gray-600">Período</label>
                 <input
                   type="number"
                   min={1}
@@ -372,7 +369,7 @@ export default function Avaliacao360Form({ idAvaliador, idCiclo }: Avaliacao360F
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Você ficaria motivado em trabalhar novamente com essa pessoa?
               </label>
               <div className="flex flex-col space-y-2">

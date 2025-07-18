@@ -15,6 +15,10 @@ type AvatarInicialProps = {
         style={{
           width: tamanho,
           height: tamanho,
+          minWidth: tamanho,
+          minHeight: tamanho,
+          maxWidth: tamanho,
+          maxHeight: tamanho,
           borderRadius: "50%",
           backgroundColor: "#4B5563", 
           color: "white",
@@ -23,7 +27,6 @@ type AvatarInicialProps = {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          marginRight: 8,
           userSelect: "none",
         }}
       >
@@ -31,4 +34,3 @@ type AvatarInicialProps = {
       </div>
     );
   }
-  

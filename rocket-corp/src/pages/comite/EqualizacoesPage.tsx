@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Equalizacao } from "../../types/Equalizacao";
 import EqualizacaoCard from "../../components/equalizacao/EqualizacaoCard";
-import { getEqualizacoes } from "../utils/equalizacaoService";
+import { getEqualizacoes } from "../../utils/equalizacaoService";
 
 export default function EqualizacoesPage() {
   const [busca, setBusca] = useState("");
@@ -58,7 +58,6 @@ export default function EqualizacoesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-[#08605F]">Equalizações</h1>
 
       <input
         type="text"

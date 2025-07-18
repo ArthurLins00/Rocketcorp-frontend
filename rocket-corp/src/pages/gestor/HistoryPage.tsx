@@ -65,7 +65,7 @@ export const HistoricoPage: React.FC<HistoricoPageProps> = ({
   }
 
   return (
-    <div className="px-8 py-7 min-h-screen">
+    <div className="px-6 py-7 min-h-screen">
       {/* First Row - 3 cards horizontally */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
         <div className="h-[109px]">

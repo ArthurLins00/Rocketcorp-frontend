@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { FormData } from "../models/FormData";
 import { authenticatedFetch, clearUserEvaluationData } from "../utils/auth";
 import { apiFetch } from "../utils/api";
@@ -12,7 +13,7 @@ export function useLoginController() {
         email: "",
         password: "",
     });
-    const { refreshUserData } = useUserType();
+    const navigate = useNavigate();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -104,16 +105,20 @@ export function useLoginController() {
             const userRes = await authenticatedFetch(`/users/${userId}`);
             if (userRes && userRes.ok) {
                 const userData = await userRes.json();
-                
-                // Limpar dados de avaliação anteriores para evitar conflitos
-                clearUserEvaluationData();
-                
+                const role = Array.isArray(userData.role) && userData.role.length > 0 ? userData.role[0] : "user";
+                if ('password' in userData) {
+                    delete userData.password;
+                }
                 localStorage.setItem("user", JSON.stringify(userData));
-                
-                // Refresh the user context to update the UI immediately
-                refreshUserData();
-                
-                window.location.href = "/dashboard";
+
+                let dashboardRoute = "/login";
+                if (role === "gestor") dashboardRoute = "/gestor/dashboard";
+                else if (role === "comite") dashboardRoute = "/comite/dashboard";
+                else if (role === "rh") dashboardRoute = "/rh/dashboard";
+                else if (role === "colaborador") dashboardRoute = "/colaborador/dashboard";
+                else dashboardRoute = "/login";
+                navigate(dashboardRoute);
+
             } else {
                 setError("Erro ao buscar informações do usuário.");
             }
@@ -133,5 +138,6 @@ export function useLoginController() {
         handleInputChange,
         handleSubmit,
         setShowPassword,
+        navigate,
     };
 }

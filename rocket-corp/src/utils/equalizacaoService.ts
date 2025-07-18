@@ -1,5 +1,5 @@
-import type { Equalizacao } from "../../types/Equalizacao";
-import { apiFetch } from "../../utils/api";
+import { apiFetch } from "../utils/api";
+import type { Equalizacao } from "../types/Equalizacao";
 
 // const STORAGE_KEY = "equalizacoes";
 

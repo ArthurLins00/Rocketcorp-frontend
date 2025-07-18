@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { Star, Trash } from "lucide-react";
+import { Trash, Send } from "lucide-react";
 import AvatarInicial from "./AvatarInicial";
 import { buscarUsuarios } from "../services/userService";
 import type { User } from "../services/userService";
+import { enviarMentoring } from "../services/avaliacaoService"; // ✅ Import da nova função
+import StarRating from "./collaborators/StarRating";
 
 type MentoringData = {
   idAvaliador: string;
@@ -217,25 +219,20 @@ export default function MentoringForm({ idAvaliador, idCiclo }: MentoringFormPro
           </div>
           
           <div>
-            <label className="block text-sm font-small mb-1 text-gray-500">
+            <label className="block text-sm font-medium mb-1 text-gray-600">
               Dê uma avaliação de 1 a 5 para seu mentor
             </label>
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  size={20}
-                  fill={star <= dados.nota ? "#facc15" : "none"}
-                  stroke="#facc15"
-                  className="cursor-pointer"
-                  onClick={() => setDados((prev) => ({ ...prev, nota: star }))}
-                />
-              ))}
-            </div>
+            <StarRating
+              value={dados.nota}
+              readOnly={false}
+              onChange={(val) => setDados((prev) => ({ ...prev, nota: val }))}
+              color="#08605F"
+              size={32}
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-small mb-1 text-gray-500">
+            <label className="block text-sm font-medium mb-1 text-gray-600">
               Justifique sua avaliação
             </label>
             <textarea

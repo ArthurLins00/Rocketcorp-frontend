@@ -107,7 +107,7 @@ const EvaluationItem: React.FC<Props> = ({ criterion, onScoreChange, onJustifica
               <span className="[font-family:'Inter-Medium',Helvetica] font-medium text-[#1c1c1cbf] text-xs">
                 Justificativa
               </span>
-              <div className="flex items-start justify-start bg-[#e6e6e680] rounded-md border-solid border-slate-600 h-20">
+              <div className="flex items-start justify-start bg-[#e6e6e680] rounded-md border-solid border-slate-600 h-20 overflow-y-auto" style={{wordBreak: 'break-word', whiteSpace: 'pre-line'}}>
                 <span className="[font-family:'Inter-Regular',Helvetica] font-normal text-[#1c1c1c] text-xs py-2 px-3">
                   {selfJustification || 'Nenhuma justificativa fornecida.'}
                 </span>
@@ -128,7 +128,8 @@ const EvaluationItem: React.FC<Props> = ({ criterion, onScoreChange, onJustifica
                 Justifique sua nota
               </span>
               <textarea
-                className="w-full h-20 p-2 border rounded-md bg-white text-[#1c1c1c] text-xs"
+                className="w-full h-20 p-2 border rounded-md bg-white text-[#1c1c1c] text-xs resize-none overflow-y-auto"
+                style={{wordBreak: 'break-word', whiteSpace: 'pre-line'}}
                 placeholder="Escreva sua justificativa aqui..."
                 value={displayManagerJustification}
                 onChange={e => onJustificationChange(criterion.id, e.target.value)}

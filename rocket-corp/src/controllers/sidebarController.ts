@@ -15,6 +15,7 @@ export type SidebarItem = {
     path: string;
     icon: string;
     show: boolean;
+    role?: string; // Add role property
 };
 
 export function useSidebarController() {
@@ -55,75 +56,108 @@ export function useSidebarController() {
     const sidebarItems: SidebarItem[] = [
         {
             label: "Dashboard do colaborador",
-            path: "/employee-dashboard",
+            path: "/colaborador/dashboard",
             icon: Frame,
-            show: true,
+            show: userType.includes("colaborador"),
+            role: "colaborador",
         },
         {
             label: "Dashboard do gestor",
-            path: "/gestor-dashboard",
+            path: "/gestor/dashboard",
             icon: Frame,
             show: userType.includes("gestor"),
+            role: "gestor",
         },
         {
             label: "Dashboard do comitê",
-            path: "/comite-dashboard",
+            path: "/comite/dashboard",
             icon: Frame,
             show: userType.includes("comite"),
+            role: "comite",
         },
         {
             label: "Dashboard do RH",
-            path: "/rh-dashboard",
+            path: "/rh/dashboard",
             icon: Frame,
             show: userType.includes("rh"),
+            role: "rh",
         },
         {
-            label: "Avaliação de ciclo",
-            path: "/avaliacao/autoavaliacao",
+            label: "Autoavaliação",
+            path: "/colaborador/avaliacao/autoavaliacao",
             icon: Frame1,
-            show: true,
+            show: userType.includes("colaborador"),
+            role: "colaborador",
+        },
+        {
+            label: "Avaliação 360",
+            path: "/colaborador/avaliacao/avaliacao360",
+            icon: Frame1,
+            show: userType.includes("colaborador"),
+            role: "colaborador",
+        },
+        {
+            label: "Mentoring",
+            path: "/colaborador/avaliacao/mentoring",
+            icon: Frame1,
+            show: userType.includes("colaborador"),
+            role: "colaborador",
+        },
+        {
+            label: "Referências",
+            path: "/colaborador/avaliacao/referencias",
+            icon: Frame1,
+            show: userType.includes("colaborador"),
+            role: "colaborador",
         },
         {
             label: "Evolução",
-            path: "/evolution-page",
+            path: "/colaborador/evolution",
             icon: Frame2,
-            show: true,
+            show: userType.includes("colaborador"),
+            role: "colaborador",
         },
         {
             label: "Colaboradores - Gestor",
-            path: userId ? `/gestor/${userId}/collaborators` : "/gestor/collaborators",
+            path: userId ? `/gestor/${userId}/colaboradores` : "/gestor/colaboradores",
             icon: Frame2,
             show: userType.includes("gestor"),
-        },
-        {
-            label: "Colaboradores - RH",
-            path: "/rh/collaborators",
-            icon: Frame2,
-            show: userType.includes("rh"),
-        },
-        {
-            label: "Critérios de Avaliação",
-            path: "/rh/criterios",
-            icon: Frame3,
-            show: userType.includes("rh"),
-        },
-        {
-            label: "Equalizações",
-            path: "/comite/equalizacoes",
-            icon: Frame4,
-            show: userType.includes("comite"),
-        },
-        {
-            label: "Importar Histórico",
-            path: "/rh/ImportHistoryPage",
-            icon: Frame5,
-            show: userType.includes("rh"),
+            role: "gestor",
         },
         {
             label: "Brutal Facts",
             path: "/gestor/brutal-facts",
             icon: Frame6,
             show: userType.includes("gestor"),
+            role: "gestor",
+        },
+        {
+            label: "Critérios de Avaliação",
+            path: "/rh/criterios",
+            icon: Frame3,
+            show: userType.includes("rh"),
+            role: "rh",
+        },
+        {
+            label: "Importar Histórico",
+            path: "/rh/import-history",
+            icon: Frame5,
+            show: userType.includes("rh"),
+            role: "rh",
+        },
+        {
+            label: "Colaboradores - RH",
+            path: "/rh/colaboradores",
+            icon: Frame2,
+            show: userType.includes("rh"),
+            role: "rh",
+        },
+        {
+            label: "Equalizações",
+            path: "/comite/equalizacoes",
+            icon: Frame4,
+            show: userType.includes("comite"),
+            role: "comite",
         }
     ];
 

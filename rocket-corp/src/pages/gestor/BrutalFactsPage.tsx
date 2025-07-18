@@ -8,7 +8,7 @@ import GenAIComponent from '../../components/GenAIComponent';
 import { getUsuarioLogado } from '../../utils/auth';
 import { buscarUsuariosPorGestor, type User } from '../../services/userService';
 import { authenticatedFetch } from '../../utils/auth';
-import { getEqualizacoes } from '../utils/equalizacaoService';
+import { getEqualizacoes } from '../../utils/equalizacaoService';
 import type { Equalizacao } from '../../types/Equalizacao';
 import type { PerformanceData } from '../../models/history';
 import { getUsersStatisticsByCiclo } from '../../services/statisticsService';

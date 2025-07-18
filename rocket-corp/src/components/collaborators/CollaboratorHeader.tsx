@@ -1,3 +1,5 @@
+import AvatarInicial from "../AvatarInicial";
+
 interface HeaderProps {
   title: string;
   initials: string;
@@ -12,8 +14,8 @@ export const Header: React.FC<HeaderProps> = ({ title, initials, role, actionLab
   <header className="flex flex-row justify-between bg-white pt-8 pb-4 px-8">
     <div className="flex flex-row space-x-4">
       {/* avatar */}
-      <div className="flex items-center justify-center w-14 h-14 bg-slate-200 rounded-full  [font-family:'Inter-Regular',Helvetica] font-normal text-slate-900 text-[22px]">
-        {initials}
+      <div className="flex items-center justify-center w-14 h-14 rounded-full overflow-hidden p-0 m-0">
+        <AvatarInicial nome={title} tamanho={56} />
       </div>
       <div className="flex flex-col">
         <h1 className="[font-family:'Inter-Bold',Helvetica] font-bold text-[#1c1c1c] text-[19.6px] "> {title} </h1>

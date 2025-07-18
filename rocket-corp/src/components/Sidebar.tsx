@@ -1,6 +1,17 @@
 import { useSidebarController } from "../controllers/sidebarController";
 import { LogsPopup } from "./LogsPopup";
 import { useUserType } from "../contexts/UserTypeContext";
+import AvatarInicial from "./AvatarInicial";
+import { useState } from "react";
+import { FaChevronUp, FaChevronDown } from "react-icons/fa";
+
+const roleLabels: Record<string, string> = {
+	admin: "admin",
+	gestor: "gestor",
+	colaborador: "colaborador",
+	comite: "comite",
+	rh: "rh",
+};
 
 export const Sidebar = () => {
 	const {
@@ -12,13 +23,25 @@ export const Sidebar = () => {
 		setShowLogsPopup,
 		handleLogout,
 		sidebarItems,
+		userType,
 	} = useSidebarController();
 
-	const { user } = useUserType();
+	// Group items by role using the explicit role property
+	const groupedItems: Record<string, typeof sidebarItems> = {};
+	sidebarItems.forEach(item => {
+		const key = item.role || "other";
+		if (!groupedItems[key]) groupedItems[key] = [];
+		groupedItems[key].push(item);
+	});
 
-	// Get user initials from name
-	const getUserInitials = (name: string) => {
-		return name.split(' ').map(n => n[0]).join('').toUpperCase();
+	const [openFolders, setOpenFolders] = useState<string[]>(Object.keys(groupedItems)); // Start expanded
+
+	const handleToggleFolder = (role: string) => {
+		setOpenFolders(prev =>
+			prev.includes(role)
+				? prev.filter(r => r !== role)
+				: [...prev, role]
+		);
 	};
 
 	return (
@@ -29,34 +52,43 @@ export const Sidebar = () => {
 				</div>
 				<nav>
 					<ul className="flex flex-col gap-2 pl-5">
-						{sidebarItems.map(item => (
-							<li key={item.path}>
-								<span
-									className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left ${
-										location.pathname === item.path
-											? "bg-[#08605F1F] font-bold"
-											: "hover:bg-[#08605F1F]"
-									}`}
-									onClick={() => navigate(item.path)}
-								>
-									<img
-										src={item.icon}
-										alt={item.label}
-										className="mr-2 w-5 h-5"
-									/>
-									{item.label}
-								</span>
-							</li>
-						))}
+						{Object.entries(groupedItems).map(([role, items]) =>
+							userType.includes(role) ? (
+								<li key={role}>
+									<div
+										className="flex items-center cursor-pointer py-2 px-2 font-semibold text-[#1D1D1D] uppercase tracking-wide text-xs bg-transparent"
+										onClick={() => handleToggleFolder(role)}
+									>
+										<span>{roleLabels[role] || role}</span>
+										<span className="ml-auto text-xs text-[#08605F]">
+											{openFolders.includes(role) ? <FaChevronUp /> : <FaChevronDown />}
+										</span>
+									</div>
+									{openFolders.includes(role) && (
+										<ul className="pl-2">
+											{items.map(item => (
+												<li key={item.path}>
+													<span
+														className={`flex items-center text-[#08605F] rounded-lg font-medium py-3 px-2 cursor-pointer w-[12rem] text-left ${location.pathname === item.path ? "bg-[#08605F1F] font-bold" : "hover:bg-[#08605F1F]"}`}
+														onClick={() => navigate(item.path)}
+													>
+														<img src={item.icon} alt={item.label} className="mr-2 w-5 h-5" />
+														{item.label}
+													</span>
+												</li>
+											))}
+										</ul>
+									)}
+								</li>
+							) : null
+						)}
 					</ul>
 				</nav>
 			</div>
 			<div className="flex flex-col items-start pl-8">
 				<div className="flex items-center mb-4">
-					<span className="bg-[#CECDCD] text-[#1D1D1D] font-bold rounded-full w-8 h-8 flex items-center justify-center mr-2">
-						{user ? getUserInitials(user.name) : "CN"}
-					</span>
-					<span className="text-base text-[#1D1D1D]">{user?.name || "Colaborador 1"}</span>
+					<AvatarInicial nome={localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!).name : "Colaborador 1"} tamanho={32} />
+					<span className="text-base text-[#1D1D1D]">{localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!).name : "Colaborador 1"}</span>
 				</div>
 				<a
 					href="#"

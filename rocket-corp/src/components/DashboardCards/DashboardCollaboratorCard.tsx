@@ -1,4 +1,4 @@
-import { CollaboratorCard } from "../../models/CollaboratorCard";
+import { CollaboratorCard } from "../collaborators/CollaboratorCard";
 import { collaborators } from "../../mocks/mockedCollaboratorCard";
 
 export const DashboardCollaboratorCard = () => (
